@@ -2,7 +2,6 @@ library(data.table); library(ggplot2); library(Hmisc)
 
 ## The familiar and novel groups
 grouping <- data.frame(Familiar = c("Bedroom", "Classroom", "Gym"), Novel = c("Library", "LivingRoom", "StorageRoom"))
-rooms    <- c("Bedroom", "Classroom", "Gym", "Library", "LivingRoom", "StorageRoom")
 
 ## Get the list of participant's folders
 participant.folders <- dir(path = "IndividualRawData/", pattern = "^P")
@@ -27,31 +26,7 @@ for (thisFolder in participant.folders) {
   }
   
   this.response[Context == "None"]$Group <- "Distractor"
-
-  # Read the curiosity rating 
-  this.rating <- read.csv(paste0("IndividualRawData", .Platform$file.sep, thisFolder, .Platform$file.sep, "CuriosityRatings.csv"), header = T, stringsAsFactors=F, fileEncoding= "UTF-8-BOM")
-  this.rating <- data.table(this.rating)
-
-  # Add the curiosity rating to the response file
-  this.response$CurRating <- 0
   
-  for (this.room in rooms) {
-    this.response[Context == this.room]$CurRating <- this.rating[Room == this.room]$CuriosityRating
-  }
-
-  this.response[CurRating == 0]$CurRating <- NA
-
-  # Add the order of room visits in each block
-  even_indexes <- seq(2, nrow(this.rating), 2)
-  this.rating$RoomOrder <- "First"
-  this.rating[even_indexes]$RoomOrder <- "Second"
-
-  this.response$RoomOrder <- ""
-
-  for (this.room in rooms) {
-    this.response[Context == this.room]$RoomOrder <- this.rating[Room == this.room]$RoomOrder
-  }
-
   Curiosity.Recall <- rbind(Curiosity.Recall, this.response)
 }
 
@@ -105,6 +80,10 @@ Curiosity.Recall[, SeenHit  :=  mapply(SeenAccuracyCal, ObjectResponse, CorrObjR
 Curiosity.Recall[, FalseAlarm := mapply(FalseAlarmCal, ObjectResponse, CorrObjResp)]
 Curiosity.Recall[, FalseSeenHit := mapply(FalseSeenHitCal, ObjectResponse, CorrObjResp)]
 
+## Split the old and new items
+old.item.responses <- Curiosity.Recall[CorrObjResp == "Seen"]
+new.item.responses <- Curiosity.Recall[CorrObjResp == "New"]
+
 # Context memory
 ContextAccuracyCal <- function(ActualResp, CorrResp) {
   if (ActualResp == CorrResp) {
@@ -116,22 +95,28 @@ ContextAccuracyCal <- function(ActualResp, CorrResp) {
   return(Accuracy)
 }
 
-ContextFalseHitCal <- function(ActualResp, CorrResp) {
-  if (CorrResp == "None" & ActualResp != "None") {
-      FalseHit = 1}
-  else {
-      FalseHit = 0
-  }
+Curiosity.Recall[, ContextAccuracy := mapply(ContextAccuracyCal, ContextResponse, Context)]
+
+## Force the context accuracy to be 0 if the corresponding item accuracy is 0
+# Curiosity.Recall[Accuracy == 0 & ContextAccuracy == 1]  # Seems that this situation only happened for distractors
+
+## Calculate the probability of choose each option respectively for old and new objects for each indivdual participant
+Curiosity.Recall$ObjectType <- "Old"
+Curiosity.Recall[Group == "Distractor"]$ObjectType <- "New"
+
+with(Curiosity.Recall, table( ObjectResponse, SubjectNo, ObjectType))
+
+RespFreqCal <- function(ObjResp, ... ){
+  FreqTable <- as.data.frame(table(ObjResp)/sum(table(ObjResp)))
+  names(FreqTable) <- c("Response", "Frequency")
+  return(FreqTable)
 }
 
-Curiosity.Recall[, ContextAccuracy := mapply(ContextAccuracyCal, ContextResponse, Context)]
-Curiosity.Recall[, ContextFalseHit := mapply(ContextFalseHitCal, ContextResponse, Context)]
+Curiosity.Recall.Freq.Grp <- Curiosity.Recall[, c(RespFreqCal(ObjectResponse)), by = c("SubjectNo", "Group")]
+Curiosity.Recall.Freq.Rsp <- Curiosity.Recall[, c(RespFreqCal(ObjectResponse)), by = c("SubjectNo", "CorrObjResp")]
 
-#  Calculate the false alarm rate for each individual participant
-idv.false.alarm.rate <- Curiosity.Recall[Group == "Distractor", .(ItemFalseAlarm = mean(FalseAlarm), ItemFalseSeenHit = mean(FalseSeenHit), ContextFalseHit = mean(ContextFalseHit)/3), by = c("SubjectNo")]
-
- 
 ## Calculate hit rate with only "seen" response
+Rooms <- c("Bedroom", "Classroom", "Gym", "LivingRoom", "Library", "StorageRoom")
 OutsideObjectsMemory <- NULL
 
 for (thisP in participant.folders) {
