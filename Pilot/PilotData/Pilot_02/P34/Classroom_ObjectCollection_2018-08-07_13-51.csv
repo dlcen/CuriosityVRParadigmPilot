@@ -1,0 +1,8 @@
+BoxNo,BoxPos_X,BoxPos_Y,BoxPos_Z,Object,Side
+1,7,9.6,50.5,Grape,Right
+2,7,9.6,58,PiggyBank,Left
+3,-3,9.6,55,BaseballBat,Right
+4,-7.25,9.6,49.5,JBLSpeaker,Left
+5,-4,9.6,43,Openner,Right
+6,4.7,11.871,51,Pineapple,Left
+

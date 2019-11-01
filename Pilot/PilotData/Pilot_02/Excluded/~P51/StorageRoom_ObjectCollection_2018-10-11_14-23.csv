@@ -1,0 +1,8 @@
+BoxNo,BoxPos_X,BoxPos_Y,BoxPos_Z,Object,Side
+1,3.5,9.6,43,Bread,Left
+2,-7.5,9.6,44,Basket,Right
+3,-4.75,9.6,53.5,Laptop,Right
+4,7.5,9.6,54.5,RockingHorse,Left
+5,3.5,11.2,58.5,DeskLight,Right
+6,5,9.6,48,CoffeeMachine,Right
+

@@ -1,0 +1,8 @@
+BoxNo,BoxPos_X,BoxPos_Y,BoxPos_Z,Object,Side
+1,7,9.6,58,FirstAidKit,Left
+2,7,9.6,50.5,Clamps,Right
+3,-7.25,9.6,49.5,Official hat,Right
+4,-4,9.6,43,CinRoll,Right
+5,-3,9.6,55,Toothpaste,Left
+6,4.7,11.871,51,Glasses,Right
+

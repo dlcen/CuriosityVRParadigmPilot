@@ -1,0 +1,8 @@
+BoxNo,BoxPos_X,BoxPos_Y,BoxPos_Z,Object,Side
+1,7.25,9.6,50,BallonDog,Left
+2,5,9.6,55,Canister,Right
+3,-1,9.6,57,MobilePhone,Left
+4,-7,9.6,56,Router,Right
+5,-7.5,9.6,44,Clamps,Right
+6,0.8,9.6,44.2,HTCVive,Right
+

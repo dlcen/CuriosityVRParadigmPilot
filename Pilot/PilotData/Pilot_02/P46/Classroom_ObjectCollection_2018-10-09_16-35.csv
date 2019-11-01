@@ -1,0 +1,8 @@
+BoxNo,BoxPos_X,BoxPos_Y,BoxPos_Z,Object,Side
+1,-4,9.6,43,Calculator,Left
+2,-7.25,9.6,49.5,Cabbaage,Right
+3,-3,9.6,55,Avocado,Left
+4,7,9.6,58,BaseballBat,Left
+5,4.7,11.871,51,Apple,Left
+6,7,9.6,50.5,Controller,Left
+

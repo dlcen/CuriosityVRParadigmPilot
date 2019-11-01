@@ -1,0 +1,8 @@
+BoxNo,BoxPos_X,BoxPos_Y,BoxPos_Z,Object,Side
+1,-4.75,9.6,53.5,Grape,Right
+2,-7.5,9.6,44,EggBeater,Right
+3,3.5,9.6,43,Spoons,Right
+4,7.5,9.6,54.5,MilkCarton,Right
+5,3.5,11.2,58.5,Kettle,Left
+6,5,9.6,48,HTCViveController,Left
+

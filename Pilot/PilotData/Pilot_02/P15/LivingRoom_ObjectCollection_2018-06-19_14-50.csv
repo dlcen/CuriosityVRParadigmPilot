@@ -1,0 +1,8 @@
+BoxNo,BoxPos_X,BoxPos_Y,BoxPos_Z,Object,Side
+1,-1,12.5,57,TennisBall,Left
+2,7.5,11.02,58,MosquitoRacket,Right
+3,-0.5,9.6,58,UGGboot,Left
+4,-2.95,9.6,53,Matrioshka,Left
+5,5.5,9.6,50.25,RockingHorse,Right
+6,-6,9.6,44,PaperCoffeeCup,Right
+

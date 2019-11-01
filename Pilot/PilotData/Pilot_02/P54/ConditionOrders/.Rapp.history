@@ -1,0 +1,795 @@
+install.packages("xlsx")
+install.packages("multicomp")
+install.packages("multiomp")
+install.packages("multcomp")
+kjh
+library(ggplot2); library(data.table)
+library(data.table)#
+#
+setwd("D:/Danlu.C - CU OneDrive/OneDrive - Cardiff University/VRCuriosityMemory")
+sys.info()
+sys.info
+Sys.info
+.Platform$os.ype
+.Platform$os.type
+library(data.table)
+install.packages("nlme")
+library(data.table)
+library(data.table)
+if (.Platform$OS.type == "unix") {#
+  setwd("~/Documents/OneDrive - Cardiff University/VRCuriosityMemory/ConditionOrder")#
+} else {#
+  setwd("D:/Danlu.C - CU OneDrive/OneDrive - Cardiff University/VRCuriosityMemory/ConditionOrder")#
+}
+grpA <- read.table("GroupA.csv", header = F)#
+grpB <- read.table("GroupB.csv", header = F)
+rooms <- c("Bedroom", "Classroom", "Gym", "LivingRoom", "Library", "StorageRoom")#
+room.list <- rep(rooms, each = 6)
+set.seed(051)#
+random.order <- sample(room.list)
+distractors <- read.csv("Distractors.csv", header = FALSE, sep = ",")
+OneDrive - Cardiff University/VRCuriosityMemory/PilotData/RawData/Pilot_02/ConditionOrders")
+setwd("~/Users/danlucen/Documents/OneDrive - Cardiff University/VRCuriosityMemory/PilotData/RawData/Pilot_02/ConditionOrders")
+setwd("~/Documents/OneDrive - Cardiff University/VRCuriosityMemory/PilotData/RawData/Pilot_02/P51/ConditionOrders")
+grpA.rooms <- data.frame(Objects = grpA$V1, Room = random.order)#
+#grpA.rooms <- do.call(rbind, Map(data.frame, Objects=grpA, Room=random.order))#
+distractors.A <- sample(distractors$V1, size = 18)#
+distractors.A.rooms <- do.call(rbind, Map(data.frame, Objects = distractors.A, Room = rep("None", 18)))#
+#
+encoding.memory.test <- rbind(grpA.rooms, distractors.A.rooms)#
+#
+### For options#
+options <- append(rooms, "None")#
+#
+#### Generate a series of options for each object#
+option.1 <- NULL#
+option.2 <- NULL#
+option.3 <- NULL#
+option.4 <- NULL#
+#
+nObject <- dim(encoding.memory.test)[1]#
+#
+for (i in c(1:nObject)){#
+  option.tmp <- NULL#
+  corr.option <- as.character(encoding.memory.test$Room[i])#
+  option.tmp <- c(option.tmp, corr.option)#
+  if (corr.option == "None") {#
+    rest.three <- as.character( sample(options[!options %in% c(corr.option)], size = 3))#
+    option.tmp <- c(option.tmp, rest.three)#
+  } else {#
+    option.tmp <- c(option.tmp, "None")#
+    rest.two <- as.character(sample(options[!options %in% option.tmp], size = 2))#
+    option.tmp <- c(option.tmp, rest.two)#
+  }#
+  option.tmp <- as.character(sample(option.tmp))#
+  option.1 <- c(option.1, option.tmp[1])#
+  option.2 <- c(option.2, option.tmp[2])#
+  option.3 <- c(option.3, option.tmp[3])#
+  option.4 <- c(option.4, option.tmp[4])#
+}#
+encoding.memory.test <- cbind(encoding.memory.test, option.1, option.2, option.3, option.4)#
+names(encoding.memory.test) <- c("Object", "Room", "Option1", "Option2", "Option3", "Option4")#
+#
+random.encoding.memory.test.order <- sample(c(1:54))#
+random.encoding.memory.test <- encoding.memory.test[sample(nrow(encoding.memory.test)),]#
+#
+write.table( noquote( random.encoding.memory.test), "Encoding_Memory_Test_Order.csv", sep = ",", row.names = F, col.names = F, quote = F)
+grpB.rooms <- data.frame(Objects = grpB$V1, Room = random.order)#
+#grpB.rooms <- do.call(rbind, Map(data.frame, Objects=grpB, Room=random.order))#
+distractors.B <- distractors$V1[!distractors$V1 %in% distractors.A]#
+distractors.B.rooms <- do.call(rbind, Map(data.frame, Objects = distractors.B, Room = rep("None", 18)))#
+#
+curiosity.memory.test <- rbind(grpB.rooms, distractors.B.rooms)#
+#
+#### Generate a series of options for each object#
+option.1 <- NULL#
+option.2 <- NULL#
+option.3 <- NULL#
+option.4 <- NULL#
+#
+nObject <- dim(curiosity.memory.test)[1]#
+#
+for (i in c(1:nObject)){#
+  option.tmp <- NULL#
+  corr.option <- as.character(curiosity.memory.test$Room[i])#
+  option.tmp <- c(option.tmp, corr.option)#
+  if (corr.option == "None") {#
+    rest.three <- as.character( sample(options[!options %in% c(corr.option)], size = 3))#
+    option.tmp <- c(option.tmp, rest.three)#
+  } else {#
+    option.tmp <- c(option.tmp, "None")#
+    rest.two <- as.character(sample(options[!options %in% option.tmp], size = 2))#
+    option.tmp <- c(option.tmp, rest.two)#
+  }#
+  option.tmp <- as.character(sample(option.tmp))#
+  option.1 <- c(option.1, option.tmp[1])#
+  option.2 <- c(option.2, option.tmp[2])#
+  option.3 <- c(option.3, option.tmp[3])#
+  option.4 <- c(option.4, option.tmp[4])#
+}#
+#
+curiosity.memory.test <- cbind(curiosity.memory.test, option.1, option.2, option.3, option.4)#
+names(curiosity.memory.test) <- c("Object", "Room", "Option1", "Option2", "Option3", "Option4")#
+#
+random.curiosity.memory.test.order <- sample(c(1:54))#
+random.curiosity.memory.test <- curiosity.memory.test[sample(nrow(curiosity.memory.test)),]#
+#
+write.table(random.curiosity.memory.test, "Curiosity_Memory_Test_Order.csv", sep = ",", row.names = F, col.names = F, quote = F)#
+#
+## For encoding task#
+### Inside the rooms#
+Objects.in.Bedroom <- grpA.rooms$Objects[grpA.rooms$Room == "Bedroom"]#
+Objects.in.Bedroom <- as.character(sample(Objects.in.Bedroom))#
+Objects.in.Bedroom <- paste(Objects.in.Bedroom, collapse = ",")#
+Objects.in.Bedroom <- paste0(Objects.in.Bedroom, ',')#
+write(noquote( Objects.in.Bedroom), "Inside/Bedroom.csv", sep = ",")#
+#
+Objects.in.Classroom <- grpA.rooms$Objects[grpA.rooms$Room == "Classroom"]#
+Objects.in.Classroom <- as.character(sample(Objects.in.Classroom))#
+Objects.in.Classroom <- paste(Objects.in.Classroom, collapse = ",")#
+Objects.in.Classroom <- paste0(Objects.in.Classroom, ',')#
+write(noquote( Objects.in.Classroom), "Inside/Classroom.csv", sep = ",")#
+#
+Objects.in.Gym <- grpA.rooms$Objects[grpA.rooms$Room == "Gym"]#
+Objects.in.Gym <- as.character(sample(Objects.in.Gym))#
+Objects.in.Gym <- paste(Objects.in.Gym, collapse = ",")#
+Objects.in.Gym <- paste0(Objects.in.Gym, ',')#
+write(noquote( Objects.in.Gym), "Inside/Gym.csv", sep = ",")#
+#
+Objects.in.Library <- grpA.rooms$Objects[grpA.rooms$Room == "Library"]#
+Objects.in.Library <- as.character(sample(Objects.in.Library))#
+Objects.in.Library <- paste(Objects.in.Library, collapse = ",")#
+Objects.in.Library <- paste0(Objects.in.Library, ',')#
+write(noquote( Objects.in.Library), "Inside/Library.csv", sep = ",")#
+#
+Objects.in.LivingRoom <- grpA.rooms$Objects[grpA.rooms$Room == "LivingRoom"]#
+Objects.in.LivingRoom <- as.character(sample(Objects.in.LivingRoom))#
+Objects.in.LivingRoom <- paste(Objects.in.LivingRoom, collapse = ",")#
+Objects.in.LivingRoom <- paste0(Objects.in.LivingRoom, ',')#
+write(noquote( Objects.in.LivingRoom), "Inside/LivingRoom.csv", sep = ",")#
+#
+Objects.in.StorageRoom <- grpA.rooms$Objects[grpA.rooms$Room == "StorageRoom"]#
+Objects.in.StorageRoom <- as.character(sample(Objects.in.StorageRoom))#
+Objects.in.StorageRoom <- paste(Objects.in.StorageRoom, collapse = ",")#
+Objects.in.StorageRoom <- paste0(Objects.in.StorageRoom, ',')#
+write(noquote( Objects.in.StorageRoom), "Inside/StorageRoom.csv", sep = ",")#
+#
+### Outside the rooms#
+Objects.in.Bedroom <- grpB.rooms$Objects[grpB.rooms$Room == "Bedroom"]#
+Objects.in.Bedroom <- as.character(sample(Objects.in.Bedroom))#
+Objects.in.Bedroom <- paste(Objects.in.Bedroom, collapse = ",")#
+Objects.in.Bedroom <- paste0(Objects.in.Bedroom, ',')#
+write(noquote( Objects.in.Bedroom), "Outside/Bedroom.csv", sep = ",")#
+#
+Objects.in.Classroom <- grpB.rooms$Objects[grpB.rooms$Room == "Classroom"]#
+Objects.in.Classroom <- as.character(sample(Objects.in.Classroom))#
+Objects.in.Classroom <- paste(Objects.in.Classroom, collapse = ",")#
+Objects.in.Classroom <- paste0(Objects.in.Classroom, ',')#
+write(noquote( Objects.in.Classroom), "Outside/Classroom.csv", sep = ",")#
+#
+Objects.in.Gym <- grpB.rooms$Objects[grpB.rooms$Room == "Gym"]#
+Objects.in.Gym <- as.character(sample(Objects.in.Gym))#
+Objects.in.Gym <- paste(Objects.in.Gym, collapse = ",")#
+Objects.in.Gym <- paste0(Objects.in.Gym, ',')#
+write(noquote( Objects.in.Gym), "Outside/Gym.csv", sep = ",")#
+#
+Objects.in.Library <- grpB.rooms$Objects[grpB.rooms$Room == "Library"]#
+Objects.in.Library <- as.character(sample(Objects.in.Library))#
+Objects.in.Library <- paste(Objects.in.Library, collapse = ",")#
+Objects.in.Library <- paste0(Objects.in.Library, ',')#
+write(noquote( Objects.in.Library), "Outside/Library.csv", sep = ",")#
+#
+Objects.in.LivingRoom <- grpB.rooms$Objects[grpB.rooms$Room == "LivingRoom"]#
+Objects.in.LivingRoom <- as.character(sample(Objects.in.LivingRoom))#
+Objects.in.LivingRoom <- paste(Objects.in.LivingRoom, collapse = ",")#
+Objects.in.LivingRoom <- paste0(Objects.in.LivingRoom, ',')#
+write(noquote( Objects.in.LivingRoom), "Outside/LivingRoom.csv", sep = ",")#
+#
+Objects.in.StorageRoom <- grpB.rooms$Objects[grpB.rooms$Room == "StorageRoom"]#
+Objects.in.StorageRoom <- as.character(sample(Objects.in.StorageRoom))#
+Objects.in.StorageRoom <- paste(Objects.in.StorageRoom, collapse = ",")#
+Objects.in.StorageRoom <- paste0(Objects.in.StorageRoom, ',')#
+write(noquote( Objects.in.StorageRoom), "Outside/StorageRoom.csv", sep = ",")
+room.grp.a <- c("Bedroom", "Classroom", "Gym")#
+room.grp.b <- c("Library", "LivingRoom", "StorageRoom")#
+#
+set.seed(051)#
+random.grp.a <- sample(room.grp.a)#
+random.grp.b <- sample(room.grp.b)#
+#
+block.1 <- c(random.grp.a[1], random.grp.b[1])#
+block.2 <- c(random.grp.a[2], random.grp.b[2])#
+block.3 <- c(random.grp.a[3], random.grp.b[3])#
+#
+random.block.1 <- sample(block.1)#
+random.block.2 <- sample(block.2)#
+random.block.3 <- sample(block.3)#
+#
+room.order <- c(cbind(random.block.1, random.block.2, random.block.3))#
+room.order <- paste(room.order, collapse = ",")#
+room.order <- paste0(room.order, ',')#
+#
+# writeLines(noquote(room.order), "RoomOrder3.csv")#
+write( noquote(room.order), "RoomOrder.csv", sep = ",")
+room.list <- c("Bedroom", "Classroom", "Gym", "Library", "LivingRoom", "StorageRoom")#
+#
+set.seed(051)#
+random.room.list <- sample(room.list)#
+#
+random.room.list <- paste(random.room.list, collapse = ",")#
+random.room.list <- paste0(random.room.list, ',')#
+#
+write( noquote(random.room.list), "SpatialTesting_RoomOrder.csv", sep = ",")
+setwd("~/Documents/OneDrive - Cardiff University/VRCuriosityMemory/PilotData/RawData/Pilot_02/P52/ConditionOrders")
+set.seed(052)#
+random.order <- sample(room.list)#
+## For encoding memory test#
+grpA.rooms <- data.frame(Objects = grpA$V1, Room = random.order)#
+#grpA.rooms <- do.call(rbind, Map(data.frame, Objects=grpA, Room=random.order))#
+distractors.A <- sample(distractors$V1, size = 18)#
+distractors.A.rooms <- do.call(rbind, Map(data.frame, Objects = distractors.A, Room = rep("None", 18)))#
+#
+encoding.memory.test <- rbind(grpA.rooms, distractors.A.rooms)#
+#
+### For options#
+options <- append(rooms, "None")#
+#
+#### Generate a series of options for each object#
+option.1 <- NULL#
+option.2 <- NULL#
+option.3 <- NULL#
+option.4 <- NULL#
+#
+nObject <- dim(encoding.memory.test)[1]#
+#
+for (i in c(1:nObject)){#
+  option.tmp <- NULL#
+  corr.option <- as.character(encoding.memory.test$Room[i])#
+  option.tmp <- c(option.tmp, corr.option)#
+  if (corr.option == "None") {#
+    rest.three <- as.character( sample(options[!options %in% c(corr.option)], size = 3))#
+    option.tmp <- c(option.tmp, rest.three)#
+  } else {#
+    option.tmp <- c(option.tmp, "None")#
+    rest.two <- as.character(sample(options[!options %in% option.tmp], size = 2))#
+    option.tmp <- c(option.tmp, rest.two)#
+  }#
+  option.tmp <- as.character(sample(option.tmp))#
+  option.1 <- c(option.1, option.tmp[1])#
+  option.2 <- c(option.2, option.tmp[2])#
+  option.3 <- c(option.3, option.tmp[3])#
+  option.4 <- c(option.4, option.tmp[4])#
+}#
+encoding.memory.test <- cbind(encoding.memory.test, option.1, option.2, option.3, option.4)#
+names(encoding.memory.test) <- c("Object", "Room", "Option1", "Option2", "Option3", "Option4")#
+#
+random.encoding.memory.test.order <- sample(c(1:54))#
+random.encoding.memory.test <- encoding.memory.test[sample(nrow(encoding.memory.test)),]#
+#
+write.table( noquote( random.encoding.memory.test), "Encoding_Memory_Test_Order.csv", sep = ",", row.names = F, col.names = F, quote = F)#
+## For curiosity memory test#
+grpB.rooms <- data.frame(Objects = grpB$V1, Room = random.order)#
+#grpB.rooms <- do.call(rbind, Map(data.frame, Objects=grpB, Room=random.order))#
+distractors.B <- distractors$V1[!distractors$V1 %in% distractors.A]#
+distractors.B.rooms <- do.call(rbind, Map(data.frame, Objects = distractors.B, Room = rep("None", 18)))#
+#
+curiosity.memory.test <- rbind(grpB.rooms, distractors.B.rooms)#
+#
+#### Generate a series of options for each object#
+option.1 <- NULL#
+option.2 <- NULL#
+option.3 <- NULL#
+option.4 <- NULL#
+#
+nObject <- dim(curiosity.memory.test)[1]#
+#
+for (i in c(1:nObject)){#
+  option.tmp <- NULL#
+  corr.option <- as.character(curiosity.memory.test$Room[i])#
+  option.tmp <- c(option.tmp, corr.option)#
+  if (corr.option == "None") {#
+    rest.three <- as.character( sample(options[!options %in% c(corr.option)], size = 3))#
+    option.tmp <- c(option.tmp, rest.three)#
+  } else {#
+    option.tmp <- c(option.tmp, "None")#
+    rest.two <- as.character(sample(options[!options %in% option.tmp], size = 2))#
+    option.tmp <- c(option.tmp, rest.two)#
+  }#
+  option.tmp <- as.character(sample(option.tmp))#
+  option.1 <- c(option.1, option.tmp[1])#
+  option.2 <- c(option.2, option.tmp[2])#
+  option.3 <- c(option.3, option.tmp[3])#
+  option.4 <- c(option.4, option.tmp[4])#
+}#
+#
+curiosity.memory.test <- cbind(curiosity.memory.test, option.1, option.2, option.3, option.4)#
+names(curiosity.memory.test) <- c("Object", "Room", "Option1", "Option2", "Option3", "Option4")#
+#
+random.curiosity.memory.test.order <- sample(c(1:54))#
+random.curiosity.memory.test <- curiosity.memory.test[sample(nrow(curiosity.memory.test)),]#
+#
+write.table(random.curiosity.memory.test, "Curiosity_Memory_Test_Order.csv", sep = ",", row.names = F, col.names = F, quote = F)#
+#
+## For encoding task#
+### Inside the rooms#
+Objects.in.Bedroom <- grpA.rooms$Objects[grpA.rooms$Room == "Bedroom"]#
+Objects.in.Bedroom <- as.character(sample(Objects.in.Bedroom))#
+Objects.in.Bedroom <- paste(Objects.in.Bedroom, collapse = ",")#
+Objects.in.Bedroom <- paste0(Objects.in.Bedroom, ',')#
+write(noquote( Objects.in.Bedroom), "Inside/Bedroom.csv", sep = ",")#
+#
+Objects.in.Classroom <- grpA.rooms$Objects[grpA.rooms$Room == "Classroom"]#
+Objects.in.Classroom <- as.character(sample(Objects.in.Classroom))#
+Objects.in.Classroom <- paste(Objects.in.Classroom, collapse = ",")#
+Objects.in.Classroom <- paste0(Objects.in.Classroom, ',')#
+write(noquote( Objects.in.Classroom), "Inside/Classroom.csv", sep = ",")#
+#
+Objects.in.Gym <- grpA.rooms$Objects[grpA.rooms$Room == "Gym"]#
+Objects.in.Gym <- as.character(sample(Objects.in.Gym))#
+Objects.in.Gym <- paste(Objects.in.Gym, collapse = ",")#
+Objects.in.Gym <- paste0(Objects.in.Gym, ',')#
+write(noquote( Objects.in.Gym), "Inside/Gym.csv", sep = ",")#
+#
+Objects.in.Library <- grpA.rooms$Objects[grpA.rooms$Room == "Library"]#
+Objects.in.Library <- as.character(sample(Objects.in.Library))#
+Objects.in.Library <- paste(Objects.in.Library, collapse = ",")#
+Objects.in.Library <- paste0(Objects.in.Library, ',')#
+write(noquote( Objects.in.Library), "Inside/Library.csv", sep = ",")#
+#
+Objects.in.LivingRoom <- grpA.rooms$Objects[grpA.rooms$Room == "LivingRoom"]#
+Objects.in.LivingRoom <- as.character(sample(Objects.in.LivingRoom))#
+Objects.in.LivingRoom <- paste(Objects.in.LivingRoom, collapse = ",")#
+Objects.in.LivingRoom <- paste0(Objects.in.LivingRoom, ',')#
+write(noquote( Objects.in.LivingRoom), "Inside/LivingRoom.csv", sep = ",")#
+#
+Objects.in.StorageRoom <- grpA.rooms$Objects[grpA.rooms$Room == "StorageRoom"]#
+Objects.in.StorageRoom <- as.character(sample(Objects.in.StorageRoom))#
+Objects.in.StorageRoom <- paste(Objects.in.StorageRoom, collapse = ",")#
+Objects.in.StorageRoom <- paste0(Objects.in.StorageRoom, ',')#
+write(noquote( Objects.in.StorageRoom), "Inside/StorageRoom.csv", sep = ",")#
+#
+### Outside the rooms#
+Objects.in.Bedroom <- grpB.rooms$Objects[grpB.rooms$Room == "Bedroom"]#
+Objects.in.Bedroom <- as.character(sample(Objects.in.Bedroom))#
+Objects.in.Bedroom <- paste(Objects.in.Bedroom, collapse = ",")#
+Objects.in.Bedroom <- paste0(Objects.in.Bedroom, ',')#
+write(noquote( Objects.in.Bedroom), "Outside/Bedroom.csv", sep = ",")#
+#
+Objects.in.Classroom <- grpB.rooms$Objects[grpB.rooms$Room == "Classroom"]#
+Objects.in.Classroom <- as.character(sample(Objects.in.Classroom))#
+Objects.in.Classroom <- paste(Objects.in.Classroom, collapse = ",")#
+Objects.in.Classroom <- paste0(Objects.in.Classroom, ',')#
+write(noquote( Objects.in.Classroom), "Outside/Classroom.csv", sep = ",")#
+#
+Objects.in.Gym <- grpB.rooms$Objects[grpB.rooms$Room == "Gym"]#
+Objects.in.Gym <- as.character(sample(Objects.in.Gym))#
+Objects.in.Gym <- paste(Objects.in.Gym, collapse = ",")#
+Objects.in.Gym <- paste0(Objects.in.Gym, ',')#
+write(noquote( Objects.in.Gym), "Outside/Gym.csv", sep = ",")#
+#
+Objects.in.Library <- grpB.rooms$Objects[grpB.rooms$Room == "Library"]#
+Objects.in.Library <- as.character(sample(Objects.in.Library))#
+Objects.in.Library <- paste(Objects.in.Library, collapse = ",")#
+Objects.in.Library <- paste0(Objects.in.Library, ',')#
+write(noquote( Objects.in.Library), "Outside/Library.csv", sep = ",")#
+#
+Objects.in.LivingRoom <- grpB.rooms$Objects[grpB.rooms$Room == "LivingRoom"]#
+Objects.in.LivingRoom <- as.character(sample(Objects.in.LivingRoom))#
+Objects.in.LivingRoom <- paste(Objects.in.LivingRoom, collapse = ",")#
+Objects.in.LivingRoom <- paste0(Objects.in.LivingRoom, ',')#
+write(noquote( Objects.in.LivingRoom), "Outside/LivingRoom.csv", sep = ",")#
+#
+Objects.in.StorageRoom <- grpB.rooms$Objects[grpB.rooms$Room == "StorageRoom"]#
+Objects.in.StorageRoom <- as.character(sample(Objects.in.StorageRoom))#
+Objects.in.StorageRoom <- paste(Objects.in.StorageRoom, collapse = ",")#
+Objects.in.StorageRoom <- paste0(Objects.in.StorageRoom, ',')#
+write(noquote( Objects.in.StorageRoom), "Outside/StorageRoom.csv", sep = ",")
+set.seed(052)#
+random.grp.a <- sample(room.grp.a)#
+random.grp.b <- sample(room.grp.b)#
+#
+block.1 <- c(random.grp.a[1], random.grp.b[1])#
+block.2 <- c(random.grp.a[2], random.grp.b[2])#
+block.3 <- c(random.grp.a[3], random.grp.b[3])#
+#
+random.block.1 <- sample(block.1)#
+random.block.2 <- sample(block.2)#
+random.block.3 <- sample(block.3)#
+#
+room.order <- c(cbind(random.block.1, random.block.2, random.block.3))#
+room.order <- paste(room.order, collapse = ",")#
+room.order <- paste0(room.order, ',')#
+#
+# writeLines(noquote(room.order), "RoomOrder3.csv")#
+write( noquote(room.order), "RoomOrder.csv", sep = ",")
+room.list <- c("Bedroom", "Classroom", "Gym", "Library", "LivingRoom", "StorageRoom")#
+#
+set.seed(052)#
+random.room.list <- sample(room.list)#
+#
+random.room.list <- paste(random.room.list, collapse = ",")#
+random.room.list <- paste0(random.room.list, ',')#
+#
+write( noquote(random.room.list), "SpatialTesting_RoomOrder.csv", sep = ",")
+setwd("~/Documents/OneDrive - Cardiff University/VRCuriosityMemory/PilotData/RawData/Pilot_02/P53/ConditionOrders")
+set.seed(053)#
+random.order <- sample(room.list)#
+## For encoding memory test#
+grpA.rooms <- data.frame(Objects = grpA$V1, Room = random.order)#
+#grpA.rooms <- do.call(rbind, Map(data.frame, Objects=grpA, Room=random.order))#
+distractors.A <- sample(distractors$V1, size = 18)#
+distractors.A.rooms <- do.call(rbind, Map(data.frame, Objects = distractors.A, Room = rep("None", 18)))#
+#
+encoding.memory.test <- rbind(grpA.rooms, distractors.A.rooms)#
+#
+### For options#
+options <- append(rooms, "None")#
+#
+#### Generate a series of options for each object#
+option.1 <- NULL#
+option.2 <- NULL#
+option.3 <- NULL#
+option.4 <- NULL#
+#
+nObject <- dim(encoding.memory.test)[1]#
+#
+for (i in c(1:nObject)){#
+  option.tmp <- NULL#
+  corr.option <- as.character(encoding.memory.test$Room[i])#
+  option.tmp <- c(option.tmp, corr.option)#
+  if (corr.option == "None") {#
+    rest.three <- as.character( sample(options[!options %in% c(corr.option)], size = 3))#
+    option.tmp <- c(option.tmp, rest.three)#
+  } else {#
+    option.tmp <- c(option.tmp, "None")#
+    rest.two <- as.character(sample(options[!options %in% option.tmp], size = 2))#
+    option.tmp <- c(option.tmp, rest.two)#
+  }#
+  option.tmp <- as.character(sample(option.tmp))#
+  option.1 <- c(option.1, option.tmp[1])#
+  option.2 <- c(option.2, option.tmp[2])#
+  option.3 <- c(option.3, option.tmp[3])#
+  option.4 <- c(option.4, option.tmp[4])#
+}#
+encoding.memory.test <- cbind(encoding.memory.test, option.1, option.2, option.3, option.4)#
+names(encoding.memory.test) <- c("Object", "Room", "Option1", "Option2", "Option3", "Option4")#
+#
+random.encoding.memory.test.order <- sample(c(1:54))#
+random.encoding.memory.test <- encoding.memory.test[sample(nrow(encoding.memory.test)),]#
+#
+write.table( noquote( random.encoding.memory.test), "Encoding_Memory_Test_Order.csv", sep = ",", row.names = F, col.names = F, quote = F)#
+## For curiosity memory test#
+grpB.rooms <- data.frame(Objects = grpB$V1, Room = random.order)#
+#grpB.rooms <- do.call(rbind, Map(data.frame, Objects=grpB, Room=random.order))#
+distractors.B <- distractors$V1[!distractors$V1 %in% distractors.A]#
+distractors.B.rooms <- do.call(rbind, Map(data.frame, Objects = distractors.B, Room = rep("None", 18)))#
+#
+curiosity.memory.test <- rbind(grpB.rooms, distractors.B.rooms)#
+#
+#### Generate a series of options for each object#
+option.1 <- NULL#
+option.2 <- NULL#
+option.3 <- NULL#
+option.4 <- NULL#
+#
+nObject <- dim(curiosity.memory.test)[1]#
+#
+for (i in c(1:nObject)){#
+  option.tmp <- NULL#
+  corr.option <- as.character(curiosity.memory.test$Room[i])#
+  option.tmp <- c(option.tmp, corr.option)#
+  if (corr.option == "None") {#
+    rest.three <- as.character( sample(options[!options %in% c(corr.option)], size = 3))#
+    option.tmp <- c(option.tmp, rest.three)#
+  } else {#
+    option.tmp <- c(option.tmp, "None")#
+    rest.two <- as.character(sample(options[!options %in% option.tmp], size = 2))#
+    option.tmp <- c(option.tmp, rest.two)#
+  }#
+  option.tmp <- as.character(sample(option.tmp))#
+  option.1 <- c(option.1, option.tmp[1])#
+  option.2 <- c(option.2, option.tmp[2])#
+  option.3 <- c(option.3, option.tmp[3])#
+  option.4 <- c(option.4, option.tmp[4])#
+}#
+#
+curiosity.memory.test <- cbind(curiosity.memory.test, option.1, option.2, option.3, option.4)#
+names(curiosity.memory.test) <- c("Object", "Room", "Option1", "Option2", "Option3", "Option4")#
+#
+random.curiosity.memory.test.order <- sample(c(1:54))#
+random.curiosity.memory.test <- curiosity.memory.test[sample(nrow(curiosity.memory.test)),]#
+#
+write.table(random.curiosity.memory.test, "Curiosity_Memory_Test_Order.csv", sep = ",", row.names = F, col.names = F, quote = F)#
+#
+## For encoding task#
+### Inside the rooms#
+Objects.in.Bedroom <- grpA.rooms$Objects[grpA.rooms$Room == "Bedroom"]#
+Objects.in.Bedroom <- as.character(sample(Objects.in.Bedroom))#
+Objects.in.Bedroom <- paste(Objects.in.Bedroom, collapse = ",")#
+Objects.in.Bedroom <- paste0(Objects.in.Bedroom, ',')#
+write(noquote( Objects.in.Bedroom), "Inside/Bedroom.csv", sep = ",")#
+#
+Objects.in.Classroom <- grpA.rooms$Objects[grpA.rooms$Room == "Classroom"]#
+Objects.in.Classroom <- as.character(sample(Objects.in.Classroom))#
+Objects.in.Classroom <- paste(Objects.in.Classroom, collapse = ",")#
+Objects.in.Classroom <- paste0(Objects.in.Classroom, ',')#
+write(noquote( Objects.in.Classroom), "Inside/Classroom.csv", sep = ",")#
+#
+Objects.in.Gym <- grpA.rooms$Objects[grpA.rooms$Room == "Gym"]#
+Objects.in.Gym <- as.character(sample(Objects.in.Gym))#
+Objects.in.Gym <- paste(Objects.in.Gym, collapse = ",")#
+Objects.in.Gym <- paste0(Objects.in.Gym, ',')#
+write(noquote( Objects.in.Gym), "Inside/Gym.csv", sep = ",")#
+#
+Objects.in.Library <- grpA.rooms$Objects[grpA.rooms$Room == "Library"]#
+Objects.in.Library <- as.character(sample(Objects.in.Library))#
+Objects.in.Library <- paste(Objects.in.Library, collapse = ",")#
+Objects.in.Library <- paste0(Objects.in.Library, ',')#
+write(noquote( Objects.in.Library), "Inside/Library.csv", sep = ",")#
+#
+Objects.in.LivingRoom <- grpA.rooms$Objects[grpA.rooms$Room == "LivingRoom"]#
+Objects.in.LivingRoom <- as.character(sample(Objects.in.LivingRoom))#
+Objects.in.LivingRoom <- paste(Objects.in.LivingRoom, collapse = ",")#
+Objects.in.LivingRoom <- paste0(Objects.in.LivingRoom, ',')#
+write(noquote( Objects.in.LivingRoom), "Inside/LivingRoom.csv", sep = ",")#
+#
+Objects.in.StorageRoom <- grpA.rooms$Objects[grpA.rooms$Room == "StorageRoom"]#
+Objects.in.StorageRoom <- as.character(sample(Objects.in.StorageRoom))#
+Objects.in.StorageRoom <- paste(Objects.in.StorageRoom, collapse = ",")#
+Objects.in.StorageRoom <- paste0(Objects.in.StorageRoom, ',')#
+write(noquote( Objects.in.StorageRoom), "Inside/StorageRoom.csv", sep = ",")#
+#
+### Outside the rooms#
+Objects.in.Bedroom <- grpB.rooms$Objects[grpB.rooms$Room == "Bedroom"]#
+Objects.in.Bedroom <- as.character(sample(Objects.in.Bedroom))#
+Objects.in.Bedroom <- paste(Objects.in.Bedroom, collapse = ",")#
+Objects.in.Bedroom <- paste0(Objects.in.Bedroom, ',')#
+write(noquote( Objects.in.Bedroom), "Outside/Bedroom.csv", sep = ",")#
+#
+Objects.in.Classroom <- grpB.rooms$Objects[grpB.rooms$Room == "Classroom"]#
+Objects.in.Classroom <- as.character(sample(Objects.in.Classroom))#
+Objects.in.Classroom <- paste(Objects.in.Classroom, collapse = ",")#
+Objects.in.Classroom <- paste0(Objects.in.Classroom, ',')#
+write(noquote( Objects.in.Classroom), "Outside/Classroom.csv", sep = ",")#
+#
+Objects.in.Gym <- grpB.rooms$Objects[grpB.rooms$Room == "Gym"]#
+Objects.in.Gym <- as.character(sample(Objects.in.Gym))#
+Objects.in.Gym <- paste(Objects.in.Gym, collapse = ",")#
+Objects.in.Gym <- paste0(Objects.in.Gym, ',')#
+write(noquote( Objects.in.Gym), "Outside/Gym.csv", sep = ",")#
+#
+Objects.in.Library <- grpB.rooms$Objects[grpB.rooms$Room == "Library"]#
+Objects.in.Library <- as.character(sample(Objects.in.Library))#
+Objects.in.Library <- paste(Objects.in.Library, collapse = ",")#
+Objects.in.Library <- paste0(Objects.in.Library, ',')#
+write(noquote( Objects.in.Library), "Outside/Library.csv", sep = ",")#
+#
+Objects.in.LivingRoom <- grpB.rooms$Objects[grpB.rooms$Room == "LivingRoom"]#
+Objects.in.LivingRoom <- as.character(sample(Objects.in.LivingRoom))#
+Objects.in.LivingRoom <- paste(Objects.in.LivingRoom, collapse = ",")#
+Objects.in.LivingRoom <- paste0(Objects.in.LivingRoom, ',')#
+write(noquote( Objects.in.LivingRoom), "Outside/LivingRoom.csv", sep = ",")#
+#
+Objects.in.StorageRoom <- grpB.rooms$Objects[grpB.rooms$Room == "StorageRoom"]#
+Objects.in.StorageRoom <- as.character(sample(Objects.in.StorageRoom))#
+Objects.in.StorageRoom <- paste(Objects.in.StorageRoom, collapse = ",")#
+Objects.in.StorageRoom <- paste0(Objects.in.StorageRoom, ',')#
+write(noquote( Objects.in.StorageRoom), "Outside/StorageRoom.csv", sep = ",")
+set.seed(053)#
+random.grp.a <- sample(room.grp.a)#
+random.grp.b <- sample(room.grp.b)#
+#
+block.1 <- c(random.grp.a[1], random.grp.b[1])#
+block.2 <- c(random.grp.a[2], random.grp.b[2])#
+block.3 <- c(random.grp.a[3], random.grp.b[3])#
+#
+random.block.1 <- sample(block.1)#
+random.block.2 <- sample(block.2)#
+random.block.3 <- sample(block.3)#
+#
+room.order <- c(cbind(random.block.1, random.block.2, random.block.3))#
+room.order <- paste(room.order, collapse = ",")#
+room.order <- paste0(room.order, ',')#
+#
+# writeLines(noquote(room.order), "RoomOrder3.csv")#
+write( noquote(room.order), "RoomOrder.csv", sep = ",")
+room.list <- c("Bedroom", "Classroom", "Gym", "Library", "LivingRoom", "StorageRoom")#
+#
+set.seed(053)#
+random.room.list <- sample(room.list)#
+#
+random.room.list <- paste(random.room.list, collapse = ",")#
+random.room.list <- paste0(random.room.list, ',')#
+#
+write( noquote(random.room.list), "SpatialTesting_RoomOrder.csv", sep = ",")
+setwd("~/Documents/OneDrive - Cardiff University/VRCuriosityMemory/PilotData/RawData/Pilot_02/P54/ConditionOrders")
+set.seed(054)#
+random.order <- sample(room.list)#
+## For encoding memory test#
+grpA.rooms <- data.frame(Objects = grpA$V1, Room = random.order)#
+#grpA.rooms <- do.call(rbind, Map(data.frame, Objects=grpA, Room=random.order))#
+distractors.A <- sample(distractors$V1, size = 18)#
+distractors.A.rooms <- do.call(rbind, Map(data.frame, Objects = distractors.A, Room = rep("None", 18)))#
+#
+encoding.memory.test <- rbind(grpA.rooms, distractors.A.rooms)#
+#
+### For options#
+options <- append(rooms, "None")#
+#
+#### Generate a series of options for each object#
+option.1 <- NULL#
+option.2 <- NULL#
+option.3 <- NULL#
+option.4 <- NULL#
+#
+nObject <- dim(encoding.memory.test)[1]#
+#
+for (i in c(1:nObject)){#
+  option.tmp <- NULL#
+  corr.option <- as.character(encoding.memory.test$Room[i])#
+  option.tmp <- c(option.tmp, corr.option)#
+  if (corr.option == "None") {#
+    rest.three <- as.character( sample(options[!options %in% c(corr.option)], size = 3))#
+    option.tmp <- c(option.tmp, rest.three)#
+  } else {#
+    option.tmp <- c(option.tmp, "None")#
+    rest.two <- as.character(sample(options[!options %in% option.tmp], size = 2))#
+    option.tmp <- c(option.tmp, rest.two)#
+  }#
+  option.tmp <- as.character(sample(option.tmp))#
+  option.1 <- c(option.1, option.tmp[1])#
+  option.2 <- c(option.2, option.tmp[2])#
+  option.3 <- c(option.3, option.tmp[3])#
+  option.4 <- c(option.4, option.tmp[4])#
+}#
+encoding.memory.test <- cbind(encoding.memory.test, option.1, option.2, option.3, option.4)#
+names(encoding.memory.test) <- c("Object", "Room", "Option1", "Option2", "Option3", "Option4")#
+#
+random.encoding.memory.test.order <- sample(c(1:54))#
+random.encoding.memory.test <- encoding.memory.test[sample(nrow(encoding.memory.test)),]#
+#
+write.table( noquote( random.encoding.memory.test), "Encoding_Memory_Test_Order.csv", sep = ",", row.names = F, col.names = F, quote = F)#
+## For curiosity memory test#
+grpB.rooms <- data.frame(Objects = grpB$V1, Room = random.order)#
+#grpB.rooms <- do.call(rbind, Map(data.frame, Objects=grpB, Room=random.order))#
+distractors.B <- distractors$V1[!distractors$V1 %in% distractors.A]#
+distractors.B.rooms <- do.call(rbind, Map(data.frame, Objects = distractors.B, Room = rep("None", 18)))#
+#
+curiosity.memory.test <- rbind(grpB.rooms, distractors.B.rooms)#
+#
+#### Generate a series of options for each object#
+option.1 <- NULL#
+option.2 <- NULL#
+option.3 <- NULL#
+option.4 <- NULL#
+#
+nObject <- dim(curiosity.memory.test)[1]#
+#
+for (i in c(1:nObject)){#
+  option.tmp <- NULL#
+  corr.option <- as.character(curiosity.memory.test$Room[i])#
+  option.tmp <- c(option.tmp, corr.option)#
+  if (corr.option == "None") {#
+    rest.three <- as.character( sample(options[!options %in% c(corr.option)], size = 3))#
+    option.tmp <- c(option.tmp, rest.three)#
+  } else {#
+    option.tmp <- c(option.tmp, "None")#
+    rest.two <- as.character(sample(options[!options %in% option.tmp], size = 2))#
+    option.tmp <- c(option.tmp, rest.two)#
+  }#
+  option.tmp <- as.character(sample(option.tmp))#
+  option.1 <- c(option.1, option.tmp[1])#
+  option.2 <- c(option.2, option.tmp[2])#
+  option.3 <- c(option.3, option.tmp[3])#
+  option.4 <- c(option.4, option.tmp[4])#
+}#
+#
+curiosity.memory.test <- cbind(curiosity.memory.test, option.1, option.2, option.3, option.4)#
+names(curiosity.memory.test) <- c("Object", "Room", "Option1", "Option2", "Option3", "Option4")#
+#
+random.curiosity.memory.test.order <- sample(c(1:54))#
+random.curiosity.memory.test <- curiosity.memory.test[sample(nrow(curiosity.memory.test)),]#
+#
+write.table(random.curiosity.memory.test, "Curiosity_Memory_Test_Order.csv", sep = ",", row.names = F, col.names = F, quote = F)#
+#
+## For encoding task#
+### Inside the rooms#
+Objects.in.Bedroom <- grpA.rooms$Objects[grpA.rooms$Room == "Bedroom"]#
+Objects.in.Bedroom <- as.character(sample(Objects.in.Bedroom))#
+Objects.in.Bedroom <- paste(Objects.in.Bedroom, collapse = ",")#
+Objects.in.Bedroom <- paste0(Objects.in.Bedroom, ',')#
+write(noquote( Objects.in.Bedroom), "Inside/Bedroom.csv", sep = ",")#
+#
+Objects.in.Classroom <- grpA.rooms$Objects[grpA.rooms$Room == "Classroom"]#
+Objects.in.Classroom <- as.character(sample(Objects.in.Classroom))#
+Objects.in.Classroom <- paste(Objects.in.Classroom, collapse = ",")#
+Objects.in.Classroom <- paste0(Objects.in.Classroom, ',')#
+write(noquote( Objects.in.Classroom), "Inside/Classroom.csv", sep = ",")#
+#
+Objects.in.Gym <- grpA.rooms$Objects[grpA.rooms$Room == "Gym"]#
+Objects.in.Gym <- as.character(sample(Objects.in.Gym))#
+Objects.in.Gym <- paste(Objects.in.Gym, collapse = ",")#
+Objects.in.Gym <- paste0(Objects.in.Gym, ',')#
+write(noquote( Objects.in.Gym), "Inside/Gym.csv", sep = ",")#
+#
+Objects.in.Library <- grpA.rooms$Objects[grpA.rooms$Room == "Library"]#
+Objects.in.Library <- as.character(sample(Objects.in.Library))#
+Objects.in.Library <- paste(Objects.in.Library, collapse = ",")#
+Objects.in.Library <- paste0(Objects.in.Library, ',')#
+write(noquote( Objects.in.Library), "Inside/Library.csv", sep = ",")#
+#
+Objects.in.LivingRoom <- grpA.rooms$Objects[grpA.rooms$Room == "LivingRoom"]#
+Objects.in.LivingRoom <- as.character(sample(Objects.in.LivingRoom))#
+Objects.in.LivingRoom <- paste(Objects.in.LivingRoom, collapse = ",")#
+Objects.in.LivingRoom <- paste0(Objects.in.LivingRoom, ',')#
+write(noquote( Objects.in.LivingRoom), "Inside/LivingRoom.csv", sep = ",")#
+#
+Objects.in.StorageRoom <- grpA.rooms$Objects[grpA.rooms$Room == "StorageRoom"]#
+Objects.in.StorageRoom <- as.character(sample(Objects.in.StorageRoom))#
+Objects.in.StorageRoom <- paste(Objects.in.StorageRoom, collapse = ",")#
+Objects.in.StorageRoom <- paste0(Objects.in.StorageRoom, ',')#
+write(noquote( Objects.in.StorageRoom), "Inside/StorageRoom.csv", sep = ",")#
+#
+### Outside the rooms#
+Objects.in.Bedroom <- grpB.rooms$Objects[grpB.rooms$Room == "Bedroom"]#
+Objects.in.Bedroom <- as.character(sample(Objects.in.Bedroom))#
+Objects.in.Bedroom <- paste(Objects.in.Bedroom, collapse = ",")#
+Objects.in.Bedroom <- paste0(Objects.in.Bedroom, ',')#
+write(noquote( Objects.in.Bedroom), "Outside/Bedroom.csv", sep = ",")#
+#
+Objects.in.Classroom <- grpB.rooms$Objects[grpB.rooms$Room == "Classroom"]#
+Objects.in.Classroom <- as.character(sample(Objects.in.Classroom))#
+Objects.in.Classroom <- paste(Objects.in.Classroom, collapse = ",")#
+Objects.in.Classroom <- paste0(Objects.in.Classroom, ',')#
+write(noquote( Objects.in.Classroom), "Outside/Classroom.csv", sep = ",")#
+#
+Objects.in.Gym <- grpB.rooms$Objects[grpB.rooms$Room == "Gym"]#
+Objects.in.Gym <- as.character(sample(Objects.in.Gym))#
+Objects.in.Gym <- paste(Objects.in.Gym, collapse = ",")#
+Objects.in.Gym <- paste0(Objects.in.Gym, ',')#
+write(noquote( Objects.in.Gym), "Outside/Gym.csv", sep = ",")#
+#
+Objects.in.Library <- grpB.rooms$Objects[grpB.rooms$Room == "Library"]#
+Objects.in.Library <- as.character(sample(Objects.in.Library))#
+Objects.in.Library <- paste(Objects.in.Library, collapse = ",")#
+Objects.in.Library <- paste0(Objects.in.Library, ',')#
+write(noquote( Objects.in.Library), "Outside/Library.csv", sep = ",")#
+#
+Objects.in.LivingRoom <- grpB.rooms$Objects[grpB.rooms$Room == "LivingRoom"]#
+Objects.in.LivingRoom <- as.character(sample(Objects.in.LivingRoom))#
+Objects.in.LivingRoom <- paste(Objects.in.LivingRoom, collapse = ",")#
+Objects.in.LivingRoom <- paste0(Objects.in.LivingRoom, ',')#
+write(noquote( Objects.in.LivingRoom), "Outside/LivingRoom.csv", sep = ",")#
+#
+Objects.in.StorageRoom <- grpB.rooms$Objects[grpB.rooms$Room == "StorageRoom"]#
+Objects.in.StorageRoom <- as.character(sample(Objects.in.StorageRoom))#
+Objects.in.StorageRoom <- paste(Objects.in.StorageRoom, collapse = ",")#
+Objects.in.StorageRoom <- paste0(Objects.in.StorageRoom, ',')#
+write(noquote( Objects.in.StorageRoom), "Outside/StorageRoom.csv", sep = ",")
+set.seed(054)#
+random.grp.a <- sample(room.grp.a)#
+random.grp.b <- sample(room.grp.b)#
+#
+block.1 <- c(random.grp.a[1], random.grp.b[1])#
+block.2 <- c(random.grp.a[2], random.grp.b[2])#
+block.3 <- c(random.grp.a[3], random.grp.b[3])#
+#
+random.block.1 <- sample(block.1)#
+random.block.2 <- sample(block.2)#
+random.block.3 <- sample(block.3)#
+#
+room.order <- c(cbind(random.block.1, random.block.2, random.block.3))#
+room.order <- paste(room.order, collapse = ",")#
+room.order <- paste0(room.order, ',')#
+#
+# writeLines(noquote(room.order), "RoomOrder3.csv")#
+write( noquote(room.order), "RoomOrder.csv", sep = ",")
+room.list <- c("Bedroom", "Classroom", "Gym", "Library", "LivingRoom", "StorageRoom")#
+#
+set.seed(054)#
+random.room.list <- sample(room.list)#
+#
+random.room.list <- paste(random.room.list, collapse = ",")#
+random.room.list <- paste0(random.room.list, ',')#
+#
+write( noquote(random.room.list), "SpatialTesting_RoomOrder.csv", sep = ",")

@@ -1,0 +1,8 @@
+BoxNo,BoxPos_X,BoxPos_Y,BoxPos_Z,Object,Side
+1,7,9.6,50.5,DeskLight,Left
+2,7,9.6,58,Pumpkin,Right
+3,4.7,11.871,51,Basket,Right
+4,-3,9.6,55,Recorder,Left
+5,-7.25,9.6,49.5,WineBottle,Right
+6,-4,9.6,43,Bread,Left
+

@@ -1,0 +1,8 @@
+BoxNo,BoxPos_X,BoxPos_Y,BoxPos_Z,Object,Side
+1,-4,9.6,43,HTCViveController,Right
+2,-7.25,9.6,49.5,Avocado,Right
+3,-3,9.6,55,Muffin,Left
+4,7,9.6,58,PencilSharpener,Left
+5,4.7,11.871,51,Teacup,Left
+6,7,9.6,50.5,NikonCamera,Right
+

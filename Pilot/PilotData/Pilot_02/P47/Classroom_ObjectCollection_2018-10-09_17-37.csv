@@ -1,0 +1,8 @@
+BoxNo,BoxPos_X,BoxPos_Y,BoxPos_Z,Object,Side
+1,7,9.6,50.5,CokeCan,Right
+2,-4,9.6,43,Canister,Left
+3,-7.25,9.6,49.5,WineBottle,Right
+4,-3,9.6,55,Basket,Right
+5,7,9.6,58,Microphone,Left
+6,4.7,11.871,51,ShowerHead,Left
+

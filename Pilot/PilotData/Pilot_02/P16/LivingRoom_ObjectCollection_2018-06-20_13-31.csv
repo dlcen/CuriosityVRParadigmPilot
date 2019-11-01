@@ -1,0 +1,8 @@
+BoxNo,BoxPos_X,BoxPos_Y,BoxPos_Z,Object,Side
+1,5.5,9.6,50.25,PencilSharpener,Right
+2,-6,9.6,44,Mushroom,Left
+3,-1,12.5,57,NikonCamera,Right
+4,-0.5,9.6,58,MilkCarton,Left
+5,-2.95,9.6,53,Muffin,Left
+6,7.5,11.02,58,Stapler,Left
+

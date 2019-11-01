@@ -1,0 +1,8 @@
+BoxNo,BoxPos_X,BoxPos_Y,BoxPos_Z,Object,Side
+1,-6,9.6,44,Controller,Right
+2,-1,12.5,57,RugbyBall,Right
+3,7.5,11.02,58,Apple,Left
+4,-0.5,9.6,58,CleaningBucket,Left
+5,-2.95,9.6,53,OfficeBin,Right
+6,5.5,9.6,50.25,Openner,Left
+
