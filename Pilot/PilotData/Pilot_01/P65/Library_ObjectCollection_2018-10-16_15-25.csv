@@ -1,0 +1,8 @@
+BoxNo,BoxPos_X,BoxPos_Y,BoxPos_Z,Object,Side
+1,7,9.6,52,Matrioshka,Left
+2,7.5,9.6,58,StrawberryDonut,Left
+3,-3.4,9.6,52.25,Router,Left
+4,-3.66,9.6,57.675,TennisBall,Left
+5,-5.25,9.6,43.75,OldRadio,Right
+6,2.2,9.6,49,Pumpkin,Right
+

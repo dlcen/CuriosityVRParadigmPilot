@@ -1,0 +1,8 @@
+BoxNo,BoxPos_X,BoxPos_Y,BoxPos_Z,Object,Side
+1,5.5,9.6,50.25,Bread,Left
+2,7.5,11.02,58,Microphone,Right
+3,-0.5,9.6,58,TennisBall,Left
+4,-2.95,9.6,53,Hammer,Right
+5,-1,12.5,57,OldRadio,Left
+6,-6,9.6,44,Clamps,Right
+

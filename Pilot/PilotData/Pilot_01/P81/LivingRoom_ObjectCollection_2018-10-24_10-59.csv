@@ -1,0 +1,8 @@
+BoxNo,BoxPos_X,BoxPos_Y,BoxPos_Z,Object,Side
+1,-1,12.5,57,CokeCan,Left
+2,7.5,11.02,58,Jug,Right
+3,-2.95,9.6,53,HTCVive,Right
+4,-0.5,9.6,58,FirstAidKit,Left
+5,5.5,9.6,50.25,NailScissors,Left
+6,-6,9.6,44,Canister,Right
+

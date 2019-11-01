@@ -1,0 +1,8 @@
+BoxNo,BoxPos_X,BoxPos_Y,BoxPos_Z,Object,Side
+1,2,9.6,43,Hammer,Left
+2,-7,11.02,49.5,Pumpkin,Left
+3,-7,9.6,58,FireExtinguisher,Right
+4,-2.25,9.6,53,MobilePhone,Right
+5,1.6,12.55,56.7,Pinza,Right
+6,6,9.6,51.8,NailScissors,Left
+

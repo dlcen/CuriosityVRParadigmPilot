@@ -1,0 +1,8 @@
+BoxNo,BoxPos_X,BoxPos_Y,BoxPos_Z,Object,Side
+1,-1,12.5,57,Recorder,Left
+2,-0.5,9.6,58,Canister,Right
+3,-2.95,9.6,53,StrawberryDonut,Left
+4,7.5,11.02,58,Chaynik,Left
+5,5.5,9.6,50.25,CinRoll,Left
+6,-6,9.6,44,Jug,Right
+

@@ -1,0 +1,8 @@
+BoxNo,BoxPos_X,BoxPos_Y,BoxPos_Z,Object,Side
+1,7,9.6,50.5,FireExtinguisher,Right
+2,-4,9.6,43,TennisBall,Right
+3,-7.25,9.6,49.5,Basket,Left
+4,7,9.6,58,Hammer,Right
+5,4.7,11.871,51,MosquitoRacket,Right
+6,-3,9.6,55,Toothpaste,Right
+

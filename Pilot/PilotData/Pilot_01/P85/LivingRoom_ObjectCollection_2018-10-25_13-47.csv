@@ -1,0 +1,8 @@
+BoxNo,BoxPos_X,BoxPos_Y,BoxPos_Z,Object,Side
+1,5.5,9.6,50.25,Padella,Right
+2,-6,9.6,44,OfficeBin,Right
+3,-2.95,9.6,53,Cabbaage,Left
+4,-1,12.5,57,RugbyBall,Left
+5,-0.5,9.6,58,Headphones,Right
+6,7.5,11.02,58,SaltSub,Right
+

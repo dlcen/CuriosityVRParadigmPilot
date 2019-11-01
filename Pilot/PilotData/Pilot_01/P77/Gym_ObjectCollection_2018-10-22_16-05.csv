@@ -1,0 +1,8 @@
+BoxNo,BoxPos_X,BoxPos_Y,BoxPos_Z,Object,Side
+1,7.25,9.6,50,UGGboot,Left
+2,5,9.6,55,PaperCoffeeCup,Right
+3,-1,9.6,57,NailScissors,Left
+4,-7,9.6,56,Router,Right
+5,-7.5,9.6,44,Jug,Left
+6,0.8,9.6,44.2,RockingHorse,Right
+

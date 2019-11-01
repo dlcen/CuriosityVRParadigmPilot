@@ -1,0 +1,8 @@
+BoxNo,BoxPos_X,BoxPos_Y,BoxPos_Z,Object,Side
+1,-6,9.6,44,MechanicalGloves,Right
+2,5.5,9.6,50.25,Spoons,Right
+3,-2.95,9.6,53,PencilSharpener,Left
+4,-0.5,9.6,58,Teacup,Left
+5,7.5,11.02,58,Toaster,Left
+6,-1,12.5,57,Calculator,Right
+

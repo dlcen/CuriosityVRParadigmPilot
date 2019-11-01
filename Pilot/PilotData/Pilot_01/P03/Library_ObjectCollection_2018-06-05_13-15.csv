@@ -1,0 +1,8 @@
+BoxNo,BoxPos_X,BoxPos_Y,BoxPos_Z,Object,Side
+1,7,9.6,52,DeskLight,Right
+2,7.5,9.6,58,NailScissors,Left
+3,-3.4,9.6,52.25,Pinza,Right
+4,-3.66,9.6,57.675,Glasses,Left
+5,-5.25,9.6,43.75,Canister,Right
+6,2.2,9.6,49,Clamps,Right
+

@@ -1,0 +1,8 @@
+BoxNo,BoxPos_X,BoxPos_Y,BoxPos_Z,Object,Side
+1,-6,9.6,44,HTCVive,Right
+2,5.5,9.6,50.25,MobilePhone,Left
+3,-2.95,9.6,53,Recorder,Right
+4,7.5,11.02,58,CoffeeMachine,Left
+5,-0.5,9.6,58,Jug,Right
+6,-1,12.5,57,Matrioshka,Left
+

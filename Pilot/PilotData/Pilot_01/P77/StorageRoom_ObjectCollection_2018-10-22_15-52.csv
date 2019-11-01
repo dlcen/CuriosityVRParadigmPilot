@@ -1,0 +1,8 @@
+BoxNo,BoxPos_X,BoxPos_Y,BoxPos_Z,Object,Side
+1,3.5,9.6,43,ShowerHead,Left
+2,5,9.6,48,DeskLight,Right
+3,7.5,9.6,54.5,CinRoll,Right
+4,3.5,11.2,58.5,CokeCan,Left
+5,-4.75,9.6,53.5,Canister,Left
+6,-7.5,9.6,44,Glasses,Right
+

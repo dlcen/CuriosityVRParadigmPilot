@@ -1,0 +1,8 @@
+BoxNo,BoxPos_X,BoxPos_Y,BoxPos_Z,Object,Side
+1,7,9.6,58,Squeezer,Left
+2,7,9.6,50.5,Mushroom,Left
+3,-4,9.6,43,Padella,Left
+4,-7.25,9.6,49.5,HandDrill,Right
+5,-3,9.6,55,HTCViveController,Right
+6,4.7,11.871,51,NikonCamera,Left
+

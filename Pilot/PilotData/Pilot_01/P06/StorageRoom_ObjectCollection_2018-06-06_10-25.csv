@@ -1,0 +1,8 @@
+BoxNo,BoxPos_X,BoxPos_Y,BoxPos_Z,Object,Side
+1,3.5,9.6,43,NailScissors,Right
+2,5,9.6,48,Basket,Left
+3,7.5,9.6,54.5,Pumpkin,Left
+4,3.5,11.2,58.5,Matrioshka,Right
+5,-4.75,9.6,53.5,CinRoll,Left
+6,-4.75,9.6,53.5,CinRoll,Left
+

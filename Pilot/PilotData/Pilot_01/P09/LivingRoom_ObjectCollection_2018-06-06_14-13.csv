@@ -1,0 +1,8 @@
+BoxNo,BoxPos_X,BoxPos_Y,BoxPos_Z,Object,Side
+1,5.5,9.6,50.25,PencilSharpener,Right
+2,-6,9.6,44,Muffin,Left
+3,-1,12.5,57,MilkCarton,Left
+4,-2.95,9.6,53,Mushroom,Right
+5,7.5,11.02,58,RugbyBall,Right
+6,-0.5,9.6,58,Spoons,Right
+

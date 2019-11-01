@@ -1,0 +1,8 @@
+BoxNo,BoxPos_X,BoxPos_Y,BoxPos_Z,Object,Side
+1,-6,9.6,44,HandDrill,Right
+2,-1,12.5,57,Stapler,Right
+3,-0.5,9.6,58,Toaster,Left
+4,7.5,11.02,58,CleaningBucket,Left
+5,5.5,9.6,50.25,Typewriter,Right
+6,-2.95,9.6,53,Padella,Left
+

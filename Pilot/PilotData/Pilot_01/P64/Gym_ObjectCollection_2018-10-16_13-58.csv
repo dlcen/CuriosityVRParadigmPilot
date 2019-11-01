@@ -1,0 +1,8 @@
+BoxNo,BoxPos_X,BoxPos_Y,BoxPos_Z,Object,Side
+1,0.8,9.6,44.2,Grape,Left
+2,7.25,9.6,50,Paprika,Left
+3,5,9.6,55,Typewriter,Right
+4,-7,9.6,56,Mouse,Left
+5,-1,9.6,57,Cabbaage,Left
+6,-7.5,9.6,44,EggBeater,Right
+

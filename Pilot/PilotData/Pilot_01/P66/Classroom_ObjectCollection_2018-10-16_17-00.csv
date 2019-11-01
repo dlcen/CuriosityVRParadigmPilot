@@ -1,0 +1,8 @@
+BoxNo,BoxPos_X,BoxPos_Y,BoxPos_Z,Object,Side
+1,7,9.6,50.5,Kettle,Left
+2,7,9.6,58,JBLSpeaker,Left
+3,-3,9.6,55,MokeExpress,Left
+4,-7.25,9.6,49.5,Grape,Right
+5,-4,9.6,43,Padella,Right
+6,4.7,11.871,51,Controller,Left
+

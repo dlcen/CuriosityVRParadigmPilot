@@ -1,0 +1,8 @@
+BoxNo,BoxPos_X,BoxPos_Y,BoxPos_Z,Object,Side
+1,7,9.6,50.5,Calculator,Right
+2,-4,9.6,43,EggBeater,Left
+3,-7.25,9.6,49.5,PencilSharpener,Left
+4,7,9.6,58,JBLSpeaker,Left
+5,-3,9.6,55,MokeExpress,Left
+6,4.7,11.871,51,Pineapple,Right
+

@@ -1,0 +1,8 @@
+BoxNo,BoxPos_X,BoxPos_Y,BoxPos_Z,Object,Side
+1,0,0,0,CoffeeMachine,Left
+2,0.8,9.6,44.2,RockingHorse,Right
+3,-7.5,9.6,44,Microphone,Left
+4,-7,9.6,56,DeskLight,Left
+5,-1,9.6,57,OldRadio,Right
+6,5,9.6,55,PaperCoffeeCup,Right
+
