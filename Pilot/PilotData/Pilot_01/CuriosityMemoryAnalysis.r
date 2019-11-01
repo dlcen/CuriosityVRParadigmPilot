@@ -4,13 +4,13 @@ library(data.table); library(ggplot2); library(Hmisc)
 grouping <- data.frame(Familiar = c("Bedroom", "Classroom", "Gym"), Novel = c("Library", "LivingRoom", "StorageRoom"))
 
 ## Get the list of participant's folders
-participant.folders <- dir(pattern = "^P")
+participant.folders <- dir(path = "IndividualRawData/", pattern = "^P")
 
 ## Get the rating in each folder (also need to determine whether the room is familiar or novel)
 Curiosity.Recall <- NULL
 
 for (thisFolder in participant.folders) {
-  this.response <- read.csv(paste0(thisFolder, .Platform$file.sep, "Curiosity_Memory_Test_Response.csv"), header = T)
+  this.response <- read.csv(paste0("IndividualRawData", .Platform$file.sep, thisFolder, .Platform$file.sep, "Curiosity_Memory_Test_Response.csv"), header = T)
   this.response<- data.table(this.response)
   
   this.response$SubjectNo <- thisFolder
@@ -18,6 +18,7 @@ for (thisFolder in participant.folders) {
   
   this.subjectNo <- as.numeric(strsplit(thisFolder, 'P')[[1]][2])
   
+  # After P13 I switched the familiar and novel groups
   if (this.subjectNo < 13) {
     this.response[Context %in% grouping$Novel]$Group <- "Novel"
   } else {
@@ -32,6 +33,7 @@ for (thisFolder in participant.folders) {
 Curiosity.Recall$CorrObjResp <- "Seen"
 Curiosity.Recall[Group == "Distractor"]$CorrObjResp <- "New"
 
+# Accuracy can be calculated as choosing "Seen" or "Familiar" to seen objects
 AccuracyCal <- function(ActualResp, CorrResp){
 	if (CorrResp == "Seen" & ActualResp %in% c("Seen", "Familiar")) {
 		Accuracy <- 1
@@ -44,6 +46,7 @@ AccuracyCal <- function(ActualResp, CorrResp){
 	return(Accuracy)
 }
 
+# Accuracy can be calculated as only choosing "Seen" to seen objects
 SeenAccuracyCal <- function(ActualResp, CorrResp){
   if (CorrResp == "Seen" & ActualResp == "Seen") {
     Accuracy <- 1
@@ -56,6 +59,14 @@ SeenAccuracyCal <- function(ActualResp, CorrResp){
   return(Accuracy)
 }
 
+FalseAlarmCal <- function(ActualResp, CorrResp){
+  if (CorrResp == 'New' & ActualResp %in% c('Seen', 'Familiar')) {
+    FalseSeen <- 1
+  } else {
+    FalseSeen <- 0
+  }
+}
+
 FalseSeenHitCal <- function(ActualResp, CorrResp){
   if (CorrResp == 'New' & ActualResp == 'Seen') {
     FalseSeen <- 1
@@ -66,14 +77,12 @@ FalseSeenHitCal <- function(ActualResp, CorrResp){
 
 Curiosity.Recall[, Accuracy :=  mapply(AccuracyCal,ObjectResponse, CorrObjResp)]
 Curiosity.Recall[, SeenHit  :=  mapply(SeenAccuracyCal, ObjectResponse, CorrObjResp)]
+Curiosity.Recall[, FalseAlarm := mapply(FalseAlarmCal, ObjectResponse, CorrObjResp)]
 Curiosity.Recall[, FalseSeenHit := mapply(FalseSeenHitCal, ObjectResponse, CorrObjResp)]
 
 ## Split the old and new items
 old.item.responses <- Curiosity.Recall[CorrObjResp == "Seen"]
 new.item.responses <- Curiosity.Recall[CorrObjResp == "New"]
-
-## Calculate false alarm rate
-new.item.responses[, far := 1 - Accuracy]
 
 # Context memory
 ContextAccuracyCal <- function(ActualResp, CorrResp) {
@@ -89,7 +98,7 @@ ContextAccuracyCal <- function(ActualResp, CorrResp) {
 Curiosity.Recall[, ContextAccuracy := mapply(ContextAccuracyCal, ContextResponse, Context)]
 
 ## Force the context accuracy to be 0 if the corresponding item accuracy is 0
-Curiosity.Recall[Accuracy == 0 & ContextAccuracy == 1]  # Seems that this situation only happened for distractors
+# Curiosity.Recall[Accuracy == 0 & ContextAccuracy == 1]  # Seems that this situation only happened for distractors
 
 ## Calculate the probability of choose each option respectively for old and new objects for each indivdual participant
 Curiosity.Recall$ObjectType <- "Old"
