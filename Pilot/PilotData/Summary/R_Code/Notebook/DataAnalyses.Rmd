@@ -1,0 +1,248 @@
+---
+output:
+  html_document:
+    fig_caption: yes
+    highlight: default
+    number_sections: yes
+    theme: lumen
+    toc: yes
+    toc_depth: 5
+    toc_float: 
+      collapsed: true
+      smooth_scroll: true
+  header-includes:
+  - \usepackage{xcolor}
+  - \usepackage{framed}
+  - \usepackage{fontspec}
+  html_notebook:
+    
+    fig_caption: yes
+    highlight: default
+    number_sections: yes
+    theme: lumen
+    toc: yes
+    toc_depth: 5
+    toc_float: true
+  pdf_document:
+    fig_caption: yes
+    highlight: default
+    latex_engine: xelatex
+    number_sections: yes
+    toc: yes
+    toc_depth: 5
+---
+
+\setmainfont{Calibri}
+\colorlet{shadecolor}{gray!10}
+\color{red}
+
+<style>
+body {
+  font-size: 15px;
+}
+
+p.caption {
+  font-weight: 500;
+  font-style: italic;
+}
+
+code.r {
+  font-family: Consolas, Monaco, monospace;
+  font-size: 12px;
+}
+</style>
+
+```{r, echo=FALSE, message=FALSE, warning=FALSE}
+library(kableExtra)
+options(knitr.table.format = "html", cache=TRUE) # "latex" for PDF
+```
+
+```{r, echo = FALSE, message=FALSE, warning=FALSE}
+library(data.table); library(ggplot2); library(nlme); library(Hmisc); library(multcomp)
+```
+
+```{r, echo = FALSE, message=FALSE, warning=FALSE}
+# load("~/Documents/OneDrive - Cardiff University/Projects/VRCuriosityMemory/PilotData/RawData/Pilot_02/.RData")
+# load("D:/OneDirve_CU/OneDrive - Cardiff University/Projects/VRCuriosityMemory/PilotData/RawData/Summary/Summary.RData")
+load("D:/Danlu.C - CU OneDrive/OneDrive - Cardiff University/Projects/VRCuriosityMemory/PilotData/RawData/Summary/Summary.RData")
+```
+
+# Outside: Item
+## Examine the difference between *High* and *Low* curiosity groups
+```{r, echo = FALSE}
+baseline          <- lme(CorrSeenHit ~ 1, random = ~ 1|SubjectNo/RatingGroup, data = Curiosity.Recall.Old.Collapsed.CuriosityType.MeanSep[!SubjectNo %in% bad.ps.less.strict], method = "ML")
+
+versionModel      <- update(baseline,     .~. + Version)
+ratingModel       <- update(versionModel, .~. + RatingGroup)
+interactionModel  <- update(ratingModel,  .~. + Version : RatingGroup)
+
+anova(baseline, versionModel, ratingModel, interactionModel)
+```
+
+## Compare linear trend
+```{r, echo = FALSE}
+baseline          <- lme(CorrSeenHit ~ 1,    random = ~ 1|SubjectNo/RatingGroup, data = Curiosity.Recall.Old.CuriosityType.MeanSep[!SubjectNo %in% bad.ps.less.strict], method = "ML")
+
+linear.int        <- update(baseline,        .~. + ItemOrder)
+linear.slp        <- update(linear.int,      random = ~ 1 + ItemOrder|SubjectNo/RatingGroup)
+
+ver.int           <- update(linear.slp,      .~. + Version)
+ver.slp           <- update(ver.int,         .~. + Version : ItemOrder)
+
+cur.int           <- update(ver.slp,         .~. + RatingGroup)
+cur.slp           <- update(cur.int,         .~. + RatingGroup : ItemOrder)
+
+interaction.int   <- update(cur.slp,         .~. + Version : RatingGroup)
+interaction.slp   <- update(interaction.int, .~. + Version : RatingGroup : ItemOrder)
+
+anova(baseline, linear.int, linear.slp, ver.int, ver.slp, cur.int, cur.slp, interaction.int, interaction.slp)
+```
+
+Parameters in the optimal model `cur.slp`.
+```{r}
+summary(cur.slp)$tTable
+```
+
+# Outside: Source
+## Examine the difference between *High* and *Low* curiosity groups
+```{r, echo = FALSE}
+baseline          <- lme(CorrContextAccuracy ~ 1, random = ~ 1|SubjectNo/RatingGroup, data = Curiosity.Recall.Old.Collapsed.CuriosityType.MeanSep[!SubjectNo %in% bad.ps.less.strict], method = "ML")
+
+versionModel      <- update(baseline,     .~. + Version)
+ratingModel       <- update(versionModel, .~. + RatingGroup)
+interactionModel  <- update(ratingModel,  .~. + Version : RatingGroup)
+
+anova(baseline, versionModel, ratingModel, interactionModel)
+```
+
+### Simple effects
+#### Delayed
+```{r, echo = FALSE}
+t.test(CorrContextAccuracy ~ RatingGroup, data = Curiosity.Recall.Old.Collapsed.CuriosityType.MeanSep[!SubjectNo %in% bad.ps.less.strict & Version == "Delayed"], paired = TRUE)
+```
+
+#### Immediate
+```{r, echo = FALSE}
+t.test(CorrContextAccuracy ~ RatingGroup, data = Curiosity.Recall.Old.Collapsed.CuriosityType.MeanSep[!SubjectNo %in% bad.ps.less.strict & Version == "Immediate"], paired = TRUE)
+```
+
+## Compare linear trend
+```{r, echo = FALSE}
+Curiosity.Recall.Old.CuriosityType.MeanSep$ItemOrderCt <- Curiosity.Recall.Old.CuriosityType.MeanSep$ItemOrder - 1
+
+Curiosity.Recall.Old.CuriosityType.MeanSep$RatingGroup <- factor(Curiosity.Recall.Old.CuriosityType.MeanSep$RatingGroup, levels(Curiosity.Recall.Old.CuriosityType.MeanSep$RatingGroup)[c(2, 1)])
+
+baseline          <- lme(CorrContextAccuracy ~ 1,    random = ~ 1|SubjectNo/RatingGroup, data = Curiosity.Recall.Old.CuriosityType.MeanSep[!SubjectNo %in% bad.ps.less.strict], method = "ML", control = list(msMaxIter = 500, opt = "optim", msVerbose=FALSE), na.action = na.exclude)
+
+linear.int        <- update(baseline,        .~. + ItemOrderCt)
+# linear.slp        <- update(linear.int,      random = ~ 1 + ItemOrderCt|SubjectNo/RatingGroup)
+
+ver.int           <- update(linear.int,      .~. + Version)
+ver.slp           <- update(ver.int,         .~. + Version : ItemOrderCt)
+
+cur.int           <- update(ver.slp,         .~. + RatingGroup)
+cur.slp           <- update(cur.int,         .~. + RatingGroup : ItemOrderCt)
+
+interaction.int   <- update(cur.slp,         .~. + Version : RatingGroup)
+interaction.slp   <- update(interaction.int, .~. + Version : RatingGroup : ItemOrderCt)
+
+anova(baseline, linear.int, ver.int, ver.slp, cur.int, cur.slp, interaction.int, interaction.slp)
+```
+
+Parameters in the optimal model `interaction.int`.
+```{r}
+summary(interaction.int)$tTable
+```
+
+# Inside: Item
+## Examine the difference between *High* and *Low* curiosity groups
+```{r, echo = FALSE}
+baseline          <- lme(CorrSeenHit ~ 1, random = ~ 1|SubjectNo/RatingGroup, data = Encoding.Recall.Old.Collapsed.CuriosityType.MeanSep[!SubjectNo %in% bad.ps.less.strict], method = "ML")
+
+versionModel      <- update(baseline,     .~. + Version)
+ratingModel       <- update(versionModel, .~. + RatingGroup)
+interactionModel  <- update(ratingModel,  .~. + Version : RatingGroup)
+
+anova(baseline, versionModel, ratingModel, interactionModel)
+```
+
+### Simple effects
+#### Delayed
+```{r, echo = FALSE}
+t.test(CorrSeenHit ~ RatingGroup, data = Encoding.Recall.Old.Collapsed.CuriosityType.MeanSep[!SubjectNo %in% bad.ps.less.strict & Version == "Delayed"], paired = TRUE)
+```
+
+#### Immediate
+```{r, echo = FALSE}
+t.test(CorrSeenHit ~ RatingGroup, data = Encoding.Recall.Old.Collapsed.CuriosityType.MeanSep[!SubjectNo %in% bad.ps.less.strict & Version == "Immediate"], paired = TRUE)
+```
+
+## Compare linear trend
+```{r, echo = FALSE}
+baseline          <- lme(CorrSeenHit ~ 1,    random = ~ 1|SubjectNo/RatingGroup, data = Encoding.Recall.Old.CuriosityType.MeanSep[!SubjectNo %in% bad.ps.less.strict], method = "ML")
+
+linear.int        <- update(baseline,        .~. + ItemOrder)
+linear.slp        <- update(linear.int,      random = ~ 1 + ItemOrder|SubjectNo/RatingGroup)
+
+ver.int           <- update(linear.slp,      .~. + Version)
+ver.slp           <- update(ver.int,         .~. + Version : ItemOrder)
+
+cur.int           <- update(ver.slp,         .~. + RatingGroup)
+cur.slp           <- update(cur.int,         .~. + RatingGroup : ItemOrder)
+
+interaction.int   <- update(cur.slp,         .~. + Version : RatingGroup)
+interaction.slp   <- update(interaction.int, .~. + Version : RatingGroup : ItemOrder)
+
+anova(baseline, linear.int, linear.slp, ver.int, ver.slp, cur.int, cur.slp, interaction.int, interaction.slp)
+```
+
+Parameters in the optimal model `interaction.int`.
+```{r}
+summary(interaction.int)$tTable
+```
+
+# Inside: Source
+## Examine the difference between *High* and *Low* curiosity groups
+```{r, echo = FALSE}
+baseline          <- lme(CorrContextAccuracy ~ 1, random = ~ 1|SubjectNo/RatingGroup, data = Encoding.Recall.Old.Collapsed.CuriosityType.MeanSep[!SubjectNo %in% bad.ps.less.strict], method = "ML")
+
+versionModel      <- update(baseline,     .~. + Version)
+ratingModel       <- update(versionModel, .~. + RatingGroup)
+interactionModel  <- update(ratingModel,  .~. + Version : RatingGroup)
+
+anova(baseline, versionModel, ratingModel, interactionModel)
+```
+
+
+## Compare linear trend
+```{r, echo = FALSE}
+baseline          <- lme(CorrContextAccuracy ~ 1,    random = ~ 1|SubjectNo/RatingGroup, data = Encoding.Recall.Old.CuriosityType.MeanSep[!SubjectNo %in% bad.ps.less.strict], method = "ML", control = list(msMaxIter = 500, opt = "optim", msVerbose=FALSE), na.action = na.exclude)
+
+linear.int        <- update(baseline,        .~. + ItemOrder)
+# linear.slp        <- update(linear.int,      random = ~ 1 + ItemOrder|SubjectNo/RatingGroup)
+
+ver.int           <- update(linear.int,      .~. + Version)
+ver.slp           <- update(ver.int,         .~. + Version : ItemOrder)
+
+cur.int           <- update(ver.slp,         .~. + RatingGroup)
+cur.slp           <- update(cur.int,         .~. + RatingGroup : ItemOrder)
+
+interaction.int   <- update(cur.slp,         .~. + Version : RatingGroup)
+interaction.slp   <- update(interaction.int, .~. + Version : RatingGroup : ItemOrder)
+
+anova(baseline, linear.int, ver.int, ver.slp, cur.int, cur.slp, interaction.int, interaction.slp)
+```
+
+Parameters in the optimal model `ver.slp`.
+```{r}
+summary(ver.slp)$tTable
+```
+
+```{r, echo = FALSE}
+contrast.matrix <- rbind(
+  "ItemOrder:VersionDelayed"          = c(0, 1, 0, 1)
+)
+postHocs <-glht(ver.slp, contrast.matrix) #, linfct = mcp(ExpNo = "Tukey"))
+summary(postHocs, test = adjusted("none"))
+```
+

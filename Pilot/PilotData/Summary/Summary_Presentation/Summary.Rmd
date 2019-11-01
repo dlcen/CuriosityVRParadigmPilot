@@ -1,0 +1,52 @@
+---
+title: "Summary"
+author: "Danlu Cen"
+date: "15 August 2018"
+output: slidy_presentation
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = FALSE)
+```
+
+```{r, include=FALSE}
+figure.folder <- "D:\\OneDirve_CU\\OneDrive - Cardiff University\\VRCuriosityMemory\\PilotData\\RawData\\Summary\\Figures"
+```
+
+```{r, include=FALSE}
+library(data.table); library(ggplot2); library(showtext); library(Hmisc)
+```
+
+```{r, include=FALSE}
+load("D:/OneDirve_CU/OneDrive - Cardiff University/VRCuriosityMemory/PilotData/RawData/Summary/.RData")
+```
+
+```{r, eval=FALSE}
+font_add_google("Open Sans", "Sans")
+showtext_auto()
+```
+
+## Slide with Bullets
+
+- Bullet 1
+- Bullet 2
+- Bullet 3
+
+## Slide with Plot
+
+```{r, echo = FALSE, warning=FALSE, fig.align='center', fig.width=5.4, fig.height=4.2}
+ggplot(OutsideObjectsMemory, aes(x = Group, y = SeenHit)) + theme_minimal() +
+	stat_summary(fun.y = mean, geom = "bar", fill = "grey82", color = "black", size = 0.5) +
+	stat_summary(fun.data = mean_cl_boot, geom = "errorbar", width = 0.2, size = 0.5) +
+	facet_wrap(~ Version) +
+	labs(x = "Room novelty", y = "Mean hit rate for \"Seen\" response") +
+	theme(axis.line = element_line(colour = "#595959"),
+	      axis.title = element_text(family = "Sans", size = 12),
+	      axis.title.x = element_text(vjust = -1),
+	      axis.title.y = element_text(vjust = 2),
+	      axis.text = element_text(size = 9),
+	      strip.text = element_text(size = 16, face = "bold", vjust = 2),
+	      panel.spacing = unit(1, "lines"),
+	      plot.margin = unit(c(0.5, 1, 1, 2), "lines"))
+```
+
