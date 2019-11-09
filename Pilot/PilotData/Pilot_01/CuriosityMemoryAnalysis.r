@@ -7,6 +7,10 @@ rooms    <- c("Bedroom", "Classroom", "Gym", "Library", "LivingRoom", "StorageRo
 ## Get the list of participant's folders
 participant.folders <- dir(path = "IndividualRawData/", pattern = "^P")
 
+## Get the order of the items outside the room
+outside.orders <- read.table("OutsideOrders.csv", header = T)
+outside.orders <- data.table(outside.orders)
+
 ## Get the rating in each folder (also need to determine whether the room is familiar or novel)
 Curiosity.Recall <- NULL
 
@@ -19,7 +23,7 @@ for (thisFolder in participant.folders) {
   
   this.subjectNo <- as.numeric(strsplit(thisFolder, 'P')[[1]][2])
   
-  # After P13 I switched the familiar and novel groups
+  # After P12 I switched the familiar and novel groups
   if (this.subjectNo < 13) {
     this.response[Context %in% grouping$Novel]$Group <- "Novel"
   } else {
@@ -27,6 +31,9 @@ for (thisFolder in participant.folders) {
   }
   
   this.response[Context == "None"]$Group <- "Distractor"
+  
+  this.response[Object == "MokeExpress"]$Object <- "MokaEspress"
+  this.response[Object == "Cabbaage"]$Object <- "Cabbage"
 
   # Read the curiosity rating 
   this.rating <- read.csv(paste0("IndividualRawData", .Platform$file.sep, thisFolder, .Platform$file.sep, "CuriosityRatings.csv"), header = T, stringsAsFactors=F, fileEncoding= "UTF-8-BOM")
@@ -51,6 +58,19 @@ for (thisFolder in participant.folders) {
   for (this.room in rooms) {
     this.response[Context == this.room]$RoomOrder <- this.rating[Room == this.room]$RoomOrder
   }
+  
+  # Add the order of items outside each room
+  this.response$ItemOrder <- 0
+  
+  item.list <- as.character(unique(outside.orders$Item))
+  
+  for (this.room in rooms) {
+    for (this.item in item.list) {
+      this.response[Context == this.room & Object == this.item]$ItemOrder <- outside.orders[SubjectNo == thisFolder & Room == this.room & Item == this.item]$Order
+    }
+  }
+  
+  this.response[ItemOrder == 0]$ItemOrder <- NA
 
   Curiosity.Recall <- rbind(Curiosity.Recall, this.response)
 }
@@ -58,71 +78,12 @@ for (thisFolder in participant.folders) {
 Curiosity.Recall$CorrObjResp <- "Seen"
 Curiosity.Recall[Group == "Distractor"]$CorrObjResp <- "New"
 
-# Accuracy can be calculated as choosing "Seen" or "Familiar" to seen objects
-AccuracyCal <- function(ActualResp, CorrResp){
-	if (CorrResp == "Seen" & ActualResp %in% c("Seen", "Familiar")) {
-		Accuracy <- 1
-	} else if (CorrResp == "New" & ActualResp == "New") {
-		Accuracy <- 1
-	} else {
-		Accuracy <- 0
-	}	
-
-	return(Accuracy)
-}
-
-# Accuracy can be calculated as only choosing "Seen" to seen objects
-SeenAccuracyCal <- function(ActualResp, CorrResp){
-  if (CorrResp == "Seen" & ActualResp == "Seen") {
-    Accuracy <- 1
-  } else if (CorrResp == "New" & ActualResp == "New") {
-    Accuracy <- 1
-  } else {
-    Accuracy <- 0
-  } 
-  
-  return(Accuracy)
-}
-
-FalseAlarmCal <- function(ActualResp, CorrResp){
-  if (CorrResp == 'New' & ActualResp %in% c('Seen', 'Familiar')) {
-    FalseSeen <- 1
-  } else {
-    FalseSeen <- 0
-  }
-}
-
-FalseSeenHitCal <- function(ActualResp, CorrResp){
-  if (CorrResp == 'New' & ActualResp == 'Seen') {
-    FalseSeen <- 1
-  } else {
-    FalseSeen <- 0
-  }
-}
+source("../Code/CalFunc.R")
 
 Curiosity.Recall[, Accuracy :=  mapply(AccuracyCal,ObjectResponse, CorrObjResp)]
 Curiosity.Recall[, SeenHit  :=  mapply(SeenAccuracyCal, ObjectResponse, CorrObjResp)]
 Curiosity.Recall[, FalseAlarm := mapply(FalseAlarmCal, ObjectResponse, CorrObjResp)]
 Curiosity.Recall[, FalseSeenHit := mapply(FalseSeenHitCal, ObjectResponse, CorrObjResp)]
-
-# Context memory
-ContextAccuracyCal <- function(ActualResp, CorrResp) {
-  if (ActualResp == CorrResp) {
-    Accuracy = 1
-  } else {
-    Accuracy = 0
-  }
-  
-  return(Accuracy)
-}
-
-ContextFalseHitCal <- function(ActualResp, CorrResp) {
-  if (CorrResp == "None" & ActualResp != "None") {
-      FalseHit = 1}
-  else {
-      FalseHit = 0
-  }
-}
 
 Curiosity.Recall[, ContextAccuracy := mapply(ContextAccuracyCal, ContextResponse, Context)]
 Curiosity.Recall[, ContextFalseHit := mapply(ContextFalseHitCal, ContextResponse, Context)]
@@ -338,20 +299,4 @@ Curiosity.Recall.Old.Interaction.MeanSep$RatingGroup                 <- factor(C
 Curiosity.Recall.Old.Order.CuriosityType.MeanSep$RatingGroup         <- factor(Curiosity.Recall.Old.Order.CuriosityType.MeanSep$RatingGroup,     levels = c(1:2), labels = c("Low", "High"))
 Curiosity.Recall.Old.Collapsed.CuriosityType.MeanSep$RatingGroup     <- factor(Curiosity.Recall.Old.Collapsed.CuriosityType.MeanSep$RatingGroup, levels = c(1:2), labels = c("Low", "High"))
 
-# Get the data ready for SPSS or JASP analyses
-Curiosity.Recall.Old.Collapsed.Grp.Corrected <- Curiosity.Recall.Old.Collapsed.Grp
-Curiosity.Recall.Old.Collapsed.Grp.Corrected$CorrSeenHit <- 0
-
-for (this.p in participant.folders) {
-  Curiosity.Recall.Old.Collapsed.Grp.Corrected[SubjectNo == this.p]$CorrSeenHit <- Curiosity.Recall.Old.Collapsed.Grp.Corrected[SubjectNo == this.p]$SeenHit - mean(Curiosity.Recall.New[SubjectNo == this.p]$FalseSeenHit)
-}
-
-Curiosity.Recall.Old.Collapsed.Grp.Corrected[CorrSeenHit < 0]$CorrSeenHit <- 0
-
-Curiosity.Recall.Old.Collapsed.Grp.Corrected.melt <- melt(Curiosity.Recall.Old.Collapsed.Grp.Corrected, id.vars = c("SubjectNo", "ItemOrderType", "Group"), measure.vars = c("CorrSeenHit"))
-Curiosity.Recall.Old.Collapsed.Grp.Corrected.wide <- cast(Curiosity.Recall.Old.Collapsed.Grp.Corrected.melt, SubjectNo ~ Group + ItemOrderType)
-
-Curiosity.Recall.Old.Collapsed.Grp.Corrected.wide <- data.table(Curiosity.Recall.Old.Collapsed.Grp.Corrected.wide)
-write.csv(Curiosity.Recall.Old.Collapsed.Grp.Corrected.wide[!SubjectNo %in% bad.ps.less.strict], "SPSSorJASP/Curiosity.Recall.Old.Collapsed.Grp.Corrected.wide.csv", row.names = F)
-rm(Curiosity.Recall.Old.Collapsed.Grp.Corrected.melt, Curiosity.Recall.Old.Collapsed.Grp.Corrected.wide)
 

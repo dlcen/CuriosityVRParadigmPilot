@@ -75,6 +75,9 @@ for (this.p in participant.folders) {
 	    this.p.orders <- rbind(this.p.orders, this.temp)
 	  }
 	  
+	  this.p.orders[Item == "MokeExpress"]$Item <- "MokaEspress"
+	  this.p.orders[Item == "Cabbaage"]$Item <- "Cabbage"
+	  
 	  write.table(this.p.orders, "OutsideOrders.csv", row.names = FALSE)
 	}
 	
