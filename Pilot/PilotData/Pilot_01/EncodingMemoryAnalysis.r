@@ -11,6 +11,9 @@ participant.folders <- dir(path = "IndividualRawData/", pattern = "^P")
 inside.orders <- read.table("InsideOrders.csv", header = T)
 inside.orders <- data.table(inside.orders)
 
+inside.orders[Item == "MokeExpress"]$Item <- "MokaEspress"
+inside.orders[Item == "Cabbaage"]$Item   <- "Cabbage"
+
 ## Get the rating in each folder (also need to determine whether the room is familiar or novel)
 Encoding.Recall <- NULL
 
@@ -36,14 +39,14 @@ for (thisFolder in participant.folders) {
   this.response[Object == "Cabbaage"]$Object <- "Cabbage"
 
   # Read the curiosity rating 
-  this.rating <- read.csv(paste0("IndividualRawData", .Platform$file.sep, thisFolder, .Platform$file.sep, "EncodingRatings.csv"), header = T, stringsAsFactors=F, fileEncoding= "UTF-8-BOM")
+  this.rating <- read.csv(paste0("IndividualRawData", .Platform$file.sep, thisFolder, .Platform$file.sep, "CuriosityRatings.csv"), header = T, stringsAsFactors=F, fileEncoding= "UTF-8-BOM")
   this.rating <- data.table(this.rating)
 
   # Add the curiosity rating to the response file
   this.response$CurRating <- 0
   
   for (this.room in rooms) {
-    this.response[Context == this.room]$CurRating <- this.rating[Room == this.room]$EncodingRating
+    this.response[Context == this.room]$CurRating <- this.rating[Room == this.room]$CuriosityRating
   }
 
   this.response[CurRating == 0]$CurRating <- NA
@@ -66,7 +69,14 @@ for (thisFolder in participant.folders) {
   
   for (this.room in rooms) {
     for (this.item in item.list) {
-      this.response[Context == this.room & Object == this.item]$ItemOrder <- inside.orders[SubjectNo == thisFolder & Room == this.room & Item == this.item]$Order
+      if (length(inside.orders[SubjectNo == thisFolder & Room == this.room & Item == this.item]$Order) > 1) {
+        this.response[Context == this.room & Object == this.item]$ItemOrder <- min(inside.orders[SubjectNo == thisFolder & Room == this.room & Item == this.item]$Order)
+      } else if (length(inside.orders[SubjectNo == thisFolder & Room == this.room & Item == this.item]$Order) == 1){
+        this.response[Context == this.room & Object == this.item]$ItemOrder <- inside.orders[SubjectNo == thisFolder & Room == this.room & Item == this.item]$Order 
+      } else if (length(inside.orders[SubjectNo == thisFolder & Room == this.room & Item == this.item]$Order) == 0){
+        this.response[Context == this.room & Object == this.item]$Context <- "None"
+        this.response[Context == this.room & Object == this.item]$Group   <- "Distractor"
+      }
     }
   }
   
@@ -158,7 +168,7 @@ inside.hit.rate.curiosity.group.mean[, c("SFAcc", "SAcc", "SrcAcc") := list( (SF
 inside.hit.rate.curiosity.group.median[, c("SFAcc", "SAcc", "SrcAcc") := list( (SFHit - SFFalse), (SHit - SFalse), (SrcHit - SrcFalse))]
 inside.hit.rate.curiosity.group[, c("SFAcc", "SAcc", "SrcAcc") := list( (SFHit - SFFalse), (SHit - SFalse), (SrcHit - SrcFalse))]
 
-save(inside.hit.rate.curiosity.group.mean, inside.hit.rate.curiosity.group.median, inside.hit.rate.curiosity.group, file = "GroupData/InsideObjectResponseEncodingGroups.RData")
+save(inside.hit.rate.curiosity.group.mean, inside.hit.rate.curiosity.group.median, inside.hit.rate.curiosity.group, file = "GroupData/InsideObjectResponseCuriosityGroups.RData")
 
 
 # Calculate the hit rates for each individual participant and each item order
