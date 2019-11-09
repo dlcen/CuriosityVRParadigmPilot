@@ -1,2 +1,0 @@
-"0","library(kableExtra)"
-"0","options(knitr.table.format = ""html"", cache=TRUE) # ""latex"" for PDF"

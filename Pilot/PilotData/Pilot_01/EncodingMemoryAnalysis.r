@@ -2,29 +2,97 @@ library(data.table); library(ggplot2); library(Hmisc)
 
 ## The familiar and novel groups
 grouping <- data.frame(Familiar = c("Bedroom", "Classroom", "Gym"), Novel = c("Library", "LivingRoom", "StorageRoom"))
+rooms    <- c("Bedroom", "Classroom", "Gym", "Library", "LivingRoom", "StorageRoom")
 
 ## Get the list of participant's folders
-participant.folders <- dir(pattern = "^P")
+participant.folders <- dir(path = "IndividualRawData/", pattern = "^P")
+
+## Get the order of the items inside the room
+inside.orders <- read.table("InsideOrders.csv", header = T)
+inside.orders <- data.table(inside.orders)
 
 ## Get the rating in each folder (also need to determine whether the room is familiar or novel)
 Encoding.Recall <- NULL
 
 for (thisFolder in participant.folders) {
-  this.response <- read.csv(paste0(thisFolder, .Platform$file.sep, "Encoding_Memory_Test_Response.csv"), header = T)
+  this.response <- read.csv(paste0("IndividualRawData", .Platform$file.sep, thisFolder, .Platform$file.sep, "Encoding_Memory_Test_Response.csv"), header = T)
   this.response<- data.table(this.response)
   
   this.response$SubjectNo <- thisFolder
   this.response$Group <- "Familiar"
-
+  
   this.subjectNo <- as.numeric(strsplit(thisFolder, 'P')[[1]][2])
-
-  if (this.subjectNo %in% GroupA) {
-        this.response[Context %in% grouping$Novel]$Group <- "Novel"
+  
+  # After P12 I switched the familiar and novel groups
+  if (this.subjectNo < 13) {
+    this.response[Context %in% grouping$Novel]$Group <- "Novel"
   } else {
-        this.response[Context %in% grouping$Familiar]$Group <- "Novel"
+    this.response[Context %in% grouping$Familiar]$Group <- "Novel"
   }
   
   this.response[Context == "None"]$Group <- "Distractor"
+  
+  this.response[Object == "MokeExpress"]$Object <- "MokaEspress"
+  this.response[Object == "Cabbaage"]$Object <- "Cabbage"
+
+  # Read the curiosity rating 
+  this.rating <- read.csv(paste0("IndividualRawData", .Platform$file.sep, thisFolder, .Platform$file.sep, "EncodingRatings.csv"), header = T, stringsAsFactors=F, fileEncoding= "UTF-8-BOM")
+  this.rating <- data.table(this.rating)
+
+  # Add the curiosity rating to the response file
+  this.response$CurRating <- 0
+  
+  for (this.room in rooms) {
+    this.response[Context == this.room]$CurRating <- this.rating[Room == this.room]$EncodingRating
+  }
+
+  this.response[CurRating == 0]$CurRating <- NA
+
+  # Add the order of room visits in each block
+  even_indexes <- seq(2, nrow(this.rating), 2)
+  this.rating$RoomOrder <- "First"
+  this.rating[even_indexes]$RoomOrder <- "Second"
+
+  this.response$RoomOrder <- ""
+
+  for (this.room in rooms) {
+    this.response[Context == this.room]$RoomOrder <- this.rating[Room == this.room]$RoomOrder
+  }
+  
+  # Add the order of items inside each room
+  this.response$ItemOrder <- 0
+  
+  item.list <- as.character(unique(inside.orders$Item))
+  
+  for (this.room in rooms) {
+    for (this.item in item.list) {
+      this.response[Context == this.room & Object == this.item]$ItemOrder <- inside.orders[SubjectNo == thisFolder & Room == this.room & Item == this.item]$Order
+    }
+  }
+  
+  this.response[ItemOrder == 0]$ItemOrder <- NA
+
+  # Add the duration of staying inside the room
+  this.response$Duration <- 0
+
+  inside.trajectories <- list.files(path = paste0("IndividualRawData", .Platform$file.sep, thisFolder), pattern = "*_InsideTrajectory*")
+  
+  if (length(inside.trajectories) > 0) {
+    for (this.trj in inside.trajectories) {
+      this.trj.info <- strsplit(this.trj, split = "_")
+      this.room     <- this.trj.info[[1]][1]
+      
+      this.trj.data <- read.csv(paste("IndividualRawData", thisFolder, this.trj, sep = .Platform$file.sep), header = TRUE)
+      
+      rep.idx <- which(this.trj.data$TimeStamp == "TimeStamp")
+      
+      if (length(rep.idx) > 0) { this.trj.data <- this.trj.data[c(1:rep.idx[1] - 1), ]; droplevels(this.trj.data$TimeStamp)}
+      
+      if (nrow(this.trj.data) > 1) {this.response[Context == this.room]$Duration <- as.numeric(as.character(this.trj.data$TimeStamp[nrow(this.trj.data)])) - as.numeric(as.character(this.trj.data$TimeStamp[1])) }
+    }
+  }
+  
+  this.response[Duration == 0]$Duration <- NA
   
   Encoding.Recall <- rbind(Encoding.Recall, this.response)
 }
@@ -32,67 +100,100 @@ for (thisFolder in participant.folders) {
 Encoding.Recall$CorrObjResp <- "Seen"
 Encoding.Recall[Group == "Distractor"]$CorrObjResp <- "New"
 
-AccuracyCal <- function(ActualResp, CorrResp){
-	if (CorrResp == "Seen" & ActualResp %in% c("Seen", "Familiar")) {
-		Accuracy <- 1
-	} else if (CorrResp == "New" & ActualResp == "New") {
-		Accuracy <- 1
-	} else {
-		Accuracy <- 0
-	}	
+source("../Code/CalFunc.R")
 
-	return(Accuracy)
-}
+Encoding.Recall[, SFHit   := mapply(SFHitCal,      ObjectResponse, CorrObjResp)]
+Encoding.Recall[, SHit    := mapply(SHitCal,       ObjectResponse, CorrObjResp)]
+Encoding.Recall[, SFFalse := mapply(SFFalseHitCal, ObjectResponse, CorrObjResp)]
+Encoding.Recall[, SFalse  := mapply(SFalseHitCal,  ObjectResponse, CorrObjResp)]
 
-SeenAccuracyCal <- function(ActualResp, CorrResp){
-  if (CorrResp == "Seen" & ActualResp == "Seen") {
-    Accuracy <- 1
-  } else if (CorrResp == "New" & ActualResp == "New") {
-    Accuracy <- 1
-  } else {
-    Accuracy <- 0
-  }	
-  
-  return(Accuracy)
-}
+Encoding.Recall[, SrcHit  := mapply(SourceHitCal, ContextResponse, Context)]
+Encoding.Recall[, SrcFalse := mapply(SourceFalseHitCal, ContextResponse, Context)]
 
-FalseSeenHitCal <- function(ActualResp, CorrResp){
-  if (CorrResp == 'New' & ActualResp == 'Seen') {
-    FalseSeen <- 1
-  } else {
-    FalseSeen <- 0
-  }
-}
+#  Calculate the false alarm rate for each individual participant
+idv.false.alarm.rate <- Encoding.Recall[Group == "Distractor", .(SFFalse = mean(SFFalse), SFalse = mean(SFalse), SrcFalse = mean(SrcFalse)/3), by = c("SubjectNo")]
 
-Encoding.Recall[, Accuracy :=  mapply(AccuracyCal,ObjectResponse, CorrObjResp)]
-Encoding.Recall[, SeenHit  :=  mapply(SeenAccuracyCal, ObjectResponse, CorrObjResp)]
-Encoding.Recall[, FalseSeenHit := mapply(FalseSeenHitCal, ObjectResponse, CorrObjResp)]
+#  Calculate the hit rates for each individual participant and each room
+inside.hit.rate.per.room <- Encoding.Recall[Context != "None", .(SFHit = mean(SFHit, na.rm = TRUE), SHit = mean(SHit, na.rm = TRUE), SrcHit = mean(SrcHit, na.rm = TRUE)), by = c("SubjectNo", "Context", "Group", "CurRating", "RoomOrder", "Duration")]
+inside.hit.rate.per.room <- inside.hit.rate.per.room[order(SubjectNo, Context), ]
+inside.hit.rate.per.room <- merge(inside.hit.rate.per.room, idv.false.alarm.rate, all = TRUE)
 
-## Split the old and new items
-old.item.responses <- Encoding.Recall[CorrObjResp == "Seen"]
-new.item.responses <- Encoding.Recall[CorrObjResp == "New"]
+inside.hit.rate.per.room[, SFAcc  := (SFHit - SFFalse)]
+inside.hit.rate.per.room[, SAcc   := (SHit  - SFalse)]
+inside.hit.rate.per.room[, SrcAcc := (SrcHit - SrcFalse)] 
 
-## Calculate false alarm rate
-new.item.responses[, far := 1 - Accuracy]
+write.csv(inside.hit.rate.per.room, "GroupData/InsideObjectsResponsePerRoom.csv", row.names = FALSE)
+save(inside.hit.rate.per.room, file = "GroupData/InsideObjectsResponsePerRoom.RData")
 
-# Context memory
-ContextAccuracyCal <- function(ActualResp, CorrResp) {
-  if (ActualResp == CorrResp) {
-    Accuracy = 1
-  } else {
-    Accuracy = 0
-  }
-  
-  return(Accuracy)
-}
+#  Calculate the hit rates for each individual participant and each novelty group
+inside.hit.rate.novelty.group <- Encoding.Recall[Context != "None", .(MeanCurRt = mean(CurRating, na.rm = TRUE), MeanDur = mean(Duration, na.rm = TRUE), SFHit = mean(SFHit, na.rm = TRUE), SHit = mean(SHit, na.rm = TRUE), SrcHit = mean(SrcHit, na.rm = TRUE)), by = c("SubjectNo", "Group")]
+inside.hit.rate.novelty.group <- merge(inside.hit.rate.novelty.group, idv.false.alarm.rate)
 
-Encoding.Recall[, ContextAccuracy := mapply(ContextAccuracyCal, ContextResponse, Context)]
+inside.hit.rate.novelty.group[, SFAcc  := (SFHit - SFFalse)]
+inside.hit.rate.novelty.group[, SAcc   := (SHit  - SFalse)]
+inside.hit.rate.novelty.group[, SrcAcc := (SrcHit - SrcFalse)] 
 
-## Force the context accuracy to be 0 if the corresponding item accuracy is 0
-Encoding.Recall[Accuracy == 0 & ContextAccuracy == 1]  # Seems that this situation only happened for distractors
+save(inside.hit.rate.novelty.group, file = "GroupData/InsideObjectResponseNoveltyGroups.RData")
 
 
-## Calculate the probability of choose each option respectively for old and new objects for each indivdual participant
+# Calculate the hit rates for each individual participant and each curiosity group
+## Calculate the mean and median curiosity rating for each participant 
+average.curiosity.rating <- Encoding.Recall[, .(MeanCur = mean(CurRating, na.rm = TRUE), MedianCur = median(CurRating, na.rm = TRUE)), by = c("SubjectNo")]
+Encoding.Recall         <- merge(Encoding.Recall, average.curiosity.rating, all = TRUE)
+
+## Separate the curiosity "high" and "low" groups according to the mean rating, median rating and 4 respectively.
+Encoding.Recall[, CurGrpMean      := mapply(CurGrpMeanSep,   CurRating, MeanCur) ]
+Encoding.Recall[, CurGrpMedian    := mapply(CurGrpMedianSep, CurRating, MedianCur) ]
+Encoding.Recall[, CurGrp          := mapply(CurGrpSep,       CurRating)]
+
+inside.hit.rate.curiosity.group.mean    <- Encoding.Recall[!is.na(CurGrpMean),   .(MeanDur = mean(Duration, na.rm = TRUE), SFHit = mean(SFHit, na.rm = TRUE), SHit = mean(SHit, na.rm = TRUE), SrcHit = mean(SrcHit, na.rm = TRUE)), by = c("SubjectNo", "CurGrpMean")]
+inside.hit.rate.curiosity.group.median  <- Encoding.Recall[!is.na(CurGrpMedian), .(MeanDur = mean(Duration, na.rm = TRUE), SFHit = mean(SFHit, na.rm = TRUE), SHit = mean(SHit, na.rm = TRUE), SrcHit = mean(SrcHit, na.rm = TRUE)), by = c("SubjectNo", "CurGrpMedian")]
+inside.hit.rate.curiosity.group         <- Encoding.Recall[!is.na(CurGrp),       .(MeanDur = mean(Duration, na.rm = TRUE), SFHit = mean(SFHit, na.rm = TRUE), SHit = mean(SHit, na.rm = TRUE), SrcHit = mean(SrcHit, na.rm = TRUE)), by = c("SubjectNo", "CurGrp")]
+
+inside.hit.rate.curiosity.group.mean    <- merge(inside.hit.rate.curiosity.group.mean, idv.false.alarm.rate, all = TRUE)
+inside.hit.rate.curiosity.group.median  <- merge(inside.hit.rate.curiosity.group.median, idv.false.alarm.rate, all = TRUE)
+inside.hit.rate.curiosity.group         <- merge(inside.hit.rate.curiosity.group, idv.false.alarm.rate, all = TRUE)
+
+inside.hit.rate.curiosity.group.mean[, c("SFAcc", "SAcc", "SrcAcc") := list( (SFHit - SFFalse), (SHit - SFalse), (SrcHit - SrcFalse))]
+inside.hit.rate.curiosity.group.median[, c("SFAcc", "SAcc", "SrcAcc") := list( (SFHit - SFFalse), (SHit - SFalse), (SrcHit - SrcFalse))]
+inside.hit.rate.curiosity.group[, c("SFAcc", "SAcc", "SrcAcc") := list( (SFHit - SFFalse), (SHit - SFalse), (SrcHit - SrcFalse))]
+
+save(inside.hit.rate.curiosity.group.mean, inside.hit.rate.curiosity.group.median, inside.hit.rate.curiosity.group, file = "GroupData/InsideObjectResponseEncodingGroups.RData")
+
+
+# Calculate the hit rates for each individual participant and each item order
+## For each room 
+Encoding.Recall[, ObjOrdGrp := mapply(ObjOrdGrpSep, ItemOrder) ]
+
+inside.hit.rate.item.order.group <- Encoding.Recall[Context != "None", .(SFHit = mean(SFHit, na.rm = TRUE), SHit = mean(SHit, na.rm = TRUE), SrcHit = mean(SrcHit, na.rm = TRUE)), by = c("SubjectNo", "Context", "Group", "CurRating", "RoomOrder", "ObjOrdGrp")]
+inside.hit.rate.item.order.group <- merge(inside.hit.rate.item.order.group, idv.false.alarm.rate, all = TRUE)
+inside.hit.rate.item.order.group[, c("SFAcc", "SAcc", "SrcAcc") := list( (SFHit - SFFalse), (SHit - SFalse), (SrcHit - SrcFalse))]
+
+## For each novelty group
+inside.hit.rate.item.order.novelty <- Encoding.Recall[Context != "None", .(MeanCurRt = mean(CurRating, na.rm = TRUE), MeanDur = mean(Duration, na.rm = TRUE), SFHit = mean(SFHit, na.rm = TRUE), SHit = mean(SHit, na.rm = TRUE), SrcHit = mean(SrcHit, na.rm = TRUE)), by = c("SubjectNo", "Group", "ObjOrdGrp")]
+inside.hit.rate.item.order.novelty <- merge(inside.hit.rate.item.order.novelty, idv.false.alarm.rate, all = TRUE)
+inside.hit.rate.item.order.novelty[, c("SFAcc", "SAcc", "SrcAcc") := list( (SFHit - SFFalse), (SHit - SFalse), (SrcHit - SrcFalse))]
+
+## For each curiosity group
+inside.hit.rate.item.order.curiosity.mean   <- Encoding.Recall[Context != "None", .(SFHit = mean(SFHit, na.rm = TRUE), SHit = mean(SHit, na.rm = TRUE), SrcHit = mean(SrcHit, na.rm = TRUE)), by = c("SubjectNo", "CurGrpMean", "ObjOrdGrp")]
+inside.hit.rate.item.order.curiosity.median <- Encoding.Recall[Context != "None", .(SFHit = mean(SFHit, na.rm = TRUE), SHit = mean(SHit, na.rm = TRUE), SrcHit = mean(SrcHit, na.rm = TRUE)), by = c("SubjectNo", "CurGrpMedian", "ObjOrdGrp")]
+inside.hit.rate.item.order.curiosity        <- Encoding.Recall[Context != "None", .(SFHit = mean(SFHit, na.rm = TRUE), SHit = mean(SHit, na.rm = TRUE), SrcHit = mean(SrcHit, na.rm = TRUE)), by = c("SubjectNo", "CurGrp", "ObjOrdGrp")]
+
+inside.hit.rate.item.order.curiosity.mean   <- merge(inside.hit.rate.item.order.curiosity.mean, idv.false.alarm.rate, all = TRUE)
+inside.hit.rate.item.order.curiosity.median <- merge(inside.hit.rate.item.order.curiosity.median, idv.false.alarm.rate, all = TRUE)
+inside.hit.rate.item.order.curiosity        <- merge(inside.hit.rate.item.order.curiosity, idv.false.alarm.rate, all = TRUE)
+
+inside.hit.rate.item.order.curiosity.mean[, c("SFAcc", "SAcc", "SrcAcc") := list( (SFHit - SFFalse), (SHit - SFalse), (SrcHit - SrcFalse))]
+inside.hit.rate.item.order.curiosity.median[, c("SFAcc", "SAcc", "SrcAcc") := list( (SFHit - SFFalse), (SHit - SFalse), (SrcHit - SrcFalse))]
+inside.hit.rate.item.order.curiosity[, c("SFAcc", "SAcc", "SrcAcc") := list( (SFHit - SFFalse), (SHit - SFalse), (SrcHit - SrcFalse))]
+
+save(inside.hit.rate.item.order.group, inside.hit.rate.item.order.novelty, inside.hit.rate.item.order.curiosity.mean, inside.hit.rate.item.order.curiosity.median, inside.hit.rate.item.order.curiosity, file = "GroupData/InsideObjectResponseItemOrders.RData")
+
+# Save the most detailed data sheet 
+
+save(Encoding.Recall, file = "GroupData/InsideObjectResponse.RData")
+
+# Calculate the frequence of reponses
 Encoding.Recall$ObjectType <- "Old"
 Encoding.Recall[Group == "Distractor"]$ObjectType <- "New"
 
@@ -107,236 +208,4 @@ RespFreqCal <- function(ObjResp, ... ){
 Encoding.Recall.Freq.Grp <- Encoding.Recall[, c(RespFreqCal(ObjectResponse)), by = c("SubjectNo", "Group")]
 Encoding.Recall.Freq.Rsp <- Encoding.Recall[, c(RespFreqCal(ObjectResponse)), by = c("SubjectNo", "CorrObjResp")]
 
-## Calculate hit rate with only "seen" response
-Rooms <- c("Bedroom", "Classroom", "Gym", "LivingRoom", "Library", "StorageRoom")
-InsideObjectsMemory <- NULL
-
-for (thisP in participant.folders) {
-  for (thisR in Rooms) {
-    thisD <- Encoding.Recall[SubjectNo == thisP & Context == thisR]
-    
-    if (nrow(thisD) > 0) {
-      
-      false.alarm.rate <- mean(new.item.responses[SubjectNo == thisP]$far, na.rm = FALSE)
-      hit.rate <- mean(thisD$Accuracy, na.rm = FALSE)
-      seen.hit <- mean(thisD$SeenHit )
-      false.seen.hit <- mean(Curiosity.Recall[SubjectNo == thisP]$FalseSeenHit)
-      corr.seen.hit <- seen.hit - false.seen.hit
-      item.accuracy <- hit.rate - false.alarm.rate
-      
-      if (item.accuracy < 0) {
-        item.accuracy = 0
-      }
-      
-      context.hit.rate <- mean(thisD$ContextAccuracy, na.rm = FALSE)
-      
-      curiosity.rating <- Curiosity.Ratings[SubjectNo == thisP & Room == thisR]$CuriosityRating
-      n.curiosity.rating <- Curiosity.Ratings[SubjectNo == thisP & Room == thisR]$NRating
-      curiosity.group.mean <- Curiosity.Ratings[SubjectNo == thisP & Room == thisR]$RatingGroupMean
-      curiosity.group.median <- Curiosity.Ratings[SubjectNo == thisP & Room == thisR]$RatingGroupMedian
-      
-      room.order <- Curiosity.Ratings[SubjectNo == thisP & Room == thisR]$RoomOrder
-      group <- Encoding.Recall[SubjectNo == thisP & Context == thisR]$Group[1]
-      this.temp <- data.table(SubjectNo = thisP, Room = thisR, Group = group, CuriosityRating = curiosity.rating, NCuriosityRating = n.curiosity.rating, RatingGroupMean = curiosity.group.mean, RatingGroupMedian = curiosity.group.median, RoomOrder = room.order, ItemFAR = false.alarm.rate, ItemAccuracy = item.accuracy, ContextAccuracy = context.hit.rate, HitRate = hit.rate, SeenHit = seen.hit, SeenFAR = false.seen.hit, CorrSeenHit = corr.seen.hit)
-      InsideObjectsMemory <- rbind(InsideObjectsMemory, this.temp)  
-      
-    }
-  }
-}
-
-InsideObjectsMemory[CorrSeenHit < 0]$CorrSeenHit <- NA
-
-## Check the context memory test response for corrected labelled distractors
-Encoding.Recall.New <- Encoding.Recall[Context == 'None' & ObjectResponse == 'New']
-Encoding.Recall.New$ContextResponseType <- 'None'
-Encoding.Recall.New[ContextResponse != 'None']$ContextResponseType <- 'Room'
-
-ContextRespFreqCal <- function(ObjResp, ... ){
-  
-  FreqTable = as.data.frame(table(ObjResp)/sum(table(ObjResp)))
-  names(FreqTable) <- c("Response", "Frequency")
-  
-  if (nrow(FreqTable) < 2) {
-    FreqTable <- rbind(FreqTable, data.frame(Response = 'Room', Frequency = c(0)))
-  }
-
-  return(FreqTable)
-}
-
-Encoding.Recall.New.Freq <- Encoding.Recall.New[, c(ContextRespFreqCal(ContextResponseType)), by = c("SubjectNo", "Group")]
-
-## Check the context memory test response for correctly recollected objects
-Encoding.Recall.Old.Corr <- Encoding.Recall.Old[Accuracy == 1]
-Encoding.Recall.Old.Corr$ContextResponseType <- "CorrectRoom"
-Encoding.Recall.Old.Corr[ContextResponse == 'None' & ContextAccuracy == 0]$ContextResponseType <- 'None'
-Encoding.Recall.Old.Corr[ContextResponse != 'None' & ContextAccuracy == 0]$ContextResponseType <- 'OtherRoom'
-
-ContextOldRespFreqCal <- function(ObjResp, ... ){
-  
-  rsps <- c('None', 'OtherRoom', 'CorrectRoom')
-  
-  FreqTable <- as.data.frame(table(ObjResp)/sum(table(ObjResp)))
-  names(FreqTable) <- c("Response", "Frequency")
-  
-  if (nrow(FreqTable) < 3) {
-    if (nrow(FreqTable) == 2) {
-      theRooms <- as.character(FreqTable$Response)
-      missingRoom <- rsps[! (rsps %in% theRooms)]
-      FreqTable <- rbind(FreqTable, data.frame(Response = missingRoom, Frequency = c(0)))
-    } else if (nrow(FreqTable) == 1){
-      theRooms <- as.character(FreqTable$Response)
-      missingRoom <- rsps[! (rsps %in% theRooms)]
-      FreqTable <- rbind(FreqTable, data.frame(Response = missingRoom[1], Frequency = c(0)))
-      FreqTable <- rbind(FreqTable, data.frame(Response = missingRoom[2], Frequency = c(0)))
-    }
-  }
-  
-  return(FreqTable)
-}
-
-Encoding.Recall.Old.Corr.Freq <- NULL
-
-for (thisP in Participants) {
-  for (thisG in c("Familiar", "Novel")) {
-    thisP.data <- Encoding.Recall.Old.Corr[SubjectNo == thisP & Group == thisG, c(ContextOldRespFreqCal(ContextResponseType))]
-    thisP.data$SubjectNo <- thisP
-    thisP.data$Group <- thisG
-    Encoding.Recall.Old.Corr.Freq <- rbind(Encoding.Recall.Old.Corr.Freq, thisP.data)
-  }
-}
-
-Encoding.Recall.Old.Corr.Freq <- data.table(Encoding.Recall.Old.Corr.Freq)
-
-## Collapse the data
-### Calculate corrected seen hit rate
-#### First calculate the seen FAR for each participant
-Encoding.Recall.New <- Encoding.Recall[Context == "None"]
-Encoding.Recall.Old$SeenFAR <- 0
-Encoding.Recall.Old$CorrSeenHit <- 0
-Encoding.Recall.Old$ContextFAR <- 0
-Encoding.Recall.Old$CorrContextAccuracy <- 0
-
-InsideObjectsMemory$ContextFAR          <- 0
-InsideObjectsMemory$CorrContextAccuracy <- 0
-
-# Calculate corrected hit rate for source memory
-Encoding.Recall.New$ContextFAR <- 0
-
-for (this.p in participant.folders) {
-  for (this.r in Rooms) {
-    this.false.response <- Encoding.Recall.New[SubjectNo == this.p & ContextResponse == this.r]
-    if (nrow(this.false.response) > 0) {
-      Encoding.Recall.New[SubjectNo == this.p & ContextResponse == this.r]$ContextFAR <- nrow(this.false.response)/nrow(Encoding.Recall.New[SubjectNo == this.p])
-    }
-  }
-}
-
-for (this.p in participant.folders) {
-  Encoding.Recall.Old[SubjectNo == this.p]$SeenFAR <- mean(Encoding.Recall.New[SubjectNo == this.p]$FalseSeenHit)
-  Encoding.Recall.Old[SubjectNo == this.p]$CorrSeenHit <- Encoding.Recall.Old[SubjectNo == this.p]$SeenHit - Encoding.Recall.Old[SubjectNo == this.p]$SeenFAR
-
-  for (this.r in Rooms) {
-    this.context.far <- as.numeric(unique(Encoding.Recall.New[SubjectNo == this.p & ContextResponse == this.r]$ContextFAR))
-
-    if (length(this.context.far) > 0) {
-      Encoding.Recall.Old[SubjectNo == this.p & Context == this.r]$ContextFAR       <- this.context.far 
-      InsideObjectsMemory[SubjectNo == this.p & Room == this.r]$ContextFAR          <- this.context.far
-    }
-
-    Encoding.Recall.Old[SubjectNo == this.p & Context == this.r]$CorrContextAccuracy <- Encoding.Recall.Old[SubjectNo == this.p & Context == this.r]$ContextAccuracy - Encoding.Recall.Old[SubjectNo == this.p & Context == this.r]$ContextFAR
-    InsideObjectsMemory[SubjectNo == this.p & Room == this.r]$CorrContextAccuracy <- InsideObjectsMemory[SubjectNo == this.p & Room == this.r]$ContextAccuracy  
-  }
-}
-
-InsideObjectsMemory[CorrContextAccuracy < 0]$CorrContextAccuracy <- NA
-
-Encoding.Recall.Old$ItemOrderType <- "Early"
-Encoding.Recall.Old[ItemOrder %in% c(4:6)]$ItemOrderType <- "Late"
-
-Encoding.Recall.Old.Novelty                 <- Encoding.Recall.Old[, .(Accuracy = mean(Accuracy), SeenHit = mean(SeenHit), CorrSeenHit = mean(CorrSeenHit), ContextAccuracy = mean(ContextAccuracy), CorrContextAccuracy = mean(CorrContextAccuracy)), by = c("SubjectNo", "ItemOrder", "Group")]
-Encoding.Recall.Old.CuriosityRating         <- Encoding.Recall.Old[, .(Accuracy = mean(Accuracy), SeenHit = mean(SeenHit), CorrSeenHit = mean(CorrSeenHit), ContextAccuracy = mean(ContextAccuracy), CorrContextAccuracy = mean(CorrContextAccuracy)), by = c("SubjectNo", "ItemOrder", "CuriosityRating")]
-Encoding.Recall.Old.CuriosityRatingN        <- Encoding.Recall.Old[, .(Accuracy = mean(Accuracy), SeenHit = mean(SeenHit), CorrSeenHit = mean(CorrSeenHit), ContextAccuracy = mean(ContextAccuracy), CorrContextAccuracy = mean(CorrContextAccuracy)), by = c("SubjectNo", "ItemOrder", "NCuriosityRating")]
-Encoding.Recall.Old.CuriosityType           <- Encoding.Recall.Old[, .(Accuracy = mean(Accuracy), SeenHit = mean(SeenHit), CorrSeenHit = mean(CorrSeenHit), ContextAccuracy = mean(ContextAccuracy), CorrContextAccuracy = mean(CorrContextAccuracy)), by = c("SubjectNo", "ItemOrder", "CuriosityRatingType")]
-Encoding.Recall.Old.Interaction             <- Encoding.Recall.Old[, .(Accuracy = mean(Accuracy), SeenHit = mean(SeenHit), CorrSeenHit = mean(CorrSeenHit), ContextAccuracy = mean(ContextAccuracy), CorrContextAccuracy = mean(CorrContextAccuracy)), by = c("SubjectNo", "Group", "CuriosityRatingType")]
-Encoding.Recall.Old.Order.Novelty           <- Encoding.Recall.Old[, .(Accuracy = mean(Accuracy), SeenHit = mean(SeenHit), CorrSeenHit = mean(CorrSeenHit), ContextAccuracy = mean(ContextAccuracy), CorrContextAccuracy = mean(CorrContextAccuracy)), by = c("SubjectNo", "ItemOrderType", "Group")]
-Encoding.Recall.Old.Order.CuriosityType     <- Encoding.Recall.Old[, .(Accuracy = mean(Accuracy), SeenHit = mean(SeenHit), CorrSeenHit = mean(CorrSeenHit), ContextAccuracy = mean(ContextAccuracy), CorrContextAccuracy = mean(CorrContextAccuracy)), by = c("SubjectNo", "ItemOrderType", "CuriosityRatingType")]
-Encoding.Recall.Old.Collapsed.CuriosityType <- Encoding.Recall.Old[, .(Accuracy = mean(Accuracy), SeenHit = mean(SeenHit), CorrSeenHit = mean(CorrSeenHit), ContextAccuracy = mean(ContextAccuracy), CorrContextAccuracy = mean(CorrContextAccuracy)), by = c("SubjectNo", "CuriosityRatingType")]
-
-Encoding.Recall.Old.Novelty[CorrSeenHit < 0]$CorrSeenHit                 <- NA
-Encoding.Recall.Old.CuriosityRating[CorrSeenHit < 0]$CorrSeenHit         <- NA
-Encoding.Recall.Old.CuriosityRatingN[CorrSeenHit < 0]$CorrSeenHit        <- NA
-Encoding.Recall.Old.CuriosityType[CorrSeenHit < 0]$CorrSeenHit           <- NA
-Encoding.Recall.Old.Interaction[CorrSeenHit < 0]$CorrSeenHit             <- NA
-Encoding.Recall.Old.Order.Novelty[CorrSeenHit < 0]$CorrSeenHit           <- NA
-Encoding.Recall.Old.Order.CuriosityType[CorrSeenHit < 0]$CorrSeenHit     <- NA
-Encoding.Recall.Old.Collapsed.CuriosityType[CorrSeenHit < 0]$CorrSeenHit <- NA
-
-Encoding.Recall.Old.Novelty[CorrContextAccuracy < 0]$CorrContextAccuracy                  <- NA
-Encoding.Recall.Old.CuriosityRating[CorrContextAccuracy < 0]$CorrContextAccuracy          <- NA
-Encoding.Recall.Old.CuriosityRatingN[CorrContextAccuracy < 0]$CorrContextAccuracy         <- NA
-Encoding.Recall.Old.CuriosityType[CorrContextAccuracy < 0]$CorrContextAccuracy            <- NA
-Encoding.Recall.Old.Interaction[CorrContextAccuracy < 0]$CorrContextAccuracy              <- NA
-Encoding.Recall.Old.Order.Novelty[CorrContextAccuracy < 0]$CorrContextAccuracy            <- NA
-Encoding.Recall.Old.Order.CuriosityType[CorrContextAccuracy < 0]$CorrContextAccuracy      <- NA
-Encoding.Recall.Old.Collapsed.CuriosityType[CorrContextAccuracy < 0]$CorrContextAccuracy  <- NA
-
-Encoding.Recall.Old.CuriosityType            <- Encoding.Recall.Old.CuriosityType[CuriosityRatingType != 0]
-Encoding.Recall.Old.Interaction              <- Encoding.Recall.Old.Interaction[CuriosityRatingType != 0]             
-Encoding.Recall.Old.Order.CuriosityType      <- Encoding.Recall.Old.Order.CuriosityType[CuriosityRatingType != 0]     
-Encoding.Recall.Old.Collapsed.CuriosityType  <- Encoding.Recall.Old.Collapsed.CuriosityType[CuriosityRatingType != 0]
-
-Encoding.Recall.Old.CuriosityType$CuriosityRatingType           <- factor(Encoding.Recall.Old.CuriosityType$CuriosityRatingType, levels = c(1:2), labels = c("Low", "High"))
-Encoding.Recall.Old.Interaction$CuriosityRatingType             <- factor(Encoding.Recall.Old.Interaction$CuriosityRatingType, levels = c(1:2), labels = c("Low", "High"))
-Encoding.Recall.Old.Order.CuriosityType$CuriosityRatingType     <- factor(Encoding.Recall.Old.Order.CuriosityType$CuriosityRatingType, levels = c(1:2), labels = c("Low", "High"))
-Encoding.Recall.Old.Collapsed.CuriosityType$CuriosityRatingType <- factor(Encoding.Recall.Old.Collapsed.CuriosityType$CuriosityRatingType, levels = c(1:2), labels = c("Low", "High"))
-
-### Using alternative ways to calculate curiosity rating groups
-Encoding.Recall.Old.CuriosityType.MeanSep                 <- Encoding.Recall.Old[, .(Accuracy = mean(Accuracy), SeenHit = mean(SeenHit), CorrSeenHit = mean(CorrSeenHit), ContextAccuracy = mean(ContextAccuracy), CorrContextAccuracy = mean(CorrContextAccuracy)), by = c("SubjectNo", "ItemOrder",  "RatingGroup")]
-Encoding.Recall.Old.Interaction.MeanSep                   <- Encoding.Recall.Old[, .(Accuracy = mean(Accuracy), SeenHit = mean(SeenHit), CorrSeenHit = mean(CorrSeenHit), ContextAccuracy = mean(ContextAccuracy), CorrContextAccuracy = mean(CorrContextAccuracy)), by = c("SubjectNo", "Group", "RatingGroup")]
-Encoding.Recall.Old.Order.CuriosityType.MeanSep           <- Encoding.Recall.Old[, .(Accuracy = mean(Accuracy), SeenHit = mean(SeenHit), CorrSeenHit = mean(CorrSeenHit), ContextAccuracy = mean(ContextAccuracy), CorrContextAccuracy = mean(CorrContextAccuracy)), by = c("SubjectNo", "ItemOrderType", "RatingGroup")]
-Encoding.Recall.Old.Collapsed.CuriosityType.MeanSep       <- Encoding.Recall.Old[, .(Accuracy = mean(Accuracy), SeenHit = mean(SeenHit), CorrSeenHit = mean(CorrSeenHit), ContextAccuracy = mean(ContextAccuracy), CorrContextAccuracy = mean(CorrContextAccuracy)), by = c("SubjectNo", "RatingGroup")]
-
-Encoding.Recall.Old.CuriosityType.MeanSep [CorrSeenHit < 0]$CorrSeenHit          <- NA
-Encoding.Recall.Old.Interaction.MeanSep [CorrSeenHit < 0]$CorrSeenHit            <- NA
-Encoding.Recall.Old.Order.CuriosityType.MeanSep [CorrSeenHit < 0]$CorrSeenHit    <- NA
-Encoding.Recall.Old.Collapsed.CuriosityType.MeanSep[CorrSeenHit < 0]$CorrSeenHit <- NA
-
-Encoding.Recall.Old.CuriosityType.MeanSep[CorrContextAccuracy < 0]$CorrContextAccuracy            <- NA
-Encoding.Recall.Old.Interaction.MeanSep[CorrContextAccuracy < 0]$CorrContextAccuracy              <- NA
-Encoding.Recall.Old.Order.CuriosityType.MeanSep[CorrContextAccuracy < 0]$CorrContextAccuracy      <- NA
-Encoding.Recall.Old.Collapsed.CuriosityType.MeanSep[CorrContextAccuracy < 0]$CorrContextAccuracy  <- NA
-
-Encoding.Recall.Old.CuriosityType.MeanSep            <- Encoding.Recall.Old.CuriosityType.MeanSep[RatingGroup != 0]
-Encoding.Recall.Old.Interaction.MeanSep              <- Encoding.Recall.Old.Interaction.MeanSep[RatingGroup != 0]             
-Encoding.Recall.Old.Order.CuriosityType.MeanSep      <- Encoding.Recall.Old.Order.CuriosityType.MeanSep[RatingGroup != 0]     
-Encoding.Recall.Old.Collapsed.CuriosityType.MeanSep  <- Encoding.Recall.Old.Collapsed.CuriosityType.MeanSep[RatingGroup != 0]
-
-Encoding.Recall.Old.CuriosityType.MeanSep$RatingGroup               <- factor(Encoding.Recall.Old.CuriosityType.MeanSep$RatingGroup,           levels = c(1:2), labels = c("Low", "High"))
-Encoding.Recall.Old.Interaction.MeanSep$RatingGroup                 <- factor(Encoding.Recall.Old.Interaction.MeanSep$RatingGroup,             levels = c(1:2), labels = c("Low", "High"))
-Encoding.Recall.Old.Order.CuriosityType.MeanSep$RatingGroup         <- factor(Encoding.Recall.Old.Order.CuriosityType.MeanSep$RatingGroup,     levels = c(1:2), labels = c("Low", "High"))
-Encoding.Recall.Old.Collapsed.CuriosityType.MeanSep$RatingGroup     <- factor(Encoding.Recall.Old.Collapsed.CuriosityType.MeanSep$RatingGroup, levels = c(1:2), labels = c("Low", "High"))
-
-############################################################################
-
-Encoding.Recall.Old.Collapsed <- Encoding.Recall.Old[CuriosityRating != 4]
-Encoding.Recall.Old.Collapsed.Cur <- Encoding.Recall.Old.Collapsed[, .(Accuracy = mean(Accuracy), SeenHit = mean(SeenHit), ContextAccuracy = mean(ContextAccuracy)), by = c("SubjectNo", "CuriosityRatingType")]
-Encoding.Recall.Old.Collapsed.Interaction <- Encoding.Recall.Old.Collapsed[, .(Accuracy = mean(Accuracy), SeenHit = mean(SeenHit), ContextAccuracy = mean(ContextAccuracy)), by = c("SubjectNo", "Group", "CuriosityRatingType")]
-Encoding.Recall.Old.Collapsed <- Encoding.Recall.Old.Collapsed[, .(Accuracy = mean(Accuracy), SeenHit = mean(SeenHit), ContextAccuracy = mean(ContextAccuracy)), by = c("SubjectNo", "ItemOrderType", "CuriosityRatingType")]
-Encoding.Recall.Old.Collapsed.Grp <- Encoding.Recall.Old[, .(Accuracy = mean(Accuracy), SeenHit = mean(SeenHit), ContextAccuracy = mean(ContextAccuracy)), by = c("SubjectNo", "ItemOrderType", "Group")]
-
-### Using alternative ways to calculate curiosity rating groups
-Encoding.Recall.Old$RatingGroup <- ""
-
-for (this.p in participant.folders) {
-  this.p.ratings <- Encoding.Recall.Old[SubjectNo == this.p]
-  this.mean <- mean(this.p.ratings$CuriosityRating )
-  Encoding.Recall.Old[SubjectNo == this.p & CuriosityRating < this.mean]$RatingGroup <- "Low"
-  Encoding.Recall.Old[SubjectNo == this.p & CuriosityRating > this.mean]$RatingGroup <- "High"
-}
-
-Encoding.Recall.Old.Collapsed.Alt <- Encoding.Recall.Old[RatingGroup != ""]
-Encoding.Recall.Old.Collapsed.Alt.Cur <- Encoding.Recall.Old.Collapsed.Alt[, .(Accuracy = mean(Accuracy), SeenHit = mean(SeenHit), ContextAccuracy = mean(ContextAccuracy)), by = c("SubjectNo", "RatingGroup")]
-Encoding.Recall.Old.Collapsed.Alt.Interaction <- Encoding.Recall.Old.Collapsed.Alt[, .(Accuracy = mean(Accuracy), SeenHit = mean(SeenHit), ContextAccuracy = mean(ContextAccuracy)), by = c("SubjectNo", "Group", "RatingGroup")]
-Encoding.Recall.Old.Collapsed.Alt <- Encoding.Recall.Old.Collapsed.Alt[, .(Accuracy = mean(Accuracy), SeenHit = mean(SeenHit), ContextAccuracy = mean(ContextAccuracy)), by = c("SubjectNo", "ItemOrderType", "RatingGroup")]
-
-
+save(Encoding.Recall.Freq.Grp, Encoding.Recall.Freq.Rsp, file = "GroupData/InsideObjectResponseFrequencies.RData")

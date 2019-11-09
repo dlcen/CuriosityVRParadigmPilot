@@ -111,7 +111,7 @@ Curiosity.Recall[, SrcHit  := mapply(SourceHitCal, ContextResponse, Context)]
 Curiosity.Recall[, SrcFalse := mapply(SourceFalseHitCal, ContextResponse, Context)]
 
 #  Calculate the false alarm rate for each individual participant
-idv.false.alarm.rate <- Curiosity.Recall[Group == "Distractor", .(SFFalse = mean(SFFalse), SFalse = mean(SFalse), SrcFalse = mean(SrcFalse)/3), by = c("SubjectNo", "Context", "Group", "CurRating", "RoomOrder", "Duration")]
+idv.false.alarm.rate <- Curiosity.Recall[Group == "Distractor", .(SFFalse = mean(SFFalse), SFalse = mean(SFalse), SrcFalse = mean(SrcFalse)/3), by = c("SubjectNo")]
 
 #  Calculate the hit rates for each individual participant and each room
 outside.hit.rate.per.room <- Curiosity.Recall[Context != "None", .(SFHit = mean(SFHit, na.rm = TRUE), SHit = mean(SHit, na.rm = TRUE), SrcHit = mean(SrcHit, na.rm = TRUE)), by = c("SubjectNo", "Context", "Group", "CurRating", "RoomOrder", "Duration")]
@@ -127,8 +127,7 @@ save(outside.hit.rate.per.room, file = "GroupData/OutsideObjectsResponsePerRoom.
 
 #  Calculate the hit rates for each individual participant and each novelty group
 outside.hit.rate.novelty.group <- Curiosity.Recall[Context != "None", .(MeanCurRt = mean(CurRating, na.rm = TRUE), MeanDur = mean(Duration, na.rm = TRUE), SFHit = mean(SFHit, na.rm = TRUE), SHit = mean(SHit, na.rm = TRUE), SrcHit = mean(SrcHit, na.rm = TRUE)), by = c("SubjectNo", "Group")]
-outside.hit.rate.novelty.group <- outside.hit.rate.novelty.group[order(SubjectNo, Group), ]
-outside.hit.rate.novelty.group <- merge(outside.hit.rate.novelty.group, idv.false.alarm.rate, all = TRUE)
+outside.hit.rate.novelty.group <- merge(outside.hit.rate.novelty.group, idv.false.alarm.rate)
 
 outside.hit.rate.novelty.group[, SFAcc  := (SFHit - SFFalse)]
 outside.hit.rate.novelty.group[, SAcc   := (SHit  - SFalse)]
@@ -184,11 +183,29 @@ outside.hit.rate.item.order.curiosity.mean   <- merge(outside.hit.rate.item.orde
 outside.hit.rate.item.order.curiosity.median <- merge(outside.hit.rate.item.order.curiosity.median, idv.false.alarm.rate, all = TRUE)
 outside.hit.rate.item.order.curiosity        <- merge(outside.hit.rate.item.order.curiosity, idv.false.alarm.rate, all = TRUE)
 
-outside.hit.rate.curiosity.group.mean[, c("SFAcc", "SAcc", "SrcAcc") := list( (SFHit - SFFalse), (SHit - SFalse), (SrcHit - SrcFalse))]
-outside.hit.rate.curiosity.group.median[, c("SFAcc", "SAcc", "SrcAcc") := list( (SFHit - SFFalse), (SHit - SFalse), (SrcHit - SrcFalse))]
-outside.hit.rate.curiosity.group[, c("SFAcc", "SAcc", "SrcAcc") := list( (SFHit - SFFalse), (SHit - SFalse), (SrcHit - SrcFalse))]
+outside.hit.rate.item.order.curiosity.mean[, c("SFAcc", "SAcc", "SrcAcc") := list( (SFHit - SFFalse), (SHit - SFalse), (SrcHit - SrcFalse))]
+outside.hit.rate.item.order.curiosity.median[, c("SFAcc", "SAcc", "SrcAcc") := list( (SFHit - SFFalse), (SHit - SFalse), (SrcHit - SrcFalse))]
+outside.hit.rate.item.order.curiosity[, c("SFAcc", "SAcc", "SrcAcc") := list( (SFHit - SFFalse), (SHit - SFalse), (SrcHit - SrcFalse))]
+
+save(outside.hit.rate.item.order.group, outside.hit.rate.item.order.novelty, outside.hit.rate.item.order.curiosity.mean, outside.hit.rate.item.order.curiosity.median, outside.hit.rate.item.order.curiosity, file = "GroupData/OutsideObjectResponseItemOrders.RData")
 
 # Save the most detailed data sheet 
 
 save(Curiosity.Recall, file = "GroupData/OutsideObjectResponse.RData")
 
+# Calculate the frequence of reponses
+Curiosity.Recall$ObjectType <- "Old"
+Curiosity.Recall[Group == "Distractor"]$ObjectType <- "New"
+
+with(Curiosity.Recall, table( ObjectResponse, SubjectNo, ObjectType))
+
+RespFreqCal <- function(ObjResp, ... ){
+  FreqTable <- as.data.frame(table(ObjResp)/sum(table(ObjResp)))
+  names(FreqTable) <- c("Response", "Frequency")
+  return(FreqTable)
+}
+
+Curiosity.Recall.Freq.Grp <- Curiosity.Recall[, c(RespFreqCal(ObjectResponse)), by = c("SubjectNo", "Group")]
+Curiosity.Recall.Freq.Rsp <- Curiosity.Recall[, c(RespFreqCal(ObjectResponse)), by = c("SubjectNo", "CorrObjResp")]
+
+save(Curiosity.Recall.Freq.Grp, Curiosity.Recall.Freq.Rsp, file = "GroupData/OutsideObjectResponseFrequencies.RData")
