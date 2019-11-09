@@ -1,0 +1,27 @@
+{
+    "collab_server" : "",
+    "contents" : "",
+    "created" : 1573319519143.000,
+    "dirty" : false,
+    "encoding" : "UTF-8",
+    "folds" : "",
+    "hash" : "3442832049",
+    "id" : "33C1CB34",
+    "lastKnownWriteTime" : 1573319652,
+    "last_content_update" : 1573319758046,
+    "path" : "~/Desktop/seal/GitHub/CuriosityVRParadigm/Pilot/PilotData/Pilot_01/Notebooks/OutsideObjectResponse.Rmd",
+    "project_path" : "Notebooks/OutsideObjectResponse.Rmd",
+    "properties" : {
+        "chunk_output_type" : "inline",
+        "cursorPosition" : "48,37",
+        "scrollLine" : "0",
+        "tempName" : "Untitled1"
+    },
+    "read_only" : false,
+    "read_only_alternatives" : [
+    ],
+    "relative_order" : 3,
+    "source_on_save" : false,
+    "source_window" : "",
+    "type" : "r_markdown"
+}
