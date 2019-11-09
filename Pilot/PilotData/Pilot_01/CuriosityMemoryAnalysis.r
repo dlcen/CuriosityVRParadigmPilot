@@ -72,6 +72,28 @@ for (thisFolder in participant.folders) {
   
   this.response[ItemOrder == 0]$ItemOrder <- NA
 
+  # Add the duration of staying outside the room
+  this.response$Duration <- 0
+
+  outside.trajectories <- list.files(path = paste0("IndividualRawData", .Platform$file.sep, thisFolder), pattern = "*_OutsideTrajectory*")
+  
+  if (length(outside.trajectories) > 0) {
+    for (this.trj in outside.trajectories) {
+      this.trj.info <- strsplit(this.trj, split = "_")
+      this.room     <- this.trj.info[[1]][1]
+      
+      this.trj.data <- read.csv(paste("IndividualRawData", thisFolder, this.trj, sep = .Platform$file.sep), header = TRUE)
+      
+      rep.idx <- which(this.trj.data$TimeStamp == "TimeStamp")
+      
+      if (length(rep.idx) > 0) { this.trj.data <- this.trj.data[c(1:rep.idx[1] - 1), ]; droplevels(this.trj.data$TimeStamp)}
+      
+      if (nrow(this.trj.data) > 1) {this.response[Context == this.room]$Duration <- as.numeric(as.character(this.trj.data$TimeStamp[nrow(this.trj.data)])) - as.numeric(as.character(this.trj.data$TimeStamp[1])) }
+    }
+  }
+  
+  this.response[Duration == 0]$Duration <- NA
+  
   Curiosity.Recall <- rbind(Curiosity.Recall, this.response)
 }
 
@@ -92,174 +114,11 @@ Curiosity.Recall[, SrcFalse := mapply(SourceFalseHitCal, ContextResponse, Contex
 idv.false.alarm.rate <- Curiosity.Recall[Group == "Distractor", .(SFFalse = mean(SFFalse), SFalse = mean(SFalse), SrcFalse = mean(SrcFalse)/3), by = c("SubjectNo")]
 
 
-OutsideObjectsMemory[CorrSeenHit < 0]$CorrSeenHit <- NA
+#  Calculate the hit rates for each individual participant and each room
+outside.hit.rate.per.room <- Curiosity.Recall[Context != "None", .(SFHit = mean(SFHit, na.rm = TRUE), SHit = mean(SHit, na.rm = TRUE), SrcHit = mean(SrcHit, na.rm = TRUE)), by = c("SubjectNo", "Context", "Group", "CurRating", "RoomOrder", "Duration")]
 
-## Check the context memory test response for corrected labelled distractors
-Curiosity.Recall.New <- Curiosity.Recall[Context == 'None' & ObjectResponse == 'New']
-Curiosity.Recall.New$ContextResponseType <- 'None'
-Curiosity.Recall.New[ContextResponse != 'None']$ContextResponseType <- 'Room'
 
-ContextRespFreqCal <- function(ObjResp, ... ){
-  
-  FreqTable = as.data.frame(table(ObjResp)/sum(table(ObjResp)))
-  names(FreqTable) <- c("Response", "Frequency")
-  
-  if (nrow(FreqTable) < 2) {
-    FreqTable <- rbind(FreqTable, data.frame(Response = 'Room', Frequency = c(0)))
-  }
-  
-  return(FreqTable)
-}
 
-Curiosity.Recall.New.Freq <- Curiosity.Recall.New[, c(ContextRespFreqCal(ContextResponseType)), by = c("SubjectNo", "Group")]
 
-## Check the context memory test response for correctly recollected objects
-Curiosity.Recall.Old.Corr <- Curiosity.Recall.Old[Accuracy == 1]
-Curiosity.Recall.Old.Corr$ContextResponseType <- "CorrectRoom"
-Curiosity.Recall.Old.Corr[ContextResponse == 'None' & ContextAccuracy == 0]$ContextResponseType <- 'None'
-Curiosity.Recall.Old.Corr[ContextResponse != 'None' & ContextAccuracy == 0]$ContextResponseType <- 'OtherRoom'
-
-ContextOldRespFreqCal <- function(ObjResp, ... ){
-  
-  rsps <- c('None', 'OtherRoom', 'CorrectRoom')
-  
-  FreqTable = as.data.frame(table(ObjResp)/sum(table(ObjResp)))
-  names(FreqTable) <- c("Response", "Frequency")
-  
-  if (nrow(FreqTable) == 2) {
-    theRooms <- as.character(FreqTable$Response)
-    missingRoom <- rsps[! (rsps %in% theRooms)]
-    FreqTable <- rbind(FreqTable, data.frame(Response = missingRoom, Frequency = c(0)))
-  }
-  
-  if (nrow(FreqTable) == 1){
-    theRooms <- as.character(FreqTable$Response)
-    missingRoom <- rsps[! (rsps %in% theRooms)]
-    FreqTable <- rbind(FreqTable, data.frame(Response = missingRoom[1], Frequency = c(0)))
-    FreqTable <- rbind(FreqTable, data.frame(Response = missingRoom[2], Frequency = c(0)))
-  }
-  
-  return(FreqTable)
-}
-
-Curiosity.Recall.Old.Corr.Freq <- NULL
-
-for (thisP in Participants) {
-  for (thisG in c("Familiar", "Novel")) {
-    thisP.data <- Curiosity.Recall.Old.Corr[SubjectNo == thisP & Group == thisG, c(ContextOldRespFreqCal(ContextResponseType))]
-    thisP.data$SubjectNo <- thisP
-    thisP.data$Group <- thisG
-    Curiosity.Recall.Old.Corr.Freq <- rbind(Curiosity.Recall.Old.Corr.Freq, thisP.data)
-  }
-}
-
-Curiosity.Recall.Old.Corr.Freq <- data.table(Curiosity.Recall.Old.Corr.Freq)
-
-## Collapse the data
-### Calculate corrected seen hit rate
-#### First calculate the seen FAR for each participant
-Curiosity.Recall.New <- Curiosity.Recall[Context == "None"]
-Curiosity.Recall.Old$SeenFAR <- 0
-Curiosity.Recall.Old$CorrSeenHit <- 0
-Curiosity.Recall.Old$ContextFAR <- 0
-Curiosity.Recall.Old$CorrContextAccuracy <- 0
-
-OutsideObjectsMemory$ContextFAR          <- 0
-OutsideObjectsMemory$CorrContextAccuracy <- 0
-
-# Calculate corrected hit rate for source memory
-Curiosity.Recall.New$ContextFAR <- 0
-
-for (this.p in participant.folders) {
-  for (this.r in Rooms) {
-    this.false.response <- Curiosity.Recall.New[SubjectNo == this.p & ContextResponse == this.r]
-    if (nrow(this.false.response) > 0) {
-      Curiosity.Recall.New[SubjectNo == this.p & ContextResponse == this.r]$ContextFAR <- nrow(this.false.response)/nrow(Curiosity.Recall.New[SubjectNo == this.p])
-    }
-  }
-}
-
-for (this.p in participant.folders) {
-  Curiosity.Recall.Old[SubjectNo == this.p]$SeenFAR <- mean(Curiosity.Recall.New[SubjectNo == this.p]$FalseSeenHit)
-  Curiosity.Recall.Old[SubjectNo == this.p]$CorrSeenHit <- Curiosity.Recall.Old[SubjectNo == this.p]$SeenHit - Curiosity.Recall.Old[SubjectNo == this.p]$SeenFAR
-
-  for (this.r in Rooms) {
-    this.context.far <- as.numeric(unique(Curiosity.Recall.New[SubjectNo == this.p & ContextResponse == this.r]$ContextFAR))
-
-    if (length(this.context.far) > 0) {
-      Curiosity.Recall.Old[SubjectNo == this.p & Context == this.r]$ContextFAR       <- this.context.far 
-      OutsideObjectsMemory[SubjectNo == this.p & Room == this.r]$ContextFAR          <- this.context.far
-    }
-
-    Curiosity.Recall.Old[SubjectNo == this.p & Context == this.r]$CorrContextAccuracy <- Curiosity.Recall.Old[SubjectNo == this.p & Context == this.r]$ContextAccuracy - Curiosity.Recall.Old[SubjectNo == this.p & Context == this.r]$ContextFAR
-    OutsideObjectsMemory[SubjectNo == this.p & Room == this.r]$CorrContextAccuracy <- OutsideObjectsMemory[SubjectNo == this.p & Room == this.r]$ContextAccuracy  
-  }
-}
-
-OutsideObjectsMemory[CorrContextAccuracy < 0]$CorrContextAccuracy <- NA
-
-Curiosity.Recall.Old$ItemOrderType <- "Early"
-Curiosity.Recall.Old[ItemOrder %in% c(4:6)]$ItemOrderType <- "Late"
-
-Curiosity.Recall.Old.Novelty                 <- Curiosity.Recall.Old[, .(Accuracy = mean(Accuracy), SeenHit = mean(SeenHit), CorrSeenHit = mean(CorrSeenHit), ContextAccuracy = mean(ContextAccuracy), CorrContextAccuracy = mean(CorrContextAccuracy)), by = c("SubjectNo", "ItemOrder", "Group")]
-Curiosity.Recall.Old.CuriosityRating         <- Curiosity.Recall.Old[, .(Accuracy = mean(Accuracy), SeenHit = mean(SeenHit), CorrSeenHit = mean(CorrSeenHit), ContextAccuracy = mean(ContextAccuracy), CorrContextAccuracy = mean(CorrContextAccuracy)), by = c("SubjectNo", "ItemOrder", "CuriosityRating")]
-Curiosity.Recall.Old.CuriosityRatingN        <- Curiosity.Recall.Old[, .(Accuracy = mean(Accuracy), SeenHit = mean(SeenHit), CorrSeenHit = mean(CorrSeenHit), ContextAccuracy = mean(ContextAccuracy), CorrContextAccuracy = mean(CorrContextAccuracy)), by = c("SubjectNo", "ItemOrder", "NCuriosityRating")]
-Curiosity.Recall.Old.CuriosityType           <- Curiosity.Recall.Old[, .(Accuracy = mean(Accuracy), SeenHit = mean(SeenHit), CorrSeenHit = mean(CorrSeenHit), ContextAccuracy = mean(ContextAccuracy), CorrContextAccuracy = mean(CorrContextAccuracy)), by = c("SubjectNo", "ItemOrder", "CuriosityRatingType")]
-Curiosity.Recall.Old.Interaction             <- Curiosity.Recall.Old[, .(Accuracy = mean(Accuracy), SeenHit = mean(SeenHit), CorrSeenHit = mean(CorrSeenHit), ContextAccuracy = mean(ContextAccuracy), CorrContextAccuracy = mean(CorrContextAccuracy)), by = c("SubjectNo", "Group", "CuriosityRatingType")]
-Curiosity.Recall.Old.Order.Novelty           <- Curiosity.Recall.Old[, .(Accuracy = mean(Accuracy), SeenHit = mean(SeenHit), CorrSeenHit = mean(CorrSeenHit), ContextAccuracy = mean(ContextAccuracy), CorrContextAccuracy = mean(CorrContextAccuracy)), by = c("SubjectNo", "ItemOrderType", "Group")]
-Curiosity.Recall.Old.Order.CuriosityType     <- Curiosity.Recall.Old[, .(Accuracy = mean(Accuracy), SeenHit = mean(SeenHit), CorrSeenHit = mean(CorrSeenHit), ContextAccuracy = mean(ContextAccuracy), CorrContextAccuracy = mean(CorrContextAccuracy)), by = c("SubjectNo", "ItemOrderType", "CuriosityRatingType")]
-Curiosity.Recall.Old.Collapsed.CuriosityType <- Curiosity.Recall.Old[, .(Accuracy = mean(Accuracy), SeenHit = mean(SeenHit), CorrSeenHit = mean(CorrSeenHit), ContextAccuracy = mean(ContextAccuracy), CorrContextAccuracy = mean(CorrContextAccuracy)), by = c("SubjectNo", "CuriosityRatingType")]
-
-Curiosity.Recall.Old.Novelty[CorrSeenHit < 0]$CorrSeenHit                 <- NA
-Curiosity.Recall.Old.CuriosityRating[CorrSeenHit < 0]$CorrSeenHit         <- NA
-Curiosity.Recall.Old.CuriosityRatingN[CorrSeenHit < 0]$CorrSeenHit        <- NA
-Curiosity.Recall.Old.CuriosityType[CorrSeenHit < 0]$CorrSeenHit           <- NA
-Curiosity.Recall.Old.Interaction[CorrSeenHit < 0]$CorrSeenHit             <- NA
-Curiosity.Recall.Old.Order.Novelty[CorrSeenHit < 0]$CorrSeenHit           <- NA
-Curiosity.Recall.Old.Order.CuriosityType[CorrSeenHit < 0]$CorrSeenHit     <- NA
-Curiosity.Recall.Old.Collapsed.CuriosityType[CorrSeenHit < 0]$CorrSeenHit <- NA
-Curiosity.Recall.Old.Novelty[CorrContextAccuracy < 0]$CorrContextAccuracy                  <- NA
-Curiosity.Recall.Old.CuriosityRating[CorrContextAccuracy < 0]$CorrContextAccuracy          <- NA
-Curiosity.Recall.Old.CuriosityRatingN[CorrContextAccuracy < 0]$CorrContextAccuracy         <- NA
-Curiosity.Recall.Old.CuriosityType[CorrContextAccuracy < 0]$CorrContextAccuracy            <- NA
-Curiosity.Recall.Old.Interaction[CorrContextAccuracy < 0]$CorrContextAccuracy              <- NA
-Curiosity.Recall.Old.Order.Novelty[CorrContextAccuracy < 0]$CorrContextAccuracy            <- NA
-Curiosity.Recall.Old.Order.CuriosityType[CorrContextAccuracy < 0]$CorrContextAccuracy      <- NA
-Curiosity.Recall.Old.Collapsed.CuriosityType[CorrContextAccuracy < 0]$CorrContextAccuracy  <- NA
-
-Curiosity.Recall.Old.CuriosityType            <- Curiosity.Recall.Old.CuriosityType[CuriosityRatingType != 0]
-Curiosity.Recall.Old.Interaction              <- Curiosity.Recall.Old.Interaction[CuriosityRatingType != 0]             
-Curiosity.Recall.Old.Order.CuriosityType      <- Curiosity.Recall.Old.Order.CuriosityType[CuriosityRatingType != 0]     
-Curiosity.Recall.Old.Collapsed.CuriosityType  <- Curiosity.Recall.Old.Collapsed.CuriosityType[CuriosityRatingType != 0]
-
-Curiosity.Recall.Old.CuriosityType$CuriosityRatingType           <- factor(Curiosity.Recall.Old.CuriosityType$CuriosityRatingType, levels = c(1:2), labels = c("Low", "High"))
-Curiosity.Recall.Old.Interaction$CuriosityRatingType             <- factor(Curiosity.Recall.Old.Interaction$CuriosityRatingType, levels = c(1:2), labels = c("Low", "High"))
-Curiosity.Recall.Old.Order.CuriosityType$CuriosityRatingType     <- factor(Curiosity.Recall.Old.Order.CuriosityType$CuriosityRatingType, levels = c(1:2), labels = c("Low", "High"))
-Curiosity.Recall.Old.Collapsed.CuriosityType$CuriosityRatingType <- factor(Curiosity.Recall.Old.Collapsed.CuriosityType$CuriosityRatingType, levels = c(1:2), labels = c("Low", "High"))
-
-### Using alternative ways to calculate curiosity rating groups
-Curiosity.Recall.Old.CuriosityType.MeanSep                 <- Curiosity.Recall.Old[, .(Accuracy = mean(Accuracy), SeenHit = mean(SeenHit), CorrSeenHit = mean(CorrSeenHit), ContextAccuracy = mean(ContextAccuracy), CorrContextAccuracy = mean(CorrContextAccuracy)), by = c("SubjectNo", "ItemOrder",  "RatingGroup")]
-Curiosity.Recall.Old.Interaction.MeanSep                   <- Curiosity.Recall.Old[, .(Accuracy = mean(Accuracy), SeenHit = mean(SeenHit), CorrSeenHit = mean(CorrSeenHit), ContextAccuracy = mean(ContextAccuracy), CorrContextAccuracy = mean(CorrContextAccuracy)), by = c("SubjectNo", "Group", "RatingGroup")]
-Curiosity.Recall.Old.Order.CuriosityType.MeanSep           <- Curiosity.Recall.Old[, .(Accuracy = mean(Accuracy), SeenHit = mean(SeenHit), CorrSeenHit = mean(CorrSeenHit), ContextAccuracy = mean(ContextAccuracy), CorrContextAccuracy = mean(CorrContextAccuracy)), by = c("SubjectNo", "ItemOrderType", "RatingGroup")]
-Curiosity.Recall.Old.Collapsed.CuriosityType.MeanSep       <- Curiosity.Recall.Old[, .(Accuracy = mean(Accuracy), SeenHit = mean(SeenHit), CorrSeenHit = mean(CorrSeenHit), ContextAccuracy = mean(ContextAccuracy), CorrContextAccuracy = mean(CorrContextAccuracy)), by = c("SubjectNo", "RatingGroup")]
-
-Curiosity.Recall.Old.CuriosityType.MeanSep [CorrSeenHit < 0]$CorrSeenHit          <- NA
-Curiosity.Recall.Old.Interaction.MeanSep [CorrSeenHit < 0]$CorrSeenHit            <- NA
-Curiosity.Recall.Old.Order.CuriosityType.MeanSep [CorrSeenHit < 0]$CorrSeenHit    <- NA
-Curiosity.Recall.Old.Collapsed.CuriosityType.MeanSep[CorrSeenHit < 0]$CorrSeenHit <- NA
-Curiosity.Recall.Old.CuriosityType.MeanSep[CorrContextAccuracy < 0]$CorrContextAccuracy            <- NA
-Curiosity.Recall.Old.Interaction.MeanSep[CorrContextAccuracy < 0]$CorrContextAccuracy              <- NA
-Curiosity.Recall.Old.Order.CuriosityType.MeanSep[CorrContextAccuracy < 0]$CorrContextAccuracy      <- NA
-Curiosity.Recall.Old.Collapsed.CuriosityType.MeanSep[CorrContextAccuracy < 0]$CorrContextAccuracy  <- NA
-
-Curiosity.Recall.Old.CuriosityType.MeanSep            <- Curiosity.Recall.Old.CuriosityType.MeanSep[RatingGroup != 0]
-Curiosity.Recall.Old.Interaction.MeanSep              <- Curiosity.Recall.Old.Interaction.MeanSep[RatingGroup != 0]             
-Curiosity.Recall.Old.Order.CuriosityType.MeanSep      <- Curiosity.Recall.Old.Order.CuriosityType.MeanSep[RatingGroup != 0]     
-Curiosity.Recall.Old.Collapsed.CuriosityType.MeanSep  <- Curiosity.Recall.Old.Collapsed.CuriosityType.MeanSep[RatingGroup != 0]
-
-Curiosity.Recall.Old.CuriosityType.MeanSep$RatingGroup               <- factor(Curiosity.Recall.Old.CuriosityType.MeanSep$RatingGroup,           levels = c(1:2), labels = c("Low", "High"))
-Curiosity.Recall.Old.Interaction.MeanSep$RatingGroup                 <- factor(Curiosity.Recall.Old.Interaction.MeanSep$RatingGroup,             levels = c(1:2), labels = c("Low", "High"))
-Curiosity.Recall.Old.Order.CuriosityType.MeanSep$RatingGroup         <- factor(Curiosity.Recall.Old.Order.CuriosityType.MeanSep$RatingGroup,     levels = c(1:2), labels = c("Low", "High"))
-Curiosity.Recall.Old.Collapsed.CuriosityType.MeanSep$RatingGroup     <- factor(Curiosity.Recall.Old.Collapsed.CuriosityType.MeanSep$RatingGroup, levels = c(1:2), labels = c("Low", "High"))
 
 
