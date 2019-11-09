@@ -111,14 +111,17 @@ Curiosity.Recall[, SrcHit  := mapply(SourceHitCal, ContextResponse, Context)]
 Curiosity.Recall[, SrcFalse := mapply(SourceFalseHitCal, ContextResponse, Context)]
 
 #  Calculate the false alarm rate for each individual participant
-idv.false.alarm.rate <- Curiosity.Recall[Group == "Distractor", .(SFFalse = mean(SFFalse), SFalse = mean(SFalse), SrcFalse = mean(SrcFalse)/3), by = c("SubjectNo")]
-
+idv.false.alarm.rate <- Curiosity.Recall[Group == "Distractor", .(SFFalse = mean(SFFalse), SFalse = mean(SFalse), SrcFalse = mean(SrcFalse)/3), by = c("SubjectNo", "Context", "Group", "CurRating", "RoomOrder", "Duration")]
 
 #  Calculate the hit rates for each individual participant and each room
 outside.hit.rate.per.room <- Curiosity.Recall[Context != "None", .(SFHit = mean(SFHit, na.rm = TRUE), SHit = mean(SHit, na.rm = TRUE), SrcHit = mean(SrcHit, na.rm = TRUE)), by = c("SubjectNo", "Context", "Group", "CurRating", "RoomOrder", "Duration")]
+outside.hit.rate.per.room <- outside.hit.rate.per.room[order(SubjectNo, Context), ]
+outside.hit.rate.per.room <- merge(outside.hit.rate.per.room, idv.false.alarm.rate, all = TRUE)
 
+outside.hit.rate.per.room[, SFAcc  := (SFHit - SFFalse)]
+outside.hit.rate.per.room[, SAcc   := (SHit  - SFalse)]
+outside.hit.rate.per.room[, SrcAcc := (SrcHit - SrcFalse)] 
 
-
-
+write.csv(outside.hit.rate.per.room, "GroupData/OutsideObjectsResponse.csv", row.names = FALSE)
 
 
