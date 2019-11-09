@@ -80,54 +80,17 @@ Curiosity.Recall[Group == "Distractor"]$CorrObjResp <- "New"
 
 source("../Code/CalFunc.R")
 
-Curiosity.Recall[, Accuracy :=  mapply(AccuracyCal,ObjectResponse, CorrObjResp)]
-Curiosity.Recall[, SeenHit  :=  mapply(SeenAccuracyCal, ObjectResponse, CorrObjResp)]
-Curiosity.Recall[, FalseAlarm := mapply(FalseAlarmCal, ObjectResponse, CorrObjResp)]
-Curiosity.Recall[, FalseSeenHit := mapply(FalseSeenHitCal, ObjectResponse, CorrObjResp)]
+Curiosity.Recall[, SFHit   := mapply(SFHitCal,      ObjectResponse, CorrObjResp)]
+Curiosity.Recall[, SHit    := mapply(SHitCal,       ObjectResponse, CorrObjResp)]
+Curiosity.Recall[, SFFalse := mapply(SFFalseHitCal, ObjectResponse, CorrObjResp)]
+Curiosity.Recall[, SFalse  := mapply(SFalseHitCal,  ObjectResponse, CorrObjResp)]
 
-Curiosity.Recall[, ContextAccuracy := mapply(ContextAccuracyCal, ContextResponse, Context)]
-Curiosity.Recall[, ContextFalseHit := mapply(ContextFalseHitCal, ContextResponse, Context)]
+Curiosity.Recall[, SrcHit  := mapply(SourceHitCal, ContextResponse, Context)]
+Curiosity.Recall[, SrcFalse := mapply(SourceFalseHitCal, ContextResponse, Context)]
 
 #  Calculate the false alarm rate for each individual participant
-idv.false.alarm.rate <- Curiosity.Recall[Group == "Distractor", .(ItemFalseAlarm = mean(FalseAlarm), ItemFalseSeenHit = mean(FalseSeenHit), ContextFalseHit = mean(ContextFalseHit)/3), by = c("SubjectNo")]
+idv.false.alarm.rate <- Curiosity.Recall[Group == "Distractor", .(SFFalse = mean(SFFalse), SFalse = mean(SFalse), SrcFalse = mean(SrcFalse)/3), by = c("SubjectNo")]
 
- 
-## Calculate hit rate with only "seen" response
-OutsideObjectsMemory <- NULL
-
-for (thisP in participant.folders) {
-  for (thisR in Rooms) {
-    thisD <- Curiosity.Recall[SubjectNo == thisP & Context == thisR]
-    
-    if (nrow(thisD) > 0) {
-      
-      false.alarm.rate <- mean(new.item.responses[SubjectNo == thisP]$far, na.rm = FALSE)
-      hit.rate <- mean(thisD$Accuracy, na.rm = FALSE)
-      seen.hit <- mean(thisD$SeenHit )
-      false.seen.hit <- mean(Curiosity.Recall[SubjectNo == thisP]$FalseSeenHit)
-      corr.seen.hit <- seen.hit - false.seen.hit
-      item.accuracy <- hit.rate - false.alarm.rate
-      
-      
-      if (item.accuracy < 0) {
-        item.accuracy = 0
-      }
-      
-      context.hit.rate <- mean(thisD$ContextAccuracy, na.rm = FALSE)
-
-      curiosity.rating <- Curiosity.Ratings[SubjectNo == thisP & Room == thisR]$CuriosityRating
-      n.curiosity.rating <- Curiosity.Ratings[SubjectNo == thisP & Room == thisR]$NRating
-      curiosity.group.mean <- Curiosity.Ratings[SubjectNo == thisP & Room == thisR]$RatingGroupMean
-      curiosity.group.median <- Curiosity.Ratings[SubjectNo == thisP & Room == thisR]$RatingGroupMedian
-      
-      room.order <- Curiosity.Ratings[SubjectNo == thisP & Room == thisR]$RoomOrder
-      group <- Curiosity.Recall[SubjectNo == thisP & Context == thisR]$Group[1]
-      this.temp <- data.table(SubjectNo = thisP, Room = thisR, Group = group, CuriosityRating = curiosity.rating, NCuriosityRating = n.curiosity.rating, RatingGroupMean = curiosity.group.mean, RatingGroupMedian = curiosity.group.median, RoomOrder = room.order, ItemFAR = false.alarm.rate, ItemAccuracy = item.accuracy, ContextAccuracy = context.hit.rate, HitRate = hit.rate, SeenHit = seen.hit, SeenFAR = false.seen.hit, CorrSeenHit = corr.seen.hit)
-      OutsideObjectsMemory <- rbind(OutsideObjectsMemory, this.temp)  
-      
-    }
-  }
-}
 
 OutsideObjectsMemory[CorrSeenHit < 0]$CorrSeenHit <- NA
 
