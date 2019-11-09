@@ -58,3 +58,66 @@ SourceFalseHitCal <- function(ActualResp, CorrResp) {
       FalseHit = 0
   }
 }
+
+# Label "high" and "low" curiosity groups
+## According to medien
+CurGrpMedianSep <- function(thisCur, medianCur) {
+      
+      if (is.na(thisCur)) {
+            CurGrp <- NA
+      } else {
+            if (thisCur < medianCur) {
+                  CurGrp <- "Low"
+            } else if (thisCur > medianCur) {
+                  CurGrp <- "High"
+            } else {
+                  CurGrp <- NA
+            }
+      }
+}
+
+## According to mean
+CurGrpMeanSep <- function(thisCur, meanCur) {
+      if (is.na(thisCur)) {
+            CurGrp <- NA
+      } else {
+            if (thisCur < meanCur) {
+                  CurGrp <- "Low"
+            } else if (thisCur > meanCur) {
+                  CurGrp <- "High"
+            } else {
+                  CurGrp <- NA
+            }
+      }
+}
+
+## According to 4
+CurGrpSep <- function(thisCur) {
+  if (is.na(thisCur)) {
+            CurGrp <- NA
+      } else {
+            if (thisCur < 4) {
+                  CurGrp <- "Low"
+            } else if (thisCur > 4) {
+                  CurGrp <- "High"
+            } else {
+                  CurGrp <- NA
+            }
+      }
+}
+
+
+# Label "Early" and "Later" object groups
+ObjOrdGrpSep <- function(thisOrder) {
+  if (is.na(thisOrder)) {
+    OrdGrp <- NA
+  } else {
+    if (thisOrder < 4) {
+      OrdGrp <- "Early"
+    } else {
+      OrdGrp <- "Later"
+    }
+  }
+}
+
+
