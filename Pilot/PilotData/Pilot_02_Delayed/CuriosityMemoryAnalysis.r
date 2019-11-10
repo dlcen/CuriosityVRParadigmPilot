@@ -14,6 +14,9 @@ participant.folders <- dir(path = "IndividualRawData/", pattern = "^P")
 outside.orders <- read.table("OutsideOrders.csv", header = T)
 outside.orders <- data.table(outside.orders)
 
+outside.orders[Item == "MokeExpress"]$Item <- "MokaEspress"
+outside.orders[Item == "Cabbaage"]$Item   <- "Cabbage"
+
 ## Get the rating in each folder (also need to determine whether the room is familiar or novel)
 Curiosity.Recall <- NULL
 
