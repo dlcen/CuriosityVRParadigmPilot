@@ -1,5 +1,5 @@
 ---
-title: "Memory performance for objects outside the rooms"
+title: "Source memory performance for objects outside the rooms"
 output: 
       html_notebook:
           fig_caption: yes
@@ -86,7 +86,7 @@ outside.hit.rate.novelty.group[SrcAcc < 0 ]$SrcAcc = 0
 MeanSAccNoveltyCmpPlot <- ggplot(outside.hit.rate.novelty.group[!SubjectNo %in% bad.ps.less.strict], aes(x = Group, y = SrcAcc)) +
   stat_summary(fun.y = mean, geom = "bar") +
   stat_summary(fun.data = mean_cl_boot, geom = "errorbar", width = 0.2) +
-  labs(x = "Room novelty", y = "Corrected hit rate for background")
+  labs(x = "Room novelty", y = "Corrected hit rate")
 
 MeanSAccNoveltyCmpPlot
 ```

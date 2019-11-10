@@ -1,5 +1,5 @@
 ---
-title: "Memory performance for objects outside the rooms"
+title: "Recall performance for objects outside the rooms"
 output: 
       html_notebook:
           fig_caption: yes
@@ -42,7 +42,7 @@ options(knitr.table.format = "html", cache=TRUE) # "latex" for PDF
 ```
 
 ```{r, echo = FALSE, message=FALSE, warning=FALSE}
-library(data.table); library(ggplot2); library(nlme); library(ez)
+library(data.table); library(ggplot2); library(nlme); library(ez); library(multcomp)
 ```
 
 ```{r, echo = FALSE, message=FALSE, warning=FALSE}
@@ -116,7 +116,7 @@ outside.hit.rate.novelty.group$Group <- factor(outside.hit.rate.novelty.group$Gr
 MeanSAccNoveltyCmpPlot <- ggplot(outside.hit.rate.novelty.group[!SubjectNo %in% bad.ps.less.strict], aes(x = Group, y = SAcc)) +
   stat_summary(fun.y = mean, geom = "bar") +
   stat_summary(fun.data = mean_cl_boot, geom = "errorbar", width = 0.2) +
-  labs(x = "Room novelty", y = "Mean accuracy for item memory")
+  labs(x = "Room novelty", y = "corrected hit rate for \"seen\"")
 
 MeanSAccNoveltyCmpPlot
 ```
@@ -138,7 +138,7 @@ MeanSAccNoveltyTmpOrdCmpPlot <- ggplot(outside.hit.rate.item.order.novelty[!Subj
   stat_summary(fun.y = mean, geom = "bar") +
   stat_summary(fun.data = mean_cl_boot, geom = "errorbar", width = 0.2) +
   facet_wrap( ~ ObjOrdGrp) +
-  labs(x = "Room novelty", y = "Mean accuracy for item memory")
+  labs(x = "Room novelty", y = "corrected hit rate for \"seen\"")
 
 MeanSAccNoveltyTmpOrdCmpPlot
 ```
@@ -162,7 +162,7 @@ ggplot(outside.hit.rate.per.room, aes(x = CurRating, y = SAcc)) +
   stat_summary(fun.y = mean, na.rm = T, geom = "point", size = 2) +
   stat_smooth(method = "lm", se = FALSE) +
   scale_x_continuous(breaks = c(1:7)) +
-  labs(x = "Curiosity rating", y = "Mean accuracy for item memory") 
+  labs(x = "Curiosity rating", y = "corrected hit rate for \"seen\"") 
 ```
 
 ## Testing the relationship between mean accuracy of item memory and curiosity rating
@@ -191,7 +191,7 @@ anova(baseline.rating, rating.intercept, rating.slope)
 MeanSAccCurGrpCmpPlot <- ggplot(outside.hit.rate.curiosity.group[!SubjectNo %in% bad.ps.less.strict], aes(x = CurGrp, y = SAcc)) +
   stat_summary(fun.y = mean, geom = "bar") +
   stat_summary(fun.data = mean_cl_boot, geom = "errorbar", width = 0.2) +
-  labs(x = "Curiosity group", y = "Corrected hit rate for \"seen\" and \"familiar\"")
+  labs(x = "Curiosity group", y = "Corrected hit rate for \"seen\"")
 
 MeanSAccCurGrpCmpPlot
 ```
@@ -202,8 +202,31 @@ MeanSAccCurGrpOrdPlot <- ggplot(outside.hit.rate.item.order.curiosity[!SubjectNo
   stat_summary(fun.y = mean, geom = "bar") +
   stat_summary(fun.data = mean_cl_boot, geom = "errorbar", width = 0.2) +
   facet_wrap( ~ ObjOrdGrp) + 
-  labs(x = "Curiosity group", y = "Corrected hit rate for \"seen\" and \"familiar\"")
+  labs(x = "Curiosity group", y = "Corrected hit rate for \"seen\"")
 
 MeanSAccCurGrpOrdPlot
 ```
 
+
+```{r, echo = FALSE, warning=FALSE}
+outside.hit.rate.item.order.curiosity[, .(Mean = mean(SAcc, na.rm = TRUE), SD = sd(SAcc, na.rm = TRUE), N = length(SAcc)), by = c("CurGrp", "ObjOrdGrp")]
+
+baseline  <- lme(SAcc ~ 1, random = ~ 1 + CurGrp + ObjOrdGrp|SubjectNo, data = outside.hit.rate.item.order.curiosity[!is.na(CurGrp)], method = "ML", control = list(msMaxIter = 500, opt = "optim", msVerbose=FALSE), na.action = na.exclude)
+ord.model <- update(baseline,  .~. + ObjOrdGrp)
+cur.model <- update(ord.model, .~. + CurGrp)
+int.model <- update(cur.model, .~. + ObjOrdGrp : CurGrp)
+
+anova(baseline, ord.model, cur.model, int.model)
+
+summary(int.model)
+```
+
+### *Post hoc*
+```{r, echo=FALSE}
+contrast.matrix <- rbind(
+        "Early: High vs. Low"         = c(0, 0, 1, 0),
+        "Late:  High vs. Low"         = c(0, 0, 1, 1)
+)
+comps <- glht(int.model, contrast.matrix)
+summary(comps, test = adjusted("none"))
+```

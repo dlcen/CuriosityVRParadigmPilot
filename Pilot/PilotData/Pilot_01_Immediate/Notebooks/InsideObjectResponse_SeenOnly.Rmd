@@ -1,5 +1,5 @@
 ---
-title: "Memory performance for objects inside the rooms"
+title: "Recall performance for objects inside the rooms"
 output: 
       html_notebook:
           fig_caption: yes
@@ -42,7 +42,7 @@ options(knitr.table.format = "html", cache=TRUE) # "latex" for PDF
 ```
 
 ```{r, echo = FALSE, message=FALSE, warning=FALSE}
-library(data.table); library(ggplot2); library(nlme); library(ez)
+library(data.table); library(ggplot2); library(nlme); library(ez); library(multcomp)
 ```
 
 ```{r, echo = FALSE, message=FALSE, warning=FALSE}
@@ -148,7 +148,7 @@ ezANOVA(inside.hit.rate.item.order.novelty, dv = .(SAcc), wid = .(SubjectNo), wi
 # Curiosity Enhancement
 ```{r, echo=FALSE}
 load("../GroupData/InsideObjectsResponsePerRoom.RData")
-load("../GroupData/InsideObjectResponseEncodingGroups.RData")
+load("../GroupData/InsideObjectResponseCuriosityGroups.RData")
 ```
   
 ## Mean accuracy of item memory as a function of curiosity rating
@@ -158,7 +158,8 @@ ggplot(inside.hit.rate.per.room, aes(x = CurRating, y = SAcc)) +
   stat_summary(fun.y = mean, na.rm = T, geom = "point", size = 2) +
   stat_smooth(method = "lm", se = FALSE) +
   scale_x_continuous(breaks = c(1:7)) +
-  labs(x = "Curiosity rating", y = "corrected hit rate for \"Seen\"") 
+  labs(x = "Curiosity rating", y = "corrected hit rate for \"Seen\"")
+
 ```
 
 ## Testing the relationship between mean accuracy of item memory and curiosity rating
