@@ -2,70 +2,47 @@ library(data.table)
 
 # Inside item orders
 
-parent.folder <- "D:\\OneDirve_CU\\OneDrive - Cardiff University\\Projects\\VRCuriosityMemory\\PilotData\\RawData\\Pilot_02"
-parent.folder <- "D:/Danlu.C - CU OneDrive/OneDrive - Cardiff University/VRCuriosityMemory/PilotData/RawData/Pilot_02"
-parent.folder <- "~/Desktop/VRCuriosityMemory/PilotData/RawData/Pilot_02"
-parent.folder <- "/Users/danlucen/Documents/OneDrive - Cardiff University/Projects/VRCuriosityMemory/PilotData/RawData/Pilot_02"
-
-setwd(parent.folder)
-
-participant.folders <- dir(pattern = "^P")
+participant.folders <- dir(path = "IndividualRawData/", pattern = "^P")
 
 for (this.p in participant.folders) {
 
-	this.inside.folder <- paste(c(this.p, "ConditionOrders", "Inside"), collapse = .Platform$file.sep)
+	this.inside.folder <- paste(c("IndividualRawData", this.p, "ConditionOrders", "Inside"), collapse = .Platform$file.sep)
 
-	setwd(this.inside.folder)
+	this.outside.folder <- paste(c("IndividualRawData", this.p, "ConditionOrders", "Outside"), collapse = .Platform$file.sep)
 	
-	if (! (file.exists("InsideOrders.csv"))) {
+	if (! (file.exists(paste0(this.inside.folder, .Platform$file.sep, "InsideOrders.csv")))) {
 
-  	inside.item.orders <- dir(pattern = "\\.csv$")
+        	inside.item.orders <- dir(path = this.inside.folder, pattern = "\\.csv$")
+        
+        	this.p.orders <- NULL
+        
+        	for (this.order in inside.item.orders) {
+        		this.room <- strsplit(this.order, split = '.csv')[[1]]
+        
+        		this.order.list <- readLines( paste0( this.inside.folder, .Platform$file.sep, this.order), warn = F)
+        		this.order.list <- strsplit( this.order.list[1], split = "," )[[1]]
+        		this.order.no   <- c(1:length(this.order.list))
+        		this.temp <- data.frame(Item = this.order.list, Order = this.order.no)
+        
+        		this.temp$SubjectNo <- this.p
+        		this.temp$Room <- this.room
+        
+        		this.p.orders <- rbind(this.p.orders, this.temp)
+        	}
   
-  	this.p.orders <- NULL
-  
-  	for (this.order in inside.item.orders) {
-  		this.room <- strsplit(this.order, split = '.csv')[[1]]
-  
-  		this.order.list <- readLines(this.order, warn = F)
-  		this.order.list <- strsplit( this.order.list[1], split = "," )[[1]]
-  		this.order.no   <- c(1:length(this.order.list))
-  		this.temp <- data.frame(Item = this.order.list, Order = this.order.no)
-  
-  		this.temp$SubjectNo <- this.p
-  		this.temp$Room <- this.room
-  
-  		this.p.orders <- rbind(this.p.orders, this.temp)
-  	}
-  
-  	write.table(this.p.orders, "InsideOrders.csv", row.names = FALSE)
+  	      write.table(this.p.orders, paste0(this.inside.folder, .Platform$file.sep, "InsideOrders.csv"), row.names = FALSE)
 	}
-	
-	setwd(parent.folder)
-}
 
-# Outside item orders
-parent.folder <- "D:\\OneDirve_CU\\OneDrive - Cardiff University\\VRCuriosityMemory\\PilotData\\RawData\\Pilot_02"
-parent.folder <- "~/Desktop/VRCuriosityMemory/PilotData/RawData/Pilot_02"
+	if (! (file.exists(paste0( this.outside.folder, .Platform$file.sep, "OutsideOrders.csv")))) {
 
-setwd(parent.folder)
-
-participant.folders <- dir(pattern = "^P")
-
-for (this.p in participant.folders) {
-
-	this.outside.folder <- paste(c(this.p, "ConditionOrders", "Outside"), collapse = .Platform$file.sep)
-
-	setwd(this.outside.folder)
-  
-	if (! (file.exists("OutsideOrders.csv"))) {
-	  outside.item.orders <- list.files(pattern = "\\.csv$", ignore.case = TRUE)
+	  outside.item.orders <- list.files(path = this.outside.folder, pattern = "\\.csv$", ignore.case = TRUE)
 	  
 	  this.p.orders <- NULL
 	  
 	  for (this.order in outside.item.orders) {
 	    this.room <- strsplit(this.order, split = '.csv')[[1]]
 	    
-	    this.order.list <- readLines(this.order, warn = F)
+	    this.order.list <- readLines(paste0( this.outside.folder, .Platform$file.sep, this.order), warn = F)
 	    this.order.list <- strsplit( this.order.list[1], split = "," )[[1]]
 	    this.order.no   <- c(1:length(this.order.list))
 	    this.temp <- data.frame(Item = this.order.list, Order = this.order.no)
@@ -76,16 +53,13 @@ for (this.p in participant.folders) {
 	    this.p.orders <- rbind(this.p.orders, this.temp)
 	  }
 	  
-	  write.table(this.p.orders, "OutsideOrders.csv", row.names = FALSE)
+	  write.table(this.p.orders, paste0(this.outside.folder, .Platform$file.sep, "OutsideOrders.csv"), row.names = FALSE)
 	}
-	
-
-	setwd(parent.folder)
 }
 
 # Group order lists into an integrated file
 
-participant.folders <- dir(pattern = "^P")
+participant.folders <- dir(path = "IndividualRawData/", pattern = "^P")
 
 ## Inside items
 
@@ -93,7 +67,7 @@ inside.orders <- NULL
 
 for (this.p in participant.folders) {
 
-	this.inside.order <- read.table( paste(c(this.p, "ConditionOrders", "Inside", "InsideOrders.csv"), collapse = .Platform$file.sep), header = TRUE)
+	this.inside.order <- read.table( paste(c("IndividualRawData", this.p, "ConditionOrders", "Inside", "InsideOrders.csv"), collapse = .Platform$file.sep), header = TRUE)
 
 	inside.orders <- rbind(inside.orders, this.inside.order)
 }
@@ -108,7 +82,7 @@ outside.orders <- NULL
 
 for (this.p in participant.folders) {
 
-	this.outside.order <- read.table( paste(c(this.p, "ConditionOrders", "Outside", "OutsideOrders.csv"), collapse = .Platform$file.sep), header = TRUE)
+	this.outside.order <- read.table( paste(c("IndividualRawData", this.p, "ConditionOrders", "Outside", "OutsideOrders.csv"), collapse = .Platform$file.sep), header = TRUE)
 
 	outside.orders <- rbind(outside.orders, this.outside.order)
 }
@@ -118,20 +92,20 @@ getwd()
 write.table(outside.orders, "OutsideOrders.csv", row.names = FALSE)
 
 # Add item order to response files
-Encoding.Recall.Old <- Encoding.Recall[Context != "None"]
-Encoding.Recall.Old <- Encoding.Recall.Old[order(SubjectNo, Context, Object)]
-
-inside.orders <- read.table("InsideOrders.csv", header = T)
-inside.orders <- data.table(inside.orders)
-inside.orders.ordered <- inside.orders[order(SubjectNo, Room, Item)]
-
-Encoding.Recall.Old$ItemOrder <- inside.orders.ordered$Order
-
-Curiosity.Recall.Old <- Curiosity.Recall[Context != "None"]
-Curiosity.Recall.Old <- Curiosity.Recall.Old[order(SubjectNo, Context, Object)]
-
-outside.orders <- read.table("OutsideOrders.csv", header = T)
-outside.orders <- data.table(outside.orders)
-outside.orders.ordered <- outside.orders[order(SubjectNo, Room, Item)]
-
-Curiosity.Recall.Old$ItemOrder <- outside.orders.ordered$Order
+# Encoding.Recall.Old <- Encoding.Recall[Context != "None"]
+# Encoding.Recall.Old <- Encoding.Recall.Old[order(SubjectNo, Context, Object)]
+# 
+# inside.orders <- read.table("InsideOrders.csv", header = T)
+# inside.orders <- data.table(inside.orders)
+# inside.orders.ordered <- inside.orders[order(SubjectNo, Room, Item)]
+# 
+# Encoding.Recall.Old$ItemOrder <- inside.orders.ordered$Order
+# 
+# Curiosity.Recall.Old <- Curiosity.Recall[Context != "None"]
+# Curiosity.Recall.Old <- Curiosity.Recall.Old[order(SubjectNo, Context, Object)]
+# 
+# outside.orders <- read.table("OutsideOrders.csv", header = T)
+# outside.orders <- data.table(outside.orders)
+# outside.orders.ordered <- outside.orders[order(SubjectNo, Room, Item)]
+# 
+# Curiosity.Recall.Old$ItemOrder <- outside.orders.ordered$Order
