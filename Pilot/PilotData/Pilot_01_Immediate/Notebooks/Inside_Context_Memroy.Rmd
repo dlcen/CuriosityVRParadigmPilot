@@ -1,0 +1,244 @@
+---
+title: "Inside Context Memory"
+output:
+  html_document:
+    fig_caption: yes
+    highlight: default
+    number_sections: yes
+    theme: lumen
+    toc: yes
+    toc_depth: 5
+    toc_float: 
+      collapsed: true
+      smooth_scroll: true
+  header-includes:
+  - \usepackage{xcolor}
+  - \usepackage{framed}
+  - \usepackage{fontspec}
+  html_notebook:
+    
+    fig_caption: yes
+    highlight: default
+    number_sections: yes
+    theme: lumen
+    toc: yes
+    toc_depth: 5
+    toc_float: true
+  pdf_document:
+    fig_caption: yes
+    highlight: default
+    latex_engine: xelatex
+    number_sections: yes
+    toc: yes
+    toc_depth: 5
+---
+
+\setmainfont{Calibri}
+\colorlet{shadecolor}{gray!10}
+\color{red}
+
+<style>
+body {
+  font-size: 15px;
+}
+
+p.caption {
+  font-weight: 500;
+  font-style: italic;
+}
+
+code.r {
+  font-family: Consolas, Monaco, monospace;
+  font-size: 12px;
+}
+</style>
+
+```{r, echo=FALSE, message=FALSE, warning=FALSE}
+library(kableExtra)
+options(knitr.table.format = "html", cache=TRUE) # "latex" for PDF
+```
+
+> This notebook focuses on context memory inside the rooms for the intermediate version. 
+
+```{r, echo = FALSE, message=FALSE, warning=FALSE}
+library(data.table); library(ggplot2); library(nlme)
+```
+
+```{r, echo = FALSE, message=FALSE, warning=FALSE}
+# load("~/Documents/OneDrive - Cardiff University/VRCuriosityMemory/PilotData/RawData/Pilot_01/.RData")
+load("D:/OneDirve_CU/OneDrive - Cardiff University/VRCuriosityMemory/PilotData/RawData/Pilot_01/.RData")
+```
+
+# Overview of the data
+The rooms were separated into *Familiar* and *Novel* groups. Participants explored the *Familiar* group at the beginning of the experiment. In the encoding task, they visisted both *Familiar* and *Novel* groups. Their context memory (i.e., in which room they saw the item) was tested in the memory test the next day of the encoding task. **Novelty benefits** on the context memory are examined by comparing the memory performance between the *Familiar* and *Novel* groups. 
+
+Participants were also asked to rate how curious they felt about the room. The higher the rating is means they felt more curious about the room. Context memory as a function of curiosity rating was also examined for **curiosity benefits**.
+
+In the encoding task, there were 6 objects in each room, and the participant saw the object after openning each of the six box. It is possbile that the context memory for the object to some extent depends on the order in which the object was seen. For example, it may be easier to remember where the first and last objects were seen as compared to those in the middle. 
+
+# Novelty Benefits
+We hypothesed that the context memory should be better in the *novel* rooms than in the *familiar* rooms. 
+
+## Compare mean accuracy between *novel* and *familiar* rooms
+```{r meanbars, echo=FALSE, fig.align='center', fig.width=3.6, fig.height=3, fig.cap='Figure1. Mean accuracy for context memory respectively for Familiar and Novel rooms.'}
+ggplot(InsideObjectsMemory[, .(MeanContextAccuracy = mean(ContextAccuracy)), by = c("SubjectNo", "Group")], aes(x = Group, y = MeanContextAccuracy)) +
+  stat_summary(fun.y = mean, geom = "bar") +
+  stat_summary(fun.data = mean_cl_boot, geom = "errorbar", width = 0.2) +
+  labs(x = "Room novelty", y = "Mean accuracy for context memory")
+```
+
+Against our prediction, the mean accuracy of context memory is higher in the *familiar* rooms than in the *novel* rooms. 
+
+```{r, echo = FALSE}
+t.test(MeanContextAccuracy ~ Group, data = InsideObjectsMemory[, .(MeanContextAccuracy = mean(ContextAccuracy)), by = c("SubjectNo", "Group")], paired = TRUE)
+```
+The difference didn't reach significance, but we only had 12 participants. 
+
+## Context memory as a function of item order
+### Visualise the data
+```{r, echo = FALSE, fig.align= 'center', fig.width=4.8, fig.height=3.6, fig.cap="Figure 2. Mean accuracy of context memory for items at each order (i.e., 1st, 2nd, 3rd, etc), respectively for familiar and novel rooms."}
+ggplot(Encoding.Recall.Old, aes(x = ItemOrder, y = ContextAccuracy)) +
+  stat_summary(fun.y = mean, geom = "point", aes(group = Group, colour = Group), position = position_dodge(width = 0.2), size = 2) +
+  stat_smooth(method = "lm", formula = y ~ x + I(x^2), se = FALSE, aes(group = Group, colour = Group)) +
+  labs(x = "Item order", y = "Accuracy of Context Memory") +
+  scale_x_continuous(breaks = c(1:6)) +
+  scale_color_brewer(palette = "Set1", labels = c("Familiar rooms", "Novel rooms")) +
+  theme(legend.title = element_blank(),
+        axis.title = element_text(face = "bold"))
+```
+For *familiar* room, the objects presented earlier were remembered better. For the *novel* rooms there is not much change with the item order. `r text_spec("Note that we only have 8 participants here", background = "#D05A6E", color = "white", bold = T, font_size = 15)`. 
+
+### Testing novelty effects by fitting mixed models
+Build models with context memory accuracy as $y$ and item order as $x$. Then examine effects of novelty by comparing the models. 
+
+* `baseline.context` is the model with only an intercept. 
+* `order.model.linear.1` is the model with $\small ItemOrder$ included, showing the effects of item order. 
+* `order.model.linear.2` is the model allowing the slope (i.e., relationship between context memory and item order) varying across participants. 
+* `order.model.quad.1` and `order.model.quad.2` repectively included $\small ItemOrder^2$ and related random effects. 
+* `novelty.model.1` is the model with $\small Group$ (i.e., *familiar* and *novel* rooms) included, examining the effects of novelty of the rooms on the intercept (i.e., mean context memory accuracy at the 1st order or overall if no difference in slope). 
+* `novelty.model.2` is the model with interaction between $\small Group$ and $\small ItemOrder$ included, examining the effects of novelty on how context memory accuracy changes as a function of item order. 
+* `novelty.model.3` included interaction between $\small Group$ and $\small ItemOrder^2$ for inestigating whether the pattern changes between *familiar* and *novel* groups. 
+
+```{r, echo = FALSE, warning=FALSE}
+baseline.context <- lme(ContextAccuracy ~ 1, random = ~ 1|SubjectNo, data = Encoding.Recall.Old, method = "ML", control = list(msMaxIter = 1000, opt = "optim", msVerbose=FALSE), na.action = na.exclude)
+
+order.model.linear.1 <- update(baseline.context, .~. + ItemOrder)
+order.model.linear.2 <- update(order.model.linear.1, random = ~ 1 + ItemOrder|SubjectNo)
+
+order.model.quad.1   <- update(order.model.linear.2, .~. + I(ItemOrder^2))
+order.model.quad.2   <- update(order.model.quad.1, random = ~ 1 + ItemOrder + I(ItemOrder^2)|SubjectNo)
+
+novelty.model.1 <- update(order.model.quad.2, .~. + Group)
+novelty.model.2 <- update(novelty.model.1, .~. + Group:ItemOrder)
+novelty.model.3 <- update(novelty.model.2, .~. + Group:I(ItemOrder^2))
+
+anova(baseline.context, order.model.linear.1, order.model.linear.2, order.model.quad.1, order.model.quad.2, novelty.model.1, novelty.model.2, novelty.model.3)
+```
+
+Including $\small Novelty$ marginally significantly improved the model fit ($p = 0.079$), suggesting it may play an important role in describing the data.
+
+#### Parameter estimation for the complete model
+```{r, echo=FALSE}
+summary(novelty.model.3, correlation = FALSE)
+```
+
+In the complete model that contains all the predictors, none of the predictors has a significant estimated parameter value. It may be mainly we had only 12 participants now and less power due to small prediction-participant ratio. Below I will examine the optimal model `novelty.model.1`. It's considered as "optimal" because adding more predictors didn't improve its model fit.
+
+#### Parameter estimation for the optimal model
+```{r, echo=FALSE}
+summary(novelty.model.1, correlation = FALSE)
+```
+
+There seems to be some difference between the *novel* and *familiar* rooms at the intercept (the lowest curiosity rating). `r text_spec("Will wait for more participants to see how the pattern changes.", background = "#D05A6E", color = "white", bold = T, font_size = 15)`
+
+# Curiosity Benefits
+We predicted that the accuracy of context memory should increase as the curiosity rating increases.
+
+## Mean accuracy of context memory as a function of curiosity rating
+```{r, echo=FALSE, fig.align='center', fig.width=3.6, fig.height=3, fig.cap='Figure 3. Mean accuracy for context memory as a function of curiosity rating.'}
+ggplot(InsideObjectsMemory, aes(x = CuriosityRating, y = ContextAccuracy)) +
+  stat_summary(fun.data = mean_cl_boot, na.rm = T, geom = "errorbar", width = 0.2) +
+  stat_summary(fun.y = mean, na.rm = T, geom = "point", size = 2) +
+  stat_smooth(method = "lm", se = FALSE) +
+  scale_x_continuous(breaks = c(1:7)) +
+  labs(x = "Curiosity rating", y = "Mean accuracy for context memory") 
+```
+Against our prediction, the accuracy of context memory *decreases* as the curiosity rating increases.
+
+### Testing the relationship between mean accuracy of context memory and curiosity rating
+Build models with context memory accuracy as $y$ and cexamine effects of curiosity rating by including it into the model and then comparing the model fits. 
+
+* `baseline.rating` is the model with only an intercept, showing no change in context memory as a function of curiosity rating. 
+* `rating.intercept` is the model with $\small CuriosityRating$ included, showing the effects of curiosity rating. 
+* `rating.slope` is the model allowing the slope (i.e., relationship between context memory and curiosity rating) varying across participants. 
+
+```{r, echo = FALSE}
+baseline.rating <- lme(ContextAccuracy ~ 1, random = ~ 1|SubjectNo, data = InsideObjectsMemory, method = "ML", control = list(msMaxIter = 500, opt = "optim", msVerbose=FALSE), na.action = na.exclude)
+
+rating.intercept <- update(baseline.rating, .~. + CuriosityRating)
+rating.slope     <- update(rating.intercept, random = ~ 1 + CuriosityRating|SubjectNo)
+
+anova(baseline.rating, rating.intercept, rating.slope)
+```
+No significant improvement to the model fit after including *curiosity rating*.
+
+#### Parameter estimates in the complete model
+```{r}
+summary(rating.slope)
+```
+
+#### Plot the model
+```{r, echo = FALSE, fig.align='center', fig.width=6.4, fig.height=4.8}
+fixef.curiosity.item <- fixef(rating.intercept)
+fit.curiosity.item <- fixef.curiosity.item[[1]] + c(1:7) * fixef.curiosity.item[[2]]
+plot(c(1:7), fit.curiosity.item, ylim = c(0, 1), type = "b", ylab = "predicted item memory accuracy", xlab = "curiosity rating")
+title("Relationship between Curiosity Rating and Item Memory")
+```
+
+The estimated value for the parameter $CuriosityRating$ is negative, as what we observed on Figure 3, suggesting a negative coorelation. However, the correlation was not significant. `r text_spec("Will wait for more participants to see how this relationship changes", background = "#D05A6E", color = "white", bold = T, font_size = 15)`.
+
+## Does the relationship with curiosity rating depend on item order?
+Maybe the correlation between curiosity rating and context memory depends on the order at which the item was seen.
+
+```{r, echo=FALSE, fig.align='center', fig.width=10.8, fig.height=3, fig.cap='Figure 4. Mean accuracy across participants for context memory as a function of curiosity rating for each order at which the item was seen (I.e., 1st, 2nd, 3rd, etc.).'}
+ggplot(Encoding.Recall.Old, aes(x = CuriosityRating, y = ContextAccuracy)) +
+  stat_summary(fun.y = mean, geom = "point", size = 2) +
+  stat_smooth(method = "lm", se = FALSE) +
+  labs(x = "Curiosity rating", y = "Accuracy of Context Memory") +
+  scale_x_continuous(breaks = c(1:7)) +
+  facet_wrap( ~ ItemOrder, nrow = 1) +
+  theme(strip.text = element_text(face = "bold", size = 11),
+        axis.title = element_text(face = "bold"))
+```
+A trend from positive to negative.
+
+### Testing the effect of item order
+Build models with context memory accuracy as $y$ and examine effects of curioity rating and item order by comparing the models. 
+
+* `item.model.linear.1` is the model with $\small ItemOrder$ included (in addition to $\small CuriosityRating$), showing the effects of item order. 
+* `item.model.linear.2` is the model allowing the slope (i.e., relationship between context memory and item order) varying across participants. 
+* `item.model.linear.3` is the model with the interaction between $\small ItemOrders$ and $\small CuriosityRating$ included.
+* `item.model.quad.1` and `item.model.quad.2` repectively included $\small ItemOrder^2$ and related random effects. 
+* `item.model.quad.3` included interaction between $\small ItemOrder^2$ and $\small CuriosityRating$ for inestigating whether the pattern changes as a function of *curiosity rating*. 
+
+```{r}
+rating.intercept <- update(baseline.context, .~. + CuriosityRating)
+rating.slope     <- update(rating.intercept, random = ~ 1 + CuriosityRating | SubjectNo)
+
+item.model.linear.1     <- update(rating.slope, .~. + ItemOrder)
+item.model.linear.2     <- update(item.model.linear.1, random = list(~1+CuriosityRating|SubjectNo, ~1+ItemOrder|SubjectNo))
+item.model.linear.3     <- update(item.model.linear.2, .~. + ItemOrder : CuriosityRating)
+
+item.model.quad.1       <- update(item.model.linear.3, .~. + I(ItemOrder^2))
+# item.model.quad.2       <- update(item.model.quad.1,   random = list(~1+CuriosityRating|SubjectNo, ~1+ItemOrder+I(ItemOrder^2)|SubjectNo)) - excluding this model because singularity issue (perhaps the model was getting too complex to be calculated)
+item.model.quad.3       <- update(item.model.quad.1,   .~. + I(ItemOrder^2) : CuriosityRating)
+
+anova(rating.intercept, rating.slope, item.model.linear.1, item.model.linear.2, item.model.linear.3, item.model.quad.1, item.model.quad.3)
+```
+
+#### Parameter estimation for the complete model
+```{r}
+summary(item.model.quad.3)
+```
+
+Maybe because of being lack of power (too many parameters and too few participants), no parameter has a significant estimated value.
