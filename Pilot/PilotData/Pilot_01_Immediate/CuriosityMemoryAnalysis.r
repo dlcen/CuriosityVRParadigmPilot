@@ -1,4 +1,4 @@
-library(data.table); library(ggplot2); library(Hmisc)
+library(data.table); library(reshape)
 
 ## The familiar and novel groups
 grouping <- data.frame(Familiar = c("Bedroom", "Classroom", "Gym"), Novel = c("Library", "LivingRoom", "StorageRoom"))
