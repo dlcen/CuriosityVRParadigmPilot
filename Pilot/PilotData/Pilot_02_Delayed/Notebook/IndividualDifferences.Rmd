@@ -1,19 +1,26 @@
 ---
 title: "Individual differences"
-output: 
-      html_notebook:
-          fig_caption: yes
-          highlight: default
-          number_sections: yes
-          theme: lumen
-          toc: yes
-          toc_depth: 5
-          toc_float: true
-          
-      header-includes:
-            - \usepackage{xcolor}
-            - \usepackage{framed}
-            - \usepackage{fontspec}
+output:
+  html_document:
+    fig_caption: yes
+    highlight: default
+    number_sections: yes
+    theme: lumen
+    toc: yes
+    toc_depth: 5
+    toc_float: yes
+  header-includes:
+  - \usepackage{xcolor}
+  - \usepackage{framed}
+  - \usepackage{fontspec}
+  html_notebook:
+    fig_caption: yes
+    highlight: default
+    number_sections: yes
+    theme: lumen
+    toc: yes
+    toc_depth: 5
+    toc_float: yes
 ---
 
 \setmainfont{Noto Sans}
@@ -49,6 +56,12 @@ library(data.table); library(ggplot2); library(nlme); library(cowplot)
 load("../GroupData/QuestionnaireScores.RData")
 load("../GroupData/InsideObjectsResponsePerRoom.RData")
 load("../GroupData/OutsideObjectsResponsePerRoom.RData")
+
+outside.hit.rate.per.room[SAcc < 0]$SAcc <- 0
+outside.hit.rate.per.room[SrcAcc < 0]$SrcAcc <- 0
+
+inside.hit.rate.per.room[SAcc < 0]$SAcc <- 0
+inside.hit.rate.per.room[SrcAcc < 0]$SrcAcc <- 0
 ```
 
 
