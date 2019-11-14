@@ -1,0 +1,771 @@
+---
+title: "Individual differences"
+output: 
+      html_notebook:
+          fig_caption: yes
+          highlight: default
+          number_sections: yes
+          theme: lumen
+          toc: yes
+          toc_depth: 5
+          toc_float: true
+          
+      header-includes:
+            - \usepackage{xcolor}
+            - \usepackage{framed}
+            - \usepackage{fontspec}
+---
+
+\setmainfont{Noto Sans}
+\colorlet{shadecolor}{gray!10}
+\color{red}
+
+<style>
+body {
+  font-size: 15px;
+}
+
+p.caption {
+  font-weight: 500;
+  font-style: italic;
+}
+
+code.r {
+  font-family: Consolas, Monaco, monospace;
+  font-size: 12px;
+}
+</style>
+
+```{r, echo=FALSE, message=FALSE, warning=FALSE}
+library(kableExtra)
+options(knitr.table.format = "html", cache=TRUE) # "latex" for PDF
+```
+
+```{r import packages, echo = FALSE, message=FALSE, warning=FALSE}
+library(data.table); library(ggplot2); library(nlme); library(cowplot)
+```
+
+```{r load the data, echo=FALSE, message=FALSE, warning=FALSE}
+load("../GroupData/QuestionnaireScores.RData")
+load("../GroupData/InsideObjectsResponsePerRoom.RData")
+load("../GroupData/OutsideObjectsResponsePerRoom.RData")
+```
+
+
+```{r Merge the data, echo=FALSE}
+outside.hit.rate.per.room <- merge(outside.hit.rate.per.room, questionnaire[, c("SubjectNo", "PC", "EC", "GN")])
+inside.hit.rate.per.room  <- merge(inside.hit.rate.per.room, questionnaire[, c("SubjectNo", "PC", "EC", "GN")])
+```
+
+In **Pilot 1**, there are `r nrow(questionnaire)` subjects who did the curiosity personal trait questionaire. The following analysis will only include these subjects who had personal trait scores.
+
+# Relationship between trait score and slope of curiosity-memory relationship
+## Outside
+```{r, echo=FALSE, fig.align='center', fig.width=6.4, fig.height=3}
+item.plot <- ggplot(outside.hit.rate.per.room, aes(x = CurRating, y = SAcc)) +
+  stat_summary(fun.data = mean_cl_boot, na.rm = T, geom = "errorbar", width = 0.2) +
+  stat_summary(fun.y = mean, na.rm = T, geom = "point", size = 2) +
+  stat_smooth(method = "lm", se = FALSE) +
+  scale_x_continuous(breaks = c(1:7)) +
+  labs(x = "Curiosity rating", y = "corrected hit rate for item recollection") 
+
+src.plot <- ggplot(outside.hit.rate.per.room, aes(x = CurRating, y = SrcAcc)) +
+  stat_summary(fun.data = mean_cl_boot, na.rm = T, geom = "errorbar", width = 0.2) +
+  stat_summary(fun.y = mean, na.rm = T, geom = "point", size = 2) +
+  stat_smooth(method = "lm", se = FALSE) +
+  scale_x_continuous(breaks = c(1:7)) +
+  labs(x = "Curiosity rating", y = "corrected hit rate for source memory")
+  
+plot_grid(item.plot, src.plot, nrow = 1)
+```
+
+### Item recollection
+#### Correlation with the average score
+```{r, echo = FALSE}
+baseline.rating <- lme(SAcc ~ 1, random = ~ 1|SubjectNo, data = outside.hit.rate.per.room, method = "ML", control = list(msMaxIter = 500, opt = "optim", msVerbose=FALSE), na.action = na.exclude)
+
+rating.intercept <- update(baseline.rating, .~. + CurRating)
+rating.slope     <- update(rating.intercept, random = ~ 1 + CurRating|SubjectNo)
+
+tr.intercept     <- update(rating.slope, .~. + GN)
+tr.slope         <- update(tr.intercept, .~. + CurRating : GN)
+
+anova(baseline.rating, rating.intercept, rating.slope, tr.intercept, tr.slope)
+```
+
+#### Correlation with the PC score
+```{r, echo = FALSE}
+PC.intercept     <- update(rating.slope, .~. + PC)
+PC.slope         <- update(PC.intercept, .~. + CurRating : PC)
+
+anova(baseline.rating, rating.intercept, rating.slope, PC.intercept, PC.slope)
+```
+
+#### Correlation with the EC score
+```{r, echo = FALSE}
+EC.intercept     <- update(rating.slope, .~. + EC)
+EC.slope         <- update(EC.intercept, .~. + CurRating : EC)
+
+anova(baseline.rating, rating.intercept, rating.slope, EC.intercept, EC.slope)
+```
+
+### Source memory
+#### Correlation with the average score
+```{r, echo = FALSE}
+baseline.rating <- lme(SrcAcc ~ 1, random = ~ 1|SubjectNo, data = outside.hit.rate.per.room, method = "ML", control = list(msMaxIter = 500, opt = "optim", msVerbose=FALSE), na.action = na.exclude)
+
+rating.intercept <- update(baseline.rating, .~. + CurRating)
+rating.slope     <- update(rating.intercept, random = ~ 1 + CurRating|SubjectNo)
+
+tr.intercept     <- update(rating.slope, .~. + GN)
+tr.slope         <- update(tr.intercept, .~. + CurRating : GN)
+
+anova(baseline.rating, rating.intercept, rating.slope, tr.intercept, tr.slope)
+```
+
+#### Correlation with the PC score
+```{r, echo = FALSE}
+PC.intercept     <- update(rating.slope, .~. + PC)
+PC.slope         <- update(PC.intercept, .~. + CurRating : PC)
+
+anova(baseline.rating, rating.intercept, rating.slope, PC.intercept, PC.slope)
+```
+
+#### Correlation with the EC score
+```{r, echo = FALSE}
+EC.intercept     <- update(rating.slope, .~. + EC)
+EC.slope         <- update(EC.intercept, .~. + CurRating : EC)
+
+anova(baseline.rating, rating.intercept, rating.slope, EC.intercept, EC.slope)
+```
+
+## Inside
+```{r, echo=FALSE, fig.align='center', fig.width=6.4, fig.height=3}
+item.plot <- ggplot(inside.hit.rate.per.room, aes(x = CurRating, y = SAcc)) +
+  stat_summary(fun.data = mean_cl_boot, na.rm = T, geom = "errorbar", width = 0.2) +
+  stat_summary(fun.y = mean, na.rm = T, geom = "point", size = 2) +
+  stat_smooth(method = "lm", se = FALSE) +
+  scale_x_continuous(breaks = c(1:7)) +
+  labs(x = "Curiosity rating", y = "corrected hit rate for item recollection") 
+
+src.plot <- ggplot(inside.hit.rate.per.room, aes(x = CurRating, y = SrcAcc)) +
+  stat_summary(fun.data = mean_cl_boot, na.rm = T, geom = "errorbar", width = 0.2) +
+  stat_summary(fun.y = mean, na.rm = T, geom = "point", size = 2) +
+  stat_smooth(method = "lm", se = FALSE) +
+  scale_x_continuous(breaks = c(1:7)) +
+  labs(x = "Curiosity rating", y = "corrected hit rate for source memory")
+  
+plot_grid(item.plot, src.plot, nrow = 1)
+```
+
+### Item recollection
+#### Correlation with the average score
+```{r, echo = FALSE}
+baseline.rating <- lme(SAcc ~ 1, random = ~ 1|SubjectNo, data = inside.hit.rate.per.room, method = "ML", control = list(msMaxIter = 500, opt = "optim", msVerbose=FALSE), na.action = na.exclude)
+
+rating.intercept <- update(baseline.rating, .~. + CurRating)
+rating.slope     <- update(rating.intercept, random = ~ 1 + CurRating|SubjectNo)
+
+tr.intercept     <- update(rating.slope, .~. + GN)
+tr.slope         <- update(tr.intercept, .~. + CurRating : GN)
+
+anova(baseline.rating, rating.intercept, rating.slope, tr.intercept, tr.slope)
+```
+
+```{r, echo=F}
+summary(tr.slope)$tTable
+```
+
+
+#### Correlation with the PC score
+```{r, echo = FALSE}
+PC.intercept     <- update(rating.slope, .~. + PC)
+PC.slope         <- update(PC.intercept, .~. + CurRating : PC)
+
+anova(baseline.rating, rating.intercept, rating.slope, PC.intercept, PC.slope)
+```
+
+```{r, echo=FALSE}
+summary(PC.slope)$tTable
+```
+
+
+#### Correlation with the EC score
+```{r, echo = FALSE}
+EC.intercept     <- update(rating.slope, .~. + EC)
+EC.slope         <- update(EC.intercept, .~. + CurRating : EC)
+
+anova(baseline.rating, rating.intercept, rating.slope, EC.intercept, EC.slope)
+```
+
+```{r, echo=FALSE}
+summary(EC.slope)$tTable
+```
+
+### Source memory
+#### Correlation with the average score
+```{r, echo = FALSE}
+baseline.rating <- lme(SrcAcc ~ 1, random = ~ 1|SubjectNo, data = inside.hit.rate.per.room, method = "ML", control = list(msMaxIter = 500, opt = "optim", msVerbose=FALSE), na.action = na.exclude)
+
+rating.intercept <- update(baseline.rating, .~. + CurRating)
+rating.slope     <- update(rating.intercept, random = ~ 1 + CurRating|SubjectNo)
+
+tr.intercept     <- update(rating.slope, .~. + GN)
+tr.slope         <- update(tr.intercept, .~. + CurRating : GN)
+
+anova(baseline.rating, rating.intercept, rating.slope, tr.intercept, tr.slope)
+```
+
+#### Correlation with the PC score
+```{r, echo = FALSE}
+PC.intercept     <- update(rating.slope, .~. + PC)
+PC.slope         <- update(PC.intercept, .~. + CurRating : PC)
+
+anova(baseline.rating, rating.intercept, rating.slope, PC.intercept, PC.slope)
+```
+
+```{r, echo=FALSE}
+summary(PC.intercept)$tTable
+```
+
+
+#### Correlation with the EC score
+```{r, echo = FALSE}
+EC.intercept     <- update(rating.slope, .~. + EC)
+EC.slope         <- update(EC.intercept, .~. + CurRating : EC)
+
+anova(baseline.rating, rating.intercept, rating.slope, EC.intercept, EC.slope)
+```
+
+# Relationship between trait score and curiosity ratings
+```{r, echo=FALSE}
+trait.ratings <- outside.hit.rate.per.room[, .(meanCurRating = mean(CurRating, na.rm = T)), by = c("SubjectNo", "PC", "EC", "GN")]
+```
+
+## Across all the rooms
+```{r, echo=FALSE, fig.align='center', fig.width=10.8, fig.height=3.6}
+PC_plot <- ggplot(data = trait.ratings, aes(x = PC, y = meanCurRating)) +
+  geom_point(size = 2, color = "grey70") +
+  stat_smooth(method = "lm", se = FALSE, color = "red") +
+  labs(x = "PC score", y = "Mean curiosity rating")
+
+EC_plot <- ggplot(data = trait.ratings, aes(x = EC, y = meanCurRating)) +
+  geom_point(size = 2, color = "grey70") +
+  stat_smooth(method = "lm", se = FALSE, color = "red") +
+  labs(x = "EC score", y = "") +
+  theme(axis.title.y = element_blank())
+
+GN_plot <- ggplot(data = trait.ratings, aes(x = GN, y = meanCurRating))  +
+  geom_point(size = 2, color = "grey70") +
+  stat_smooth(method = "lm", se = FALSE, color = "red") +
+  labs(x = "General score", y = "") +
+  theme(axis.title.y = element_blank())
+
+plot_grid(PC_plot, EC_plot, GN_plot, nrow = 1)
+```
+
+```{r}
+cor.test(trait.ratings$meanCurRating, trait.ratings$PC, method = "pearson")
+cor.test(trait.ratings$meanCurRating, trait.ratings$EC, method = "pearson")
+cor.test(trait.ratings$meanCurRating, trait.ratings$GN, method = "pearson")
+```
+
+## Only for the *novel* rooms
+```{r, echo=FALSE}
+trait.ratings.novel <- outside.hit.rate.per.room[Group == "Novel", .(meanCurRating = mean(CurRating, na.rm = T)), by = c("SubjectNo", "PC", "EC", "GN")]
+```
+
+```{r, echo=FALSE, fig.align='center', fig.width=10.8, fig.height=3.6}
+PC_plot <- ggplot(data = trait.ratings.novel, aes(x = PC, y = meanCurRating)) +
+  geom_point(size = 2, color = "grey70") +
+  stat_smooth(method = "lm", se = FALSE, color = "red") +
+  labs(x = "PC score", y = "Mean curiosity rating")
+
+EC_plot <- ggplot(data = trait.ratings.novel, aes(x = EC, y = meanCurRating)) +
+  geom_point(size = 2, color = "grey70") +
+  stat_smooth(method = "lm", se = FALSE, color = "red") +
+  labs(x = "EC score", y = "") +
+  theme(axis.title.y = element_blank())
+
+GN_plot <- ggplot(data = trait.ratings.novel, aes(x = GN, y = meanCurRating))  +
+  geom_point(size = 2, color = "grey70") +
+  stat_smooth(method = "lm", se = FALSE, color = "red") +
+  labs(x = "General score", y = "") +
+  theme(axis.title.y = element_blank())
+
+plot_grid(PC_plot, EC_plot, GN_plot, nrow = 1)
+```
+
+```{r, echo=FALSE}
+cor.test(trait.ratings.novel$meanCurRating, trait.ratings.novel$PC, method = "pearson")
+cor.test(trait.ratings.novel$meanCurRating, trait.ratings.novel$EC, method = "pearson")
+cor.test(trait.ratings.novel$meanCurRating, trait.ratings.novel$GN, method = "pearson")
+```
+
+
+# Relationship between trait score and memory performance
+
+Here *memory performance* refers to the average corrected hit rate for "seen" response for items and average corrected hit rate for source memory.
+
+```{r, echo=FALSE, warning=FALSE, message=FALSE}
+outside.hit.rate.trait <- outside.hit.rate.per.room[, .(meanSAcc = mean(SAcc, na.rm = T), meanSrcAcc = mean(SrcAcc, na.rm = T), meanCurRating = mean(CurRating, na.rm = T)), by = c("SubjectNo", "PC", "EC", "GN")]
+inside.hit.rate.trait  <- inside.hit.rate.per.room[, .(meanSAcc = mean(SAcc, na.rm = T), meanSrcAcc = mean(SrcAcc, na.rm = T), meanCurRating = mean(CurRating, na.rm = T)), by = c("SubjectNo", "PC", "EC", "GN")]
+```
+
+
+## Outside
+### Item recollection
+```{r, echo=FALSE, fig.align='center', fig.width=10.8, fig.height=3.6}
+PC_plot <- ggplot(data = outside.hit.rate.trait, aes(x = PC, y = meanSAcc)) +
+  geom_point(size = 2, color = "grey70") +
+  stat_smooth(method = "lm", se = FALSE, color = "red") +
+  labs(x = "PC score", y = "Mean corrected hit rate for \"Seen\"")
+
+EC_plot <- ggplot(data = outside.hit.rate.trait, aes(x = EC, y = meanSAcc)) +
+  geom_point(size = 2, color = "grey70") +
+  stat_smooth(method = "lm", se = FALSE, color = "red") +
+  labs(x = "EC score", y = "") +
+  theme(axis.title.y = element_blank())
+
+GN_plot <- ggplot(data = outside.hit.rate.trait, aes(x = GN, y = meanSAcc))  +
+  geom_point(size = 2, color = "grey70") +
+  stat_smooth(method = "lm", se = FALSE, color = "red") +
+  labs(x = "General score", y = "") +
+  theme(axis.title.y = element_blank())
+
+plot_grid(PC_plot, EC_plot, GN_plot, nrow = 1)
+```
+
+```{r, echo=FALSE}
+cor.test(outside.hit.rate.trait$meanSAcc, outside.hit.rate.trait$PC, method = "pearson")
+cor.test(outside.hit.rate.trait$meanSAcc, outside.hit.rate.trait$EC, method = "pearson")
+cor.test(outside.hit.rate.trait$meanSAcc, outside.hit.rate.trait$GN, method = "pearson")
+```
+
+
+### Source memory
+```{r, echo=FALSE, fig.align='center', fig.width=10.8, fig.height=3.6}
+PC_plot <- ggplot(data = outside.hit.rate.trait, aes(x = PC, y = meanSrcAcc)) +
+  geom_point(size = 2, color = "grey70") +
+  stat_smooth(method = "lm", se = FALSE, color = "red") +
+  labs(x = "PC score", y = "Mean corrected hit rate for \"Seen\"")
+
+EC_plot <- ggplot(data = outside.hit.rate.trait, aes(x = EC, y = meanSrcAcc)) +
+  geom_point(size = 2, color = "grey70") +
+  stat_smooth(method = "lm", se = FALSE, color = "red") +
+  labs(x = "EC score", y = "") +
+  theme(axis.title.y = element_blank())
+
+GN_plot <- ggplot(data = outside.hit.rate.trait, aes(x = GN, y = meanSrcAcc))  +
+  geom_point(size = 2, color = "grey70") +
+  stat_smooth(method = "lm", se = FALSE, color = "red") +
+  labs(x = "General score", y = "") +
+  theme(axis.title.y = element_blank())
+
+plot_grid(PC_plot, EC_plot, GN_plot, nrow = 1)
+```
+
+```{r, echo=FALSE}
+cor.test(outside.hit.rate.trait$meanSrcAcc, outside.hit.rate.trait$PC, method = "pearson")
+cor.test(outside.hit.rate.trait$meanSrcAcc, outside.hit.rate.trait$EC, method = "pearson")
+cor.test(outside.hit.rate.trait$meanSrcAcc, outside.hit.rate.trait$GN, method = "pearson")
+```
+
+
+## Inside
+### Item recollection
+```{r, echo=FALSE, fig.align='center', fig.width=10.8, fig.height=3.6}
+PC_plot <- ggplot(data = inside.hit.rate.trait, aes(x = PC, y = meanSAcc)) +
+  geom_point(size = 2, color = "grey70") +
+  stat_smooth(method = "lm", se = FALSE, color = "red") +
+  labs(x = "PC score", y = "Mean corrected hit rate for \"Seen\"")
+
+EC_plot <- ggplot(data = inside.hit.rate.trait, aes(x = EC, y = meanSAcc)) +
+  geom_point(size = 2, color = "grey70") +
+  stat_smooth(method = "lm", se = FALSE, color = "red") +
+  labs(x = "EC score", y = "") +
+  theme(axis.title.y = element_blank())
+
+GN_plot <- ggplot(data = inside.hit.rate.trait, aes(x = GN, y = meanSAcc))  +
+  geom_point(size = 2, color = "grey70") +
+  stat_smooth(method = "lm", se = FALSE, color = "red") +
+  labs(x = "General score", y = "") +
+  theme(axis.title.y = element_blank())
+
+plot_grid(PC_plot, EC_plot, GN_plot, nrow = 1)
+```
+
+```{r, echo=FALSE}
+cor.test(inside.hit.rate.trait$meanSAcc, inside.hit.rate.trait$PC, method = "pearson")
+cor.test(inside.hit.rate.trait$meanSAcc, inside.hit.rate.trait$EC, method = "pearson")
+cor.test(inside.hit.rate.trait$meanSAcc, inside.hit.rate.trait$GN, method = "pearson")
+```
+
+
+### Source memory
+```{r, echo=FALSE, fig.align='center', fig.width=10.8, fig.height=3.6}
+PC_plot <- ggplot(data = inside.hit.rate.trait, aes(x = PC, y = meanSrcAcc)) +
+  geom_point(size = 2, color = "grey70") +
+  stat_smooth(method = "lm", se = FALSE, color = "red") +
+  labs(x = "PC score", y = "Mean corrected hit rate for \"Seen\"")
+
+EC_plot <- ggplot(data = inside.hit.rate.trait, aes(x = EC, y = meanSrcAcc)) +
+  geom_point(size = 2, color = "grey70") +
+  stat_smooth(method = "lm", se = FALSE, color = "red") +
+  labs(x = "EC score", y = "") +
+  theme(axis.title.y = element_blank())
+
+GN_plot <- ggplot(data = inside.hit.rate.trait, aes(x = GN, y = meanSrcAcc))  +
+  geom_point(size = 2, color = "grey70") +
+  stat_smooth(method = "lm", se = FALSE, color = "red") +
+  labs(x = "General score", y = "") +
+  theme(axis.title.y = element_blank())
+
+plot_grid(PC_plot, EC_plot, GN_plot, nrow = 1)
+```
+
+```{r, echo=FALSE}
+cor.test(inside.hit.rate.trait$meanSrcAcc, inside.hit.rate.trait$PC, method = "pearson")
+cor.test(inside.hit.rate.trait$meanSrcAcc, inside.hit.rate.trait$EC, method = "pearson")
+cor.test(inside.hit.rate.trait$meanSrcAcc, inside.hit.rate.trait$GN, method = "pearson")
+```
+
+
+# Relationship between trait score and memory performance within *Novel* rooms
+
+Here *memory performance* refers to the average corrected hit rate for "seen" response for items and average corrected hit rate for source memory.
+
+```{r, echo=FALSE, warning=FALSE, message=FALSE}
+outside.hit.rate.trait.novel <- outside.hit.rate.per.room[Group == "Novel", .(meanSAcc = mean(SAcc, na.rm = T), meanSrcAcc = mean(SrcAcc, na.rm = T), meanCurRating = mean(CurRating, na.rm = T)), by = c("SubjectNo", "PC", "EC", "GN")]
+inside.hit.rate.trait.novel  <- inside.hit.rate.per.room[Group == "Novel", .(meanSAcc = mean(SAcc, na.rm = T), meanSrcAcc = mean(SrcAcc, na.rm = T), meanCurRating = mean(CurRating, na.rm = T)), by = c("SubjectNo", "PC", "EC", "GN")]
+```
+
+## Outside
+### Item recollection
+```{r, echo=FALSE, fig.align='center', fig.width=10.8, fig.height=3.6}
+PC_plot <- ggplot(data = outside.hit.rate.trait.novel, aes(x = PC, y = meanSAcc)) +
+  geom_point(size = 2, color = "grey70") +
+  stat_smooth(method = "lm", se = FALSE, color = "red") +
+  labs(x = "PC score", y = "Mean corrected hit rate for \"Seen\"")
+
+EC_plot <- ggplot(data = outside.hit.rate.trait.novel, aes(x = EC, y = meanSAcc)) +
+  geom_point(size = 2, color = "grey70") +
+  stat_smooth(method = "lm", se = FALSE, color = "red") +
+  labs(x = "EC score", y = "") +
+  theme(axis.title.y = element_blank())
+
+GN_plot <- ggplot(data = outside.hit.rate.trait.novel, aes(x = GN, y = meanSAcc))  +
+  geom_point(size = 2, color = "grey70") +
+  stat_smooth(method = "lm", se = FALSE, color = "red") +
+  labs(x = "General score", y = "") +
+  theme(axis.title.y = element_blank())
+
+plot_grid(PC_plot, EC_plot, GN_plot, nrow = 1)
+```
+
+```{r, echo=FALSE}
+cor.test(outside.hit.rate.trait.novel$meanSAcc, outside.hit.rate.trait.novel$PC, method = "pearson")
+cor.test(outside.hit.rate.trait.novel$meanSAcc, outside.hit.rate.trait.novel$EC, method = "pearson")
+cor.test(outside.hit.rate.trait.novel$meanSAcc, outside.hit.rate.trait.novel$GN, method = "pearson")
+```
+
+### Source memory
+```{r, echo=FALSE, fig.align='center', fig.width=10.8, fig.height=3.6}
+PC_plot <- ggplot(data = outside.hit.rate.trait.novel, aes(x = PC, y = meanSrcAcc)) +
+  geom_point(size = 2, color = "grey70") +
+  stat_smooth(method = "lm", se = FALSE, color = "red") +
+  labs(x = "PC score", y = "Mean corrected hit rate for \"Seen\"")
+
+EC_plot <- ggplot(data = outside.hit.rate.trait.novel, aes(x = EC, y = meanSrcAcc)) +
+  geom_point(size = 2, color = "grey70") +
+  stat_smooth(method = "lm", se = FALSE, color = "red") +
+  labs(x = "EC score", y = "") +
+  theme(axis.title.y = element_blank())
+
+GN_plot <- ggplot(data = outside.hit.rate.trait.novel, aes(x = GN, y = meanSrcAcc))  +
+  geom_point(size = 2, color = "grey70") +
+  stat_smooth(method = "lm", se = FALSE, color = "red") +
+  labs(x = "General score", y = "") +
+  theme(axis.title.y = element_blank())
+
+plot_grid(PC_plot, EC_plot, GN_plot, nrow = 1)
+```
+
+```{r, echo=FALSE}
+cor.test(outside.hit.rate.trait.novel$meanSrcAcc, outside.hit.rate.trait.novel$PC, method = "pearson")
+cor.test(outside.hit.rate.trait.novel$meanSrcAcc, outside.hit.rate.trait.novel$EC, method = "pearson")
+cor.test(outside.hit.rate.trait.novel$meanSrcAcc, outside.hit.rate.trait.novel$GN, method = "pearson")
+```
+
+## Inside
+### Item recollection
+```{r, echo=FALSE, fig.align='center', fig.width=10.8, fig.height=3.6}
+PC_plot <- ggplot(data = inside.hit.rate.trait.novel, aes(x = PC, y = meanSAcc)) +
+  geom_point(size = 2, color = "grey70") +
+  stat_smooth(method = "lm", se = FALSE, color = "red") +
+  labs(x = "PC score", y = "Mean corrected hit rate for \"Seen\"")
+
+EC_plot <- ggplot(data = inside.hit.rate.trait.novel, aes(x = EC, y = meanSAcc)) +
+  geom_point(size = 2, color = "grey70") +
+  stat_smooth(method = "lm", se = FALSE, color = "red") +
+  labs(x = "EC score", y = "") +
+  theme(axis.title.y = element_blank())
+
+GN_plot <- ggplot(data = inside.hit.rate.trait.novel, aes(x = GN, y = meanSAcc))  +
+  geom_point(size = 2, color = "grey70") +
+  stat_smooth(method = "lm", se = FALSE, color = "red") +
+  labs(x = "General score", y = "") +
+  theme(axis.title.y = element_blank())
+
+plot_grid(PC_plot, EC_plot, GN_plot, nrow = 1)
+```
+
+```{r, echo=FALSE}
+cor.test(inside.hit.rate.trait.novel$meanSAcc, inside.hit.rate.trait.novel$PC, method = "pearson")
+cor.test(inside.hit.rate.trait.novel$meanSAcc, inside.hit.rate.trait.novel$EC, method = "pearson")
+cor.test(inside.hit.rate.trait.novel$meanSAcc, inside.hit.rate.trait.novel$GN, method = "pearson")
+```
+
+
+### Source memory
+```{r, echo=FALSE, fig.align='center', fig.width=10.8, fig.height=3.6}
+PC_plot <- ggplot(data = inside.hit.rate.trait.novel, aes(x = PC, y = meanSrcAcc)) +
+  geom_point(size = 2, color = "grey70") +
+  stat_smooth(method = "lm", se = FALSE, color = "red") +
+  labs(x = "PC score", y = "Mean corrected hit rate for \"Seen\"")
+
+EC_plot <- ggplot(data = inside.hit.rate.trait.novel, aes(x = EC, y = meanSrcAcc)) +
+  geom_point(size = 2, color = "grey70") +
+  stat_smooth(method = "lm", se = FALSE, color = "red") +
+  labs(x = "EC score", y = "") +
+  theme(axis.title.y = element_blank())
+
+GN_plot <- ggplot(data = inside.hit.rate.trait.novel, aes(x = GN, y = meanSrcAcc))  +
+  geom_point(size = 2, color = "grey70") +
+  stat_smooth(method = "lm", se = FALSE, color = "red") +
+  labs(x = "General score", y = "") +
+  theme(axis.title.y = element_blank())
+
+plot_grid(PC_plot, EC_plot, GN_plot, nrow = 1)
+```
+
+```{r, echo=FALSE}
+cor.test(inside.hit.rate.trait.novel$meanSrcAcc, inside.hit.rate.trait.novel$PC, method = "pearson")
+cor.test(inside.hit.rate.trait.novel$meanSrcAcc, inside.hit.rate.trait.novel$EC, method = "pearson")
+cor.test(inside.hit.rate.trait.novel$meanSrcAcc, inside.hit.rate.trait.novel$GN, method = "pearson")
+```
+
+
+# Relationship between trait score and curiosity ratings between *Familiar* and *Novel* rooms
+
+Here *performance difference* refers to difference in item recollection and source memory between the *novel* and *familiar* rooms (*novel* - *familiar*).
+
+```{r, echo=FALSE, warning=FALSE, message=FALSE}
+outside.hit.rate.trait.familiar <- outside.hit.rate.per.room[Group == "Familiar", .(meanSAcc = mean(SAcc, na.rm = T), meanSrcAcc = mean(SrcAcc, na.rm = T), meanCurRating = mean(CurRating, na.rm = T)), by = c("SubjectNo", "PC", "EC", "GN")]
+inside.hit.rate.trait.familiar  <- inside.hit.rate.per.room[Group == "Familiar", .(meanSAcc = mean(SAcc, na.rm = T), meanSrcAcc = mean(SrcAcc, na.rm = T), meanCurRating = mean(CurRating, na.rm = T)), by = c("SubjectNo", "PC", "EC", "GN")]
+
+outside.hit.rate.trait.diff              <- outside.hit.rate.trait.novel
+outside.hit.rate.trait.diff$diffSAcc     <- outside.hit.rate.trait.novel$meanSAcc - outside.hit.rate.trait.familiar$meanSAcc 
+outside.hit.rate.trait.diff$diffSrcAcc   <- outside.hit.rate.trait.novel$meanSrcAcc - outside.hit.rate.trait.familiar$meanSrcAcc
+outside.hit.rate.trait.diff$diffRating   <- outside.hit.rate.trait.novel$meanCurRating - outside.hit.rate.trait.familiar$meanCurRating
+
+inside.hit.rate.trait.diff              <- inside.hit.rate.trait.novel
+inside.hit.rate.trait.diff$diffSAcc     <- inside.hit.rate.trait.novel$meanSAcc - inside.hit.rate.trait.familiar$meanSAcc 
+inside.hit.rate.trait.diff$diffSrcAcc   <- inside.hit.rate.trait.novel$meanSrcAcc - inside.hit.rate.trait.familiar$meanSrcAcc
+inside.hit.rate.trait.diff$diffRating   <- inside.hit.rate.trait.novel$meanCurRating - inside.hit.rate.trait.familiar$meanCurRating
+```
+
+## See whether the curiosity ratings are significantly different between *novel* and *familiar* rooms
+
+The average curiosity rating for the *novel* rooms is `r round(mean(outside.hit.rate.trait.novel$meanCurRating), digits = 2)` (SD = $\pm$ `r round(sd(outside.hit.rate.trait.novel$meanCurRating), digits = 2)`).
+
+The average curiosity rating for the *familiar* rooms is `r round(mean(outside.hit.rate.trait.familiar$meanCurRating), digits = 2)` (SD = $\pm$ `r round(sd(outside.hit.rate.trait.familiar$meanCurRating), digits = 2)`).
+
+```{r, echo=FALSE}
+t.test(outside.hit.rate.trait.diff$diffRating, mu = 0)
+```
+
+## See whether the difference in curiosity ratings are significantly correlated with trait scores
+
+```{r, echo=FALSE, fig.align='center', fig.width=10.8, fig.height=3.6}
+PC_plot <- ggplot(data = outside.hit.rate.trait.diff, aes(x = PC, y = diffRating)) +
+  geom_point(size = 2, color = "grey70") +
+  stat_smooth(method = "lm", se = FALSE, color = "red") +
+  labs(x = "PC score", y = "Mean difference in rating between novel and familiar")
+
+EC_plot <- ggplot(data = outside.hit.rate.trait.diff, aes(x = EC, y = diffRating)) +
+  geom_point(size = 2, color = "grey70") +
+  stat_smooth(method = "lm", se = FALSE, color = "red") +
+  labs(x = "EC score", y = "") +
+  theme(axis.title.y = element_blank())
+
+GN_plot <- ggplot(data = outside.hit.rate.trait.diff, aes(x = GN, y = diffRating))  +
+  geom_point(size = 2, color = "grey70") +
+  stat_smooth(method = "lm", se = FALSE, color = "red") +
+  labs(x = "General score", y = "") +
+  theme(axis.title.y = element_blank())
+
+plot_grid(PC_plot, EC_plot, GN_plot, nrow = 1)
+```
+
+```{r, echo=FALSE}
+cor.test(outside.hit.rate.trait.diff$diffRating, outside.hit.rate.trait.diff$PC, method = "pearson")
+cor.test(outside.hit.rate.trait.diff$diffRating, outside.hit.rate.trait.diff$EC, method = "pearson")
+cor.test(outside.hit.rate.trait.diff$diffRating, outside.hit.rate.trait.diff$GN, method = "pearson")
+```
+
+### Looking at the trait-rating correlation separately for the *novel* and *familiar* rooms
+
+```{r, echo=FALSE}
+outside.hit.rate.per.grp <- outside.hit.rate.per.room[, .(meanRating = mean(CurRating, na.rm = T)), by = c("SubjectNo", "Group", "PC", "EC", "GN")]
+```
+
+
+```{r, echo=FALSE, fig.align='center', fig.width=10.8, fig.height=3.6}
+PC_plot <- ggplot(data = outside.hit.rate.per.grp, aes(x = PC, y = meanRating, group = Group)) +
+  geom_point(size = 2, aes(color = Group)) +
+  stat_smooth(method = "lm", se = FALSE, aes(color = Group)) +
+  labs(x = "PC score", y = "Average curiosity rating")
+
+EC_plot <- ggplot(data = outside.hit.rate.per.grp, aes(x = EC, y = meanRating, group = Group)) +
+  geom_point(size = 2, aes(color = Group)) +
+  stat_smooth(method = "lm", se = FALSE, aes(color = Group)) +
+  labs(x = "EC score", y = "") +
+  theme(axis.title.y = element_blank())
+
+GN_plot <- ggplot(data = outside.hit.rate.per.grp, aes(x = GN, y = meanRating, group = Group))  +
+  geom_point(size = 2, aes(color = Group)) +
+  stat_smooth(method = "lm", se = FALSE, aes(color = Group)) +
+  labs(x = "General score", y = "") +
+  theme(axis.title.y = element_blank())
+
+plot_grid(PC_plot, EC_plot, GN_plot, nrow = 1)
+```
+
+# Relationship between trait score and performance differences between *Familiar* and *Novel* rooms
+
+Here *performance difference* refers to difference in item recollection and source memory between the *novel* and *familiar* rooms (*novel* - *familiar*).
+
+## Outside
+### Item recollection
+```{r, echo=FALSE, fig.align='center', fig.width=10.8, fig.height=3.6}
+PC_plot <- ggplot(data = outside.hit.rate.trait.diff, aes(x = PC, y = diffSAcc)) +
+  geom_point(size = 2, color = "grey70") +
+  stat_smooth(method = "lm", se = FALSE, color = "red") +
+  labs(x = "PC score", y = "Difference in corrected hit rate for \"Seen\"")
+
+EC_plot <- ggplot(data = outside.hit.rate.trait.diff, aes(x = EC, y = diffSAcc)) +
+  geom_point(size = 2, color = "grey70") +
+  stat_smooth(method = "lm", se = FALSE, color = "red") +
+  labs(x = "EC score", y = "") +
+  theme(axis.title.y = element_blank())
+
+GN_plot <- ggplot(data = outside.hit.rate.trait.diff, aes(x = GN, y = diffSAcc))  +
+  geom_point(size = 2, color = "grey70") +
+  stat_smooth(method = "lm", se = FALSE, color = "red") +
+  labs(x = "General score", y = "") +
+  theme(axis.title.y = element_blank())
+
+plot_grid(PC_plot, EC_plot, GN_plot, nrow = 1)
+```
+
+```{r, echo=FALSE, include = FALSE, eval = FALSE}
+cor.test(outside.hit.rate.trait.diff$diffSAcc, outside.hit.rate.trait.diff$PC, method = "pearson")
+cor.test(outside.hit.rate.trait.diff$diffSAcc, outside.hit.rate.trait.diff$EC, method = "pearson")
+cor.test(outside.hit.rate.trait.diff$diffSAcc, outside.hit.rate.trait.diff$GN, method = "pearson")
+```
+
+
+### Source memory
+```{r, echo=FALSE, fig.align='center', fig.width=10.8, fig.height=3.6}
+PC_plot <- ggplot(data = outside.hit.rate.trait.diff, aes(x = PC, y = diffSrcAcc)) +
+  geom_point(size = 2, color = "grey70") +
+  stat_smooth(method = "lm", se = FALSE, color = "red") +
+  labs(x = "PC score", y = "Mean corrected hit rate for \"Seen\"")
+
+EC_plot <- ggplot(data = outside.hit.rate.trait.diff, aes(x = EC, y = diffSrcAcc)) +
+  geom_point(size = 2, color = "grey70") +
+  stat_smooth(method = "lm", se = FALSE, color = "red") +
+  labs(x = "EC score", y = "") +
+  theme(axis.title.y = element_blank())
+
+GN_plot <- ggplot(data = outside.hit.rate.trait.diff, aes(x = GN, y = diffSrcAcc))  +
+  geom_point(size = 2, color = "grey70") +
+  stat_smooth(method = "lm", se = FALSE, color = "red") +
+  labs(x = "General score", y = "") +
+  theme(axis.title.y = element_blank())
+
+plot_grid(PC_plot, EC_plot, GN_plot, nrow = 1)
+```
+
+```{r, echo=FALSE}
+cor.test(outside.hit.rate.trait.diff$diffSrcAcc, outside.hit.rate.trait.diff$PC, method = "pearson")
+cor.test(outside.hit.rate.trait.diff$diffSrcAcc, outside.hit.rate.trait.diff$EC, method = "pearson")
+cor.test(outside.hit.rate.trait.diff$diffSrcAcc, outside.hit.rate.trait.diff$GN, method = "pearson")
+```
+
+
+## Inside
+### Item recollection
+```{r, echo=FALSE, fig.align='center', fig.width=10.8, fig.height=3.6}
+PC_plot <- ggplot(data = inside.hit.rate.trait.diff, aes(x = PC, y = diffSAcc)) +
+  geom_point(size = 2, color = "grey70") +
+  stat_smooth(method = "lm", se = FALSE, color = "red") +
+  labs(x = "PC score", y = "Mean corrected hit rate for \"Seen\"")
+
+EC_plot <- ggplot(data = inside.hit.rate.trait.diff, aes(x = EC, y = diffSAcc)) +
+  geom_point(size = 2, color = "grey70") +
+  stat_smooth(method = "lm", se = FALSE, color = "red") +
+  labs(x = "EC score", y = "") +
+  theme(axis.title.y = element_blank())
+
+GN_plot <- ggplot(data = inside.hit.rate.trait.diff, aes(x = GN, y = diffSAcc))  +
+  geom_point(size = 2, color = "grey70") +
+  stat_smooth(method = "lm", se = FALSE, color = "red") +
+  labs(x = "General score", y = "") +
+  theme(axis.title.y = element_blank())
+
+plot_grid(PC_plot, EC_plot, GN_plot, nrow = 1)
+```
+
+```{r, echo=FALSE}
+cor.test(inside.hit.rate.trait.diff$diffSAcc, inside.hit.rate.trait.diff$PC, method = "pearson")
+cor.test(inside.hit.rate.trait.diff$diffSAcc, inside.hit.rate.trait.diff$EC, method = "pearson")
+cor.test(inside.hit.rate.trait.diff$diffSAcc, inside.hit.rate.trait.diff$GN, method = "pearson")
+```
+
+
+### Source memory
+```{r, echo=FALSE, fig.align='center', fig.width=10.8, fig.height=3.6}
+PC_plot <- ggplot(data = inside.hit.rate.trait.diff, aes(x = PC, y = diffSrcAcc)) +
+  geom_point(size = 2, color = "grey70") +
+  stat_smooth(method = "lm", se = FALSE, color = "red") +
+  labs(x = "PC score", y = "Mean corrected hit rate for \"Seen\"")
+
+EC_plot <- ggplot(data = inside.hit.rate.trait.diff, aes(x = EC, y = diffSrcAcc)) +
+  geom_point(size = 2, color = "grey70") +
+  stat_smooth(method = "lm", se = FALSE, color = "red") +
+  labs(x = "EC score", y = "") +
+  theme(axis.title.y = element_blank())
+
+GN_plot <- ggplot(data = inside.hit.rate.trait.diff, aes(x = GN, y = diffSrcAcc))  +
+  geom_point(size = 2, color = "grey70") +
+  stat_smooth(method = "lm", se = FALSE, color = "red") +
+  labs(x = "General score", y = "") +
+  theme(axis.title.y = element_blank())
+
+plot_grid(PC_plot, EC_plot, GN_plot, nrow = 1)
+```
+
+```{r, echo=FALSE}
+cor.test(inside.hit.rate.trait.diff$diffSrcAcc, inside.hit.rate.trait.diff$PC, method = "pearson")
+cor.test(inside.hit.rate.trait.diff$diffSrcAcc, inside.hit.rate.trait.diff$EC, method = "pearson")
+cor.test(inside.hit.rate.trait.diff$diffSrcAcc, inside.hit.rate.trait.diff$GN, method = "pearson")
+```
+
+
+
+
+
+
+
