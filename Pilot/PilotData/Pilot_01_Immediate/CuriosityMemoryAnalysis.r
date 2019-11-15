@@ -138,8 +138,8 @@ save(outside.hit.rate.novelty.group, file = "GroupData/OutsideObjectResponseNove
 
 # Calculate the hit rates for each individual participant and each curiosity group
 ## Calculate the mean and median curiosity rating for each participant 
-average.curiosity.rating <- Curiosity.Recall[, .(MeanCur = mean(CurRating, na.rm = TRUE), MedianCur = median(CurRating, na.rm = TRUE)), by = c("SubjectNo")]
-Curiosity.Recall         <- merge(Curiosity.Recall, average.curiosity.rating, all = TRUE)
+average.curiosity.rating <- outside.hit.rate.per.room[, .(MeanCur = mean(CurRating, na.rm = TRUE), MedianCur = median(CurRating, na.rm = TRUE)), by = c("SubjectNo")]
+Curiosity.Recall         <- merge(Curiosity.Recall, average.curiosity.rating, by = "SubjectNo")
 
 ## Separate the curiosity "high" and "low" groups according to the mean rating, median rating and 4 respectively.
 Curiosity.Recall[, CurGrpMean      := mapply(CurGrpMeanSep,   CurRating, MeanCur) ]

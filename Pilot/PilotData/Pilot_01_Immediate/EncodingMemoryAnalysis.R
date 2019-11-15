@@ -148,8 +148,8 @@ save(inside.hit.rate.novelty.group, file = "GroupData/InsideObjectResponseNovelt
 
 # Calculate the hit rates for each individual participant and each curiosity group
 ## Calculate the mean and median curiosity rating for each participant 
-average.curiosity.rating <- Encoding.Recall[, .(MeanCur = mean(CurRating, na.rm = TRUE), MedianCur = median(CurRating, na.rm = TRUE)), by = c("SubjectNo")]
-Encoding.Recall         <- merge(Encoding.Recall, average.curiosity.rating, all = TRUE)
+average.curiosity.rating <- inside.hit.rate.per.room[, .(MeanCur = mean(CurRating, na.rm = TRUE), MedianCur = median(CurRating, na.rm = TRUE)), by = c("SubjectNo")]
+Encoding.Recall          <- merge(Encoding.Recall, average.curiosity.rating, by = "SubjectNo")
 
 ## Separate the curiosity "high" and "low" groups according to the mean rating, median rating and 4 respectively.
 Encoding.Recall[, CurGrpMean      := mapply(CurGrpMeanSep,   CurRating, MeanCur) ]

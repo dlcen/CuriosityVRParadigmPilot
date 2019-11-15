@@ -1,0 +1,264 @@
+---
+title: "Source memory performance for objects inside the rooms"
+output: 
+      
+      html_document:
+          
+          fig_caption: yes
+          highlight: default
+          number_sections: yes
+          theme: lumen
+          toc: yes
+          toc_depth: 5
+          toc_float: true
+      html_notebook:
+          fig_caption: yes
+          highlight: default
+          number_sections: yes
+          theme: lumen
+          toc: yes
+          toc_depth: 5
+          toc_float: true
+      header-includes:
+            - \usepackage{xcolor}
+            - \usepackage{framed}
+            - \usepackage{fontspec}
+---
+
+\setmainfont{Noto Sans}
+\colorlet{shadecolor}{gray!10}
+\color{red}
+
+<style>
+body {
+  font-size: 15px;
+}
+
+p.caption {
+  font-weight: 500;
+  font-style: italic;
+}
+
+code.r {
+  font-family: Consolas, Monaco, monospace;
+  font-size: 9px;
+}
+</style>
+
+```{r, echo=FALSE, message=FALSE, warning=FALSE}
+library(kableExtra)
+options(knitr.table.format = "html", cache=TRUE) # "latex" for PDF
+```
+
+```{r, echo = FALSE, message=FALSE, warning=FALSE}
+library(data.table); library(ggplot2); library(nlme); library(ez); library(multcomp)
+```
+
+```{r, echo = FALSE, message=FALSE, warning=FALSE}
+load("../GroupData/InsideObjectResponseFrequencies.RData")
+```
+
+# Novelty Benefits 
+
+## Compare mean accuracy between *novel* and *familiar* rooms
+```{r, echo=FALSE}
+load("../GroupData/InsideObjectResponseNoveltyGroups.RData")
+```
+
+```{r, echo=FALSE, warning=FALSE, fig.align='center', fig.width=3.6, fig.height=3}
+MeanSrcHitNoveltyCmpPlot <- ggplot(inside.hit.rate.novelty.group, aes(x = Group, y = SrcHit)) +
+  stat_summary(fun.y = mean, geom = "bar") +
+  stat_summary(fun.data = mean_cl_boot, geom = "errorbar", width = 0.2) +
+  labs(x = "Room novelty", y = "Hit rate for source memory")
+
+MeanSrcHitNoveltyCmpPlot
+```
+
+```{r, echo = FALSE}
+inside.hit.rate.novelty.group[, .(Mean = mean(SrcHit, na.rm = TRUE), SD = sd(SrcHit, na.rm = TRUE), N = length(SrcHit)), by = c("Group")]
+t.test(SrcHit ~ Group, data = inside.hit.rate.novelty.group, paired = TRUE)
+```
+
+## Any difference between *Early* and *Later* object groups?
+```{r, echo = FALSE}
+load("../GroupData/InsideObjectResponseItemOrders.RData")
+```
+
+```{r, echo=FALSE, warning=FALSE, fig.align='center', fig.width=4.8, fig.height=3}
+MeanSrcHitNoveltyTmpOrdCmpPlot <- ggplot(inside.hit.rate.item.order.novelty, aes(x = Group, y = SrcHit)) +
+  stat_summary(fun.y = mean, geom = "bar") +
+  stat_summary(fun.data = mean_cl_boot, geom = "errorbar", width = 0.2) +
+  facet_wrap( ~ ObjOrdGrp) +
+  labs(x = "Room novelty", y = "Hit rate for source memory")
+
+MeanSrcHitNoveltyTmpOrdCmpPlot
+```
+
+```{r, echo = FALSE, warning=FALSE}
+inside.hit.rate.item.order.novelty[, .(Mean = mean(SrcHit, na.rm = TRUE), SD = sd(SrcHit, na.rm = TRUE), N = length(SrcHit)), by = c("Group", "ObjOrdGrp")]
+
+ezANOVA(inside.hit.rate.item.order.novelty, dv = .(SrcHit), wid = .(SubjectNo), within = .(Group, ObjOrdGrp))
+```
+
+# Curiosity Enhancement
+```{r, echo=FALSE}
+load("../GroupData/InsideObjectsResponsePerRoom.RData")
+load("../GroupData/InsideObjectResponseCuriosityGroups.RData")
+```
+
+## Mean accuracy of item memory as a function of curiosity rating
+```{r, echo=FALSE, fig.align='center', fig.width=3.6, fig.height=3}
+ggplot(inside.hit.rate.per.room, aes(x = CurRating, y = SrcHit)) +
+  stat_summary(fun.data = mean_cl_boot, na.rm = T, geom = "errorbar", width = 0.2) +
+  stat_summary(fun.y = mean, na.rm = T, geom = "point", size = 2) +
+  stat_smooth(method = "lm", se = FALSE) +
+  scale_x_continuous(breaks = c(1:7)) +
+  labs(x = "Curiosity rating", y = "Hit rate for source memory") 
+```
+
+## Testing the relationship between mean accuracy of item memory and curiosity rating
+Build models with item memory accuracy as $y$ and examine effects of curiosity rating by including it into the model and then comparing the model fits. 
+
+* `baseline.rating` is the model with only an intercept, showing no change in item memory as a function of curiosity rating. 
+* `rating.intercept` is the model with $\small CuriosityRating$ included, showing the effects of curiosity rating. 
+* `rating.slope` is the model allowing the slope (i.e., relationship between item memory and curiosity rating) varying across participants. 
+
+```{r, echo = FALSE}
+baseline.rating <- lme(SrcHit ~ 1, random = ~ 1|SubjectNo, data = inside.hit.rate.per.room, method = "ML", control = list(msMaxIter = 500, opt = "optim", msVerbose=FALSE), na.action = na.exclude)
+
+rating.intercept <- update(baseline.rating, .~. + CurRating)
+rating.slope     <- update(rating.intercept, random = ~ 1 + CurRating|SubjectNo)
+
+anova(baseline.rating, rating.intercept, rating.slope)
+```
+
+## Check the curiosity groups
+
+### Separate the groups according to the rating
+- *High*: curiosity rating > 4
+- *Low*: curiosity rating < 4
+- For curiosity rating = 4, discarded
+
+```{r echo=FALSE}
+inside.hit.rate.curiosity.group$CurGrp <- factor(inside.hit.rate.curiosity.group$CurGrp)
+inside.hit.rate.curiosity.group$CurGrp <- factor(inside.hit.rate.curiosity.group$CurGrp, levels = levels(inside.hit.rate.curiosity.group$CurGrp)[c(2, 1)])
+
+inside.hit.rate.item.order.curiosity$CurGrp <- factor(inside.hit.rate.item.order.curiosity$CurGrp)
+inside.hit.rate.item.order.curiosity$CurGrp <- factor(inside.hit.rate.item.order.curiosity$CurGrp, levels = levels(inside.hit.rate.item.order.curiosity$CurGrp)[c(2, 1)])
+```
+
+```{r, echo=FALSE, warning=FALSE, fig.align='center', fig.width=3.6, fig.height=3}
+MeanSrcHitCurGrpCmpPlot <- ggplot(inside.hit.rate.curiosity.group, aes(x = CurGrp, y = SrcHit)) +
+  stat_summary(fun.y = mean, geom = "bar") +
+  stat_summary(fun.data = mean_cl_boot, geom = "errorbar", width = 0.2) +
+  labs(x = "Curiosity group", y = "Hit rate for source memory")
+
+MeanSrcHitCurGrpCmpPlot
+```
+
+```{r, echo = FALSE}
+inside.hit.rate.curiosity.group[, .(Mean = mean(SrcHit, na.rm = TRUE), SD = sd(SrcHit, na.rm = TRUE), N = length(SrcHit)), by = c("CurGrp")]
+cur.grp.model <- lme(SrcHit ~ CurGrp,random = ~ 1 + CurGrp|SubjectNo,  data = inside.hit.rate.curiosity.group, method = "ML")
+summary(cur.grp.model)
+```
+
+#### Curiosity groups and temporal order of the objects
+
+```{r, echo=FALSE, warning=FALSE, fig.align='center', fig.width=6.4, fig.height=3}
+MeanSrcHitCurGrpOrdPlot <- ggplot(inside.hit.rate.item.order.curiosity[!is.na(CurGrp)], aes(x = CurGrp, y = SrcHit)) +
+  stat_summary(fun.y = mean, geom = "bar") +
+  stat_summary(fun.data = mean_cl_boot, geom = "errorbar", width = 0.2) +
+  facet_wrap( ~ ObjOrdGrp) + 
+  labs(x = "Curiosity group", y = "Hit rate for source memory")
+
+MeanSrcHitCurGrpOrdPlot
+```
+
+```{r, echo = FALSE}
+inside.hit.rate.item.order.curiosity[!is.na(CurGrp), .(Mean = mean(SrcHit, na.rm = TRUE), SD = sd(SrcHit, na.rm = TRUE), N = length(SrcHit)), by = c("CurGrp", "ObjOrdGrp")]
+```
+
+```{r, echo=FALSE}
+baseline  <- lme(SrcHit ~ 1, random = ~ 1 + CurGrp + ObjOrdGrp|SubjectNo, data = inside.hit.rate.item.order.curiosity[!is.na(CurGrp)], method = "ML", control = list(msMaxIter = 500, opt = "optim", msVerbose=FALSE), na.action = na.exclude)
+ord.model <- update(baseline,  .~. + ObjOrdGrp)
+cur.model <- update(ord.model, .~. + CurGrp)
+int.model <- update(cur.model, .~. + ObjOrdGrp : CurGrp)
+
+anova(baseline, ord.model, cur.model, int.model)
+```
+
+```{r, echo = FALSE}
+summary(int.model)
+```
+
+##### *Post hoc*
+```{r, echo=FALSE}
+contrast.matrix <- rbind(
+        "Low: Later - Early"         = c(0, 1, 0, 0),
+        "High:  Later - Early"       = c(0, 1, 0, 1)
+)
+comps <- glht(int.model, contrast.matrix)
+summary(comps, test = adjusted("none"))
+```
+
+
+### Separate the groups according to the median rating of each participant
+- *High*: curiosity rating > median of the participant
+- *Low*: curiosity rating < median of the participant
+
+```{r echo=FALSE}
+inside.hit.rate.curiosity.group.median$CurGrp <- factor(inside.hit.rate.curiosity.group.median$CurGrp)
+inside.hit.rate.curiosity.group.median$CurGrp <- factor(inside.hit.rate.curiosity.group.median$CurGrp, levels = levels(inside.hit.rate.curiosity.group.median$CurGrp)[c(2, 1)])
+
+inside.hit.rate.item.order.curiosity.median$CurGrpMedian <- factor(inside.hit.rate.item.order.curiosity.median$CurGrpMedian)
+inside.hit.rate.item.order.curiosity.median$CurGrpMedian <- factor(inside.hit.rate.item.order.curiosity.median$CurGrpMedian, levels = levels(inside.hit.rate.item.order.curiosity.median$CurGrpMedian)[c(2, 1)])
+```
+
+```{r, echo=FALSE, warning=FALSE, fig.align='center', fig.width=3.6, fig.height=3}
+MeanSrcHitCurGrpCmpPlot <- ggplot(inside.hit.rate.curiosity.group.median, aes(x = CurGrp, y = SrcHit)) +
+  stat_summary(fun.y = mean, geom = "bar") +
+  stat_summary(fun.data = mean_cl_boot, geom = "errorbar", width = 0.2) +
+  labs(x = "Curiosity group", y = "Hit rate for source memory")
+
+MeanSrcHitCurGrpCmpPlot
+```
+
+```{r, echo=FALSE}
+cur.grp.model <- lme(SrcHit ~ CurGrp,random = ~ 1 + CurGrp|SubjectNo,  data = inside.hit.rate.curiosity.group.median, method = "ML")
+summary(cur.grp.model)
+```
+
+#### Curiosity groups and temporal order of the objects
+
+```{r, echo=FALSE, warning=FALSE, fig.align='center', fig.width=6.4, fig.height=3}
+MeanSrcHitCurGrpOrdPlot <- ggplot(inside.hit.rate.item.order.curiosity.median[!is.na(CurGrpMedian)], aes(x = CurGrpMedian, y = SrcHit)) +
+  stat_summary(fun.y = mean, geom = "bar") +
+  stat_summary(fun.data = mean_cl_boot, geom = "errorbar", width = 0.2) +
+  facet_wrap( ~ ObjOrdGrp) + 
+  labs(x = "Curiosity group", y = "Hit rate for source memory")
+
+MeanSrcHitCurGrpOrdPlot
+```
+
+```{r, echo = FALSE, warning=FALSE}
+inside.hit.rate.item.order.curiosity.median[!is.na(CurGrpMedian), .(Mean = mean(SrcHit, na.rm = TRUE), SD = sd(SrcHit, na.rm = TRUE), N = length(SrcHit)), by = c("CurGrpMedian", "ObjOrdGrp")]
+
+baseline  <- lme(SrcHit ~ 1, random = ~ 1 + CurGrpMedian + ObjOrdGrp|SubjectNo, data = inside.hit.rate.item.order.curiosity.median[!is.na(CurGrpMedian)], method = "ML", control = list(msMaxIter = 500, opt = "optim", msVerbose=FALSE), na.action = na.exclude)
+ord.model <- update(baseline,  .~. + ObjOrdGrp)
+cur.model <- update(ord.model, .~. + CurGrpMedian)
+int.model <- update(cur.model, .~. + ObjOrdGrp : CurGrpMedian)
+
+anova(baseline, ord.model, cur.model, int.model)
+
+summary(int.model)
+```
+
+##### *Post hoc*
+```{r, echo=FALSE}
+contrast.matrix <- rbind(
+        "Early: High vs. Low"         = c(0, 0, 1, 0),
+        "Late:  High vs. Low"         = c(0, 0, 1, 1)
+)
+comps <- glht(int.model, contrast.matrix)
+summary(comps, test = adjusted("none"))
+```
