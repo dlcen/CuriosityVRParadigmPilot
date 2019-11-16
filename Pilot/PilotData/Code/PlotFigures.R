@@ -8,7 +8,7 @@
 #   - Curiosity plots
 #   - Curiosity (temporal order) plots
   
-library(ggplot2); library(data.table); library(cowplot)
+library(ggplot2); library(data.table); library(cowplot); library(Hmisc); library(reshape)
 
 #  Individual plots
 ## Load the data
@@ -47,14 +47,74 @@ library(ggplot2); library(data.table); library(cowplot)
 # save(hit.rate.per.room, file = "Together/Data/ResponsePerRoom.RData")
 
 load("Together/Data/ResponsePerRoom.RData")
+hit.rate.per.room$Condition <- factor(hit.rate.per.room$Condition)
+hit.rate.per.room$Condition <- factor(hit.rate.per.room$Condition, levels = levels(hit.rate.per.room$Condition)[c(2, 1)])
+
+hit.rate.per.room$phase 	<- factor(hit.rate.per.room$phase)
+hit.rate.per.room$phase 	<- factor(hit.rate.per.room$phase, levels = levels(hit.rate.per.room$phase)[c(2, 1)])
+
+hit.rate.per.room$Group 	<- factor(hit.rate.per.room$Group)
+hit.rate.per.room$Type 		<- factor(hit.rate.per.room$Type)
 
 ## Plot the figure
-ggplot(data = hit.rate.per.room[Condition == "Delayed" & phase == "Outside"], aes(x = Context, y = SHit)) + 
-	geom_point(size = 2, aes(color = Group)) +
-	geom_hline(aes(yintercept = SFalse), size = 0.75, linetype = "dashed") +
-	geom_hline(yintercept = 0, colour = "#595959") +
-	facet_wrap( ~ SubjectNo, nrow = 8) +
-	labs(x = "Room", y = "Hit rate for \"Seen\" response") +
-	scale_shape_discrete(name = "source") +
-	theme(axis.text.x = element_text(angle = 45, vjust = 0.5))
+source("Code/PlotFunc.R")
+
+conditions  <- c("Immediate", "Delayed")
+phases 		<- c("Inside", "Outside")
+measures    <- c("SHit", "SrcHit")
+fas 		<- c("SFalse", "SrcFalse")
+
+labels 		<- data.frame(SHit = "Hit rate for item recollection", SrcHit = "Hit rate for source memory")
+
+for (this.condition in conditions) {
+	for (this.phase in phases) {
+		for (this.measure in measures) {
+			for (this.fa in fas) {
+				this.filename <- paste("IndividualPlot", this.condition, this.phase, this.measure, sep = "_")
+				this.data <- hit.rate.per.room[Condition == this.condition & phase == this.phase]
+				IndividualDataPlot(this.data, this.data$Context, this.data[[this.measure]], this.data[[this.fa]], labels[, this.measure], this.filename )
+			}
+		}
+	}
+}
+
+# Plot the relationship between Novelty and Curiosity ratings
+## Calculate the mean rating for each group for each individual participant
+mean.rating.per.novelty.grp <- hit.rate.per.room[, .(meanCurRating = mean(CurRating, na.rm = T)), by = c("SubjectNo", "Group")]
+
+ggplot(data = mean.rating.per.novelty.grp, aes(x = Group, y = meanCurRating)) + 
+	geom_violin(trim = F) +
+	geom_dotplot(binaxis = "y", stackdir = "center", dotsize = 0.75) +
+	stat_summary(fun.data = mean_sdl, fun.args = list(mult = 1), geom = "pointrange", color = "red", size = 1.5, shape = 15) +
+	labs(x = "Novelty", y = "Curiosity rating") +
+	theme(axis.title = element_text(size = 16),
+		  axis.text = element_text(size = 14))
+	
+ggplot2::ggsave("Together/Figures/NoveltyRatings.png", width = 6.4, height = 5.7)
+
+
+# Plot the difference in performance depending on novelty
+mean.data <- hit.rate.per.room[, .(SAcc = mean(SAcc, na.rm = T), SrcAcc = mean(SrcAcc, na.rm = T)), by = c("SubjectNo", "Group", "Condition", "phase")]
+melt.data <- reshape::melt(mean.data, id.vars = c("SubjectNo", "Condition", "phase", "Group"), measure.vars = c("SAcc", "SrcAcc"))
+names(melt.data)[c(5, 6)] <- c("Type", "Acc")
+melt.data[Acc < 0]$Acc <- 0
+
+ggplot(melt.data, aes(x = Type, y = Acc, fill = Group)) + theme_minimal()+
+	stat_summary(fun.y = mean, geom = "bar", position = position_dodge(width = 0.95)) +
+	stat_summary(fun.data = mean_cl_normal, geom = "errorbar", width = 0.2, position = position_dodge(width = 0.95)) +
+	geom_hline(yintercept = 0) +
+	facet_grid(phase ~ Condition) +
+	labs(y = "Corrected hit rate") +
+	scale_fill_manual(values = c("#cccccc", "#636363")) + 
+	scale_x_discrete(labels = c("Item recollection", "Source memory")) +
+	theme(axis.title.x = element_blank(), 
+		  axis.title.y = element_text(size = 16),
+		  axis.text.x = element_text(size = 14),
+		  axis.text.y = element_text(size = 12),
+		  legend.title = element_blank(),
+		  legend.text = element_text(size = 14),
+		  strip.text = element_text(face = "bold", size = 16))
+
+ggplot2::ggsave("Together/Figures/Novelty.png", width = 10.8, height = 8.1)
+
 
