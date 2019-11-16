@@ -1,11 +1,11 @@
-library(data.table); library(ggplot2); library(Hmisc)
+library(data.table); 
 
 ## The familiar and novel groups
 grouping <- data.frame(Familiar = c("Bedroom", "Classroom", "Gym"), Novel = c("Library", "LivingRoom", "StorageRoom"))
 rooms    <- c("Bedroom", "Classroom", "Gym", "Library", "LivingRoom", "StorageRoom")
 
-GroupA <- c(13:20, 30, 33:34, 37:38, 41:42)
-GroupB <- c(21:29, 31:32, 35:36, 39:40)
+GroupA <- paste0("P", c(13:20, 30, 33:34, 37:38, 41:42, 45:46, 49:50, 53:54, 57:58))
+GroupB <- paste0("P", c(21:29, 31:32, 35:36, 39:40, 43:44, 47:48, 51:52, 55:56))
 
 ## Get the list of participant's folders
 participant.folders <- dir(path = "IndividualRawData/", pattern = "^P")
@@ -27,7 +27,8 @@ for (thisFolder in participant.folders) {
   this.response$SubjectNo <- thisFolder
   this.response$Group <- "Familiar"
   
-  this.subjectNo <- as.numeric(strsplit(thisFolder, 'P')[[1]][2])
+  # this.subjectNo <- as.numeric(strsplit(thisFolder, 'P')[[1]][2])
+  this.subjectNo <- thisFolder
   
   # After P12 I switched the familiar and novel groups
   if (this.subjectNo %in% GroupA) {

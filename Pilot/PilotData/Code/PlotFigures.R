@@ -45,7 +45,7 @@ hit.rate.per.room 					<- rbind(inside.hit.rate.per.room, outside.hit.rate.per.r
 rm(list = c("inside.hit.rate.per.room", "outside.hit.rate.per.room"))
 
 ## Plot the figure
-ggplot(data = hit.rate.per.room[Condition == "Immediate" & phase == "Outside"], aes(x = Context, y = SAcc)) + 
+ggplot(data = hit.rate.per.room[Condition == "Delayed" & phase == "Outside"], aes(x = Context, y = SAcc)) + 
 	geom_point(size = 2, aes(color = Group)) +
 	geom_hline(aes(yintercept = SFalse), size = 0.75, linetype = "dashed") +
 	geom_hline(yintercept = 0, colour = "#595959") +
