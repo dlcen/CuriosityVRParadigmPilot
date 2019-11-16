@@ -122,6 +122,7 @@ load("../GroupData/InsideObjectResponseNoveltyGroups.RData")
 ## Check the data
 
 * **Is there any corrected hit rate < 0?**
+
 ```{r, echo=FALSE}
 n.negative.SAcc <- nrow(inside.hit.rate.novelty.group[SAcc < 0])
 ```
@@ -151,17 +152,18 @@ load("../GroupData/InsideObjectResponseItemOrders.RData")
 ### Check the data
 
 * **Is there any corrected hit rate < 0?**
+
 ```{r, echo=FALSE}
 n.negative.SAcc <- nrow(inside.hit.rate.item.order.novelty[SAcc < 0 ])
 ```
 
   * There are `r n.negative.SAcc` negative values out of a total of `r nrow(inside.hit.rate.item.order.novelty)` values.
 
-```{r, echo=FALSE}
+```{r, echo=FALSE, eval=FALSE, include = FALSE}
 inside.hit.rate.item.order.novelty[SAcc < 0]
 ```
 
-```{r, echo=FALSE}
+```{r, echo=FALSE, eval=FALSE, include = FALSE}
 inside.hit.rate.item.order.novelty[SAcc < 0]$SAcc <- 0
 ```
 
@@ -202,7 +204,7 @@ n.negative.SAcc <- nrow(inside.hit.rate.per.room[SAcc < 0])
 inside.hit.rate.per.room[SAcc < 0, ]
 ```
 
-```{r, echo=FALSE}
+```{r, echo=FALSE, eval=FALSE, include = FALSE}
 inside.hit.rate.per.room[SAcc < 0]$SAcc <- 0
 ```
 
@@ -282,6 +284,7 @@ summary(cur.grp.model)
 #### Check the data
 
 * **Is there any corrected hit rate < 0?**
+
 ```{r, echo=FALSE}
 n.negative.SAcc <- nrow(inside.hit.rate.item.order.curiosity[SAcc < 0])
 ```
@@ -292,7 +295,7 @@ n.negative.SAcc <- nrow(inside.hit.rate.item.order.curiosity[SAcc < 0])
 inside.hit.rate.item.order.curiosity[SAcc < 0, ]
 ```
 
-```{r, echo=FALSE}
+```{r, echo=FALSE, eval=FALSE, include = FALSE}
 inside.hit.rate.item.order.curiosity[SAcc < 0]$SAcc <- 0
 ```
 
@@ -373,7 +376,7 @@ n.negative.SAcc <- nrow(inside.hit.rate.item.order.curiosity.median[SAcc < 0])
 inside.hit.rate.item.order.curiosity.median[SAcc < 0, ]
 ```
 
-```{r, echo = FALSE}
+```{r, echo = FALSE, eval=FALSE, include = FALSE}
 inside.hit.rate.item.order.curiosity.median[SAcc < 0]$SAcc <- 0
 ```
 
@@ -434,7 +437,7 @@ inside.hit.rate.per.room[, CurGrpMedian    := mapply(CurGrpMedianSep, CurRating,
 inside.hit.rate.per.room[, CurGrp          := mapply(CurGrpSep,       CurRating)]
 ```
 
-```{r, echo=FALSE}
+```{r, echo=FALSE, eval = FALSE, include = FALSE}
 inside.hit.rate.per.room[SAcc < 0]$SAcc <- 0
 ```
 

@@ -103,7 +103,8 @@ There are `r n.negative.SrcAcc` negative value out of a total of `r nrow(outside
 outside.hit.rate.novelty.group[SrcAcc < 0]
 ```
 
-```{r, echo=FALSE, eval=FALSE, include=FALSE}
+```{r, echo=FALSE}
+# , eval=FALSE, include=FALSE}
 outside.hit.rate.novelty.group[SrcAcc < 0]$SrcAcc <- 0
 ```
 
@@ -140,7 +141,8 @@ There are `r n.negative.SrcAcc` negative values out of a total of `r nrow(outsid
 outside.hit.rate.item.order.novelty[SrcAcc < 0]
 ```
 
-```{r, echo=FALSE, eval=FALSE, include=FALSE}
+```{r, echo=FALSE}
+# , eval=FALSE, include=FALSE}
 outside.hit.rate.item.order.novelty[SrcAcc < 0]$SrcAcc <- 0
 ```
 
@@ -199,7 +201,8 @@ n.negative.SrcAcc <- nrow(outside.hit.rate.per.room[SrcAcc < 0])
 outside.hit.rate.per.room[SrcAcc < 0, ]
 ```
 
-```{r, echo=FALSE, eval=FALSE, include=FALSE}
+```{r, echo=FALSE}
+# , eval=FALSE, include=FALSE}
 outside.hit.rate.per.room[SrcAcc < 0]$SrcAcc <- 0
 ```
 
@@ -215,7 +218,8 @@ n.negative.SrcAcc <- nrow(outside.hit.rate.curiosity.group[SrcAcc < 0])
 outside.hit.rate.curiosity.group[SrcAcc < 0]
 ```
   
-```{r, echo=FALSE, eval=FALSE, include=FALSE}
+```{r, echo=FALSE}
+# , eval=FALSE, include=FALSE}
 outside.hit.rate.curiosity.group[SrcAcc < 0]$SrcAcc <- 0
 ```
 
@@ -230,7 +234,8 @@ n.negative.SrcAcc <- nrow(outside.hit.rate.curiosity.group.median[SrcAcc < 0])
 outside.hit.rate.curiosity.group.median[SrcAcc < 0]
 ```
 
-```{r, echo=FALSE, eval=FALSE, include=FALSE}
+```{r, echo=FALSE}
+# , eval=FALSE, include=FALSE}
 outside.hit.rate.curiosity.group.median[SrcAcc < 0]$SrcAcc <- 0
 ```
 
@@ -306,7 +311,8 @@ n.negative.SrcAcc <- nrow(outside.hit.rate.item.order.curiosity[SrcAcc < 0])
 outside.hit.rate.item.order.curiosity[SrcAcc < 0, ]
 ```
 
-```{r, echo=FALSE, eval=FALSE, include=FALSE}
+```{r, echo=FALSE}
+# , eval=FALSE, include=FALSE}
 outside.hit.rate.item.order.curiosity[SrcAcc <0]$SrcAcc <- 0
 ```
 
@@ -390,7 +396,8 @@ n.negative.SrcAcc <- nrow(outside.hit.rate.item.order.curiosity.median[SrcAcc < 
 outside.hit.rate.item.order.curiosity.median[SrcAcc < 0 , ]
 ```
 
-```{r, echo=FALSE, eval=FALSE, include=FALSE}
+```{r, echo=FALSE}
+# , eval=FALSE, include=FALSE}
 outside.hit.rate.item.order.curiosity.median[SrcAcc < 0]$SrcAcc <- 0
 ```
 

@@ -98,6 +98,7 @@ outside.hit.rate.novelty.group[SrcAcc < 0]
 ```
 
 ```{r, echo=FALSE}
+# , eval = FALSE, include = FALSE}
 outside.hit.rate.novelty.group[SrcAcc < 0]$SrcAcc <- 0
 ```
 
@@ -133,6 +134,11 @@ n.negative.SrcAcc <- nrow(outside.hit.rate.item.order.novelty[SrcAcc < 0])
 There are `r n.negative.SrcAcc` negative value out of a total of `r nrow(outside.hit.rate.item.order.novelty)` values. 
 ```{r, echo=FALSE}
 outside.hit.rate.item.order.novelty[SrcAcc < 0]
+```
+
+```{r, echo=FALSE}
+# , eval = FALSE, include = FALSE}
+outside.hit.rate.item.order.novelty[SrcAcc < 0]$SrcAcc <- 0
 ```
 
 ### Analysis
@@ -173,6 +179,7 @@ outside.hit.rate.per.room[SrcAcc < 0, ]
 ```
 
 ```{r, echo=FALSE}
+# , eval = FALSE, include = FALSE}
 outside.hit.rate.per.room[SrcAcc < 0]$SrcAcc <- 0
 ```
 
@@ -189,6 +196,7 @@ outside.hit.rate.curiosity.group[SrcAcc < 0]
 ```
   
 ```{r, echo=FALSE}
+# , eval = FALSE, include = FALSE}
 outside.hit.rate.curiosity.group[SrcAcc < 0]$SrcAcc <- 0
 ```
 
@@ -204,6 +212,7 @@ outside.hit.rate.curiosity.group.median[SrcAcc < 0]
 ```
 
 ```{r, echo=FALSE}
+# , eval = FALSE, include = FALSE}
 outside.hit.rate.curiosity.group.median[SrcAcc < 0]$SrcAcc <- 0
 ```
 
@@ -250,7 +259,7 @@ outside.hit.rate.item.order.curiosity$CurGrp <- factor(outside.hit.rate.item.ord
 ```
 
 ```{r, echo=FALSE, warning=FALSE, fig.align='center', fig.width=3.6, fig.height=3}
-MeanSrcAccCurGrpCmpPlot <- ggplot(outside.hit.rate.curiosity.group, aes(x = CurGrp, y = SrcAcc)) +
+MeanSrcAccCurGrpCmpPlot <- ggplot(outside.hit.rate.curiosity.group[!is.na(CurGrp)], aes(x = CurGrp, y = SrcAcc)) +
   stat_summary(fun.y = mean, geom = "bar") +
   stat_summary(fun.data = mean_cl_boot, geom = "errorbar", width = 0.2) +
   labs(x = "Curiosity group", y = "corrected hit rate")
@@ -259,12 +268,31 @@ MeanSrcAccCurGrpCmpPlot
 ```
 
 ```{r, echo = FALSE}
-outside.hit.rate.curiosity.group[, .(Mean = mean(SrcAcc, na.rm = TRUE), SD = sd(SrcAcc, na.rm = TRUE), N = length(SrcAcc)), by = c("CurGrp")]
-cur.grp.model <- lme(SrcAcc ~ CurGrp,random = ~ 1 + CurGrp|SubjectNo,  data = outside.hit.rate.curiosity.group, method = "ML")
+outside.hit.rate.curiosity.group[!is.na(CurGrp), .(Mean = mean(SrcAcc, na.rm = TRUE), SD = sd(SrcAcc, na.rm = TRUE), N = length(SrcAcc)), by = c("CurGrp")]
+cur.grp.model <- lme(SrcAcc ~ CurGrp,random = ~ 1 + CurGrp|SubjectNo,  data = outside.hit.rate.curiosity.group[!is.na(CurGrp)], method = "ML")
 summary(cur.grp.model)
 ```
 
 #### Curiosity groups and temporal order of the objects
+##### Check the data
+
+**Is there any corrected hit rate < 0?**
+
+```{r, echo=FALSE}
+n.negative.SrcAcc <- nrow(outside.hit.rate.item.order.curiosity[SrcAcc < 0 & !is.na(CurGrp)])
+```
+
+* There are `r n.negative.SrcAcc` negative values out of a total of `r nrow(outside.hit.rate.item.order.curiosity)` participants.
+
+```{r, echo=FALSE}
+outside.hit.rate.item.order.curiosity[SrcAcc < 0 & !is.na(CurGrp), ]
+```
+
+```{r, echo=FALSE}
+# , eval = FALSE, include = FALSE}
+outside.hit.rate.item.order.curiosity[SrcAcc < 0 & !is.na(CurGrp)]$SrcAcc <- 0
+```
+
 ```{r, echo=FALSE, warning=FALSE, fig.align='center', fig.width=6.4, fig.height=3}
 outside.hit.rate.item.order.curiosity[SrcAcc < 0]$SrcAcc = 0
 
@@ -309,15 +337,15 @@ summary(comps, test = adjusted("none"))
 - *Low*: curiosity rating < median of the participant
 
 ```{r echo=FALSE}
-outside.hit.rate.curiosity.group.median$CurGrp <- factor(outside.hit.rate.curiosity.group.median$CurGrp)
-outside.hit.rate.curiosity.group.median$CurGrp <- factor(outside.hit.rate.curiosity.group.median$CurGrp, levels = levels(outside.hit.rate.curiosity.group.median$CurGrp)[c(2, 1)])
+outside.hit.rate.curiosity.group.median$CurGrpMedian <- factor(outside.hit.rate.curiosity.group.median$CurGrpMedian)
+outside.hit.rate.curiosity.group.median$CurGrpMedian <- factor(outside.hit.rate.curiosity.group.median$CurGrpMedian, levels = levels(outside.hit.rate.curiosity.group.median$CurGrpMedian)[c(2, 1)])
 
 outside.hit.rate.item.order.curiosity.median$CurGrpMedian <- factor(outside.hit.rate.item.order.curiosity.median$CurGrpMedian)
 outside.hit.rate.item.order.curiosity.median$CurGrpMedian <- factor(outside.hit.rate.item.order.curiosity.median$CurGrpMedian, levels = levels(outside.hit.rate.item.order.curiosity.median$CurGrpMedian)[c(2, 1)])
 ```
 
 ```{r, echo=FALSE, warning=FALSE, fig.align='center', fig.width=3.6, fig.height=3}
-MeanSrcAccCurGrpCmpPlot <- ggplot(outside.hit.rate.curiosity.group.median, aes(x = CurGrp, y = SrcAcc)) +
+MeanSrcAccCurGrpCmpPlot <- ggplot(outside.hit.rate.curiosity.group.median[!is.na(CurGrpMedian)], aes(x = CurGrpMedian, y = SrcAcc)) +
   stat_summary(fun.y = mean, geom = "bar") +
   stat_summary(fun.data = mean_cl_boot, geom = "errorbar", width = 0.2) +
   labs(x = "Curiosity group", y = "Corrected hit rate")
@@ -326,7 +354,7 @@ MeanSrcAccCurGrpCmpPlot
 ```
 
 ```{r, echo=FALSE}
-cur.grp.model <- lme(SrcAcc ~ CurGrp,random = ~ 1 + CurGrp|SubjectNo,  data = outside.hit.rate.curiosity.group.median, method = "ML")
+cur.grp.model <- lme(SrcAcc ~ CurGrpMedian,random = ~ 1 + CurGrpMedian|SubjectNo,  data = outside.hit.rate.curiosity.group.median[!is.na(CurGrpMedian)], method = "ML")
 summary(cur.grp.model)
 ```
 
@@ -334,6 +362,7 @@ summary(cur.grp.model)
 ##### Check the data
 
 * **Is there any corrected hit rate < 0?**
+
 ```{r, echo=FALSE}
 n.negative.SrcAcc <- nrow(outside.hit.rate.item.order.curiosity.median[SrcAcc < 0 & !is.na(CurGrpMedian)])
 ```
@@ -345,6 +374,7 @@ outside.hit.rate.item.order.curiosity.median[SrcAcc < 0 & !is.na(CurGrpMedian), 
 ```
 
 ```{r, echo=FALSE}
+# , eval = FALSE, include = FALSE}
 outside.hit.rate.item.order.curiosity.median[SrcAcc < 0 & !is.na(CurGrpMedian)]$SrcAcc <- 0
 ```
 
@@ -381,4 +411,85 @@ comps <- glht(int.model, contrast.matrix)
 summary(comps, test = adjusted("none"))
 ```
 
+# **Novelty** or **Curiosity**?
+```{r, echo=FALSE}
+load("../GroupData/OutsideObjectsResponsePerRoom.RData")
+```
 
+```{r, echo=FALSE}
+source("../../Code/CalFunc.R")
+
+average.curiosity.rating <- outside.hit.rate.per.room[, .(MedianCur = median(CurRating, na.rm = TRUE)), by = c("SubjectNo")]
+
+outside.hit.rate.per.room <- merge(outside.hit.rate.per.room, average.curiosity.rating, by = "SubjectNo")
+
+outside.hit.rate.per.room[, CurGrpMedian    := mapply(CurGrpMedianSep, CurRating, MedianCur) ]
+outside.hit.rate.per.room[, CurGrp          := mapply(CurGrpSep,       CurRating)]
+```
+
+```{r, echo=FALSE}
+# , eval = FALSE, include = FALSE}
+outside.hit.rate.per.room[SrcAcc < 0]$SrcAcc <- 0
+```
+
+
+## For Curiosity group splitted by score (*Low*: 1 ~ 3; *High*: 5 ~ 7)
+### Curiosity first, novelty next
+```{r, echo=FALSE}
+base.model    <- lme(SrcAcc ~ 1, random = ~ 1 + CurGrp + Group | SubjectNo, data = outside.hit.rate.per.room[!is.na(CurGrp)], method = "ML", control = list(msMaxIter = 500, opt = "optim", msVerbose=FALSE))
+
+cur.scr.model <- update(base.model, .~. + CurGrp)
+
+nov.scr.model <- update(cur.scr.model, .~. + Group)
+
+anova(base.model, cur.scr.model, nov.scr.model)
+```
+
+```{r, echo=FALSE}
+summary(cur.scr.model)
+```
+
+
+### Novelty first, curiosity next
+```{r, echo=FALSE}
+nov.scr.model <- update(base.model, .~. + Group)
+
+cur.scr.model <- update(nov.scr.model, .~. + CurGrp)
+
+anova(base.model, nov.scr.model, cur.scr.model)
+```
+
+```{r, echo=FALSE}
+summary(nov.scr.model)
+```
+
+
+## For Curiosity group splitted by individual medians
+### Curiosity first, novelty next
+```{r, echo=FALSE}
+base.model    <- lme(SrcAcc ~ 1, random = ~ 1 + CurGrpMedian + Group | SubjectNo, data = outside.hit.rate.per.room[!is.na(CurGrpMedian)], method = "ML", control = list(msMaxIter = 500, opt = "optim", msVerbose=FALSE))
+
+cur.md.model <- update(base.model, .~. + CurGrpMedian)
+
+nov.md.model <- update(cur.md.model, .~. + Group)
+
+anova(base.model, cur.md.model, nov.md.model)
+```
+
+```{r, echo=FALSE}
+summary(cur.md.model)
+```
+
+
+### Novelty first, curiosity next
+```{r, echo=FALSE}
+nov.md.model <- update(base.model, .~. + Group)
+
+cur.md.model <- update(nov.md.model, .~. + CurGrpMedian)
+
+anova(base.model, nov.md.model, cur.md.model)
+```
+
+```{r, echo=FALSE}
+summary(nov.md.model)
+```

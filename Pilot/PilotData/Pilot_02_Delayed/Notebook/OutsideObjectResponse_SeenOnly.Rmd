@@ -130,8 +130,7 @@ n.negative.SAcc <- nrow(outside.hit.rate.novelty.group[SAcc < 0])
 outside.hit.rate.novelty.group[SAcc < 0]
 ```
   
-```{r, echo=FALSE} 
-# , eval=FALSE, include=FALSE}
+```{r, echo=FALSE, eval=FALSE, include=FALSE}
 outside.hit.rate.novelty.group[SAcc < 0]$SAcc <- 0
 ```
 
@@ -170,8 +169,7 @@ n.negative.SAcc <- nrow(outside.hit.rate.item.order.novelty[SAcc < 0 ])
 outside.hit.rate.item.order.novelty[SAcc < 0]
 ```
 
-```{r, echo=FALSE}
-# , include=FALSE}
+```{r, echo=FALSE, eval=FALSE, include=FALSE}
 outside.hit.rate.item.order.novelty[SAcc < 0]$SAcc <- 0
 ```
 
@@ -214,8 +212,7 @@ n.negative.SAcc <- nrow(outside.hit.rate.per.room[SAcc < 0])
 outside.hit.rate.per.room[SAcc < 0, ]
 ```
 
-```{r, echo=FALSE}
-# , eval=FALSE, include=FALSE}
+```{r, echo=FALSE, eval=FALSE, include=FALSE}
 outside.hit.rate.per.room[SAcc < 0]$SAcc <- 0
 ```
 
@@ -231,8 +228,7 @@ n.negative.SAcc <- nrow(outside.hit.rate.curiosity.group[SAcc < 0])
 outside.hit.rate.curiosity.group[SAcc < 0, ]
 ```
 
-```{r, echo=FALSE}
-# , eval=FALSE, include=FALSE}
+```{r, echo=FALSE, eval=FALSE, include=FALSE}
 outside.hit.rate.curiosity.group[SAcc < 0]$SAcc <- 0
 ```
 
@@ -247,8 +243,7 @@ n.negative.SAcc <- nrow(outside.hit.rate.curiosity.group.median[SAcc < 0])
 outside.hit.rate.curiosity.group.median[SAcc < 0, ]
 ```
 
-```{r, echo=FALSE}
-# , eval=FALSE, include=FALSE}
+```{r, echo=FALSE, eval=FALSE, include=FALSE}
 outside.hit.rate.curiosity.group.median[SAcc < 0]$SAcc <- 0
 ```
 
@@ -325,8 +320,7 @@ n.negative.SAcc <- nrow(outside.hit.rate.item.order.curiosity[SAcc < 0])
 outside.hit.rate.item.order.curiosity[SAcc < 0, ]
 ```
 
-```{r, echo=FALSE}
-# , eval=FALSE, include=FALSE}
+```{r, echo=FALSE, eval=FALSE, include=FALSE}
 outside.hit.rate.item.order.curiosity[SAcc < 0]$SAcc <- 0
 ```
 
@@ -403,8 +397,7 @@ n.negative.SAcc <- nrow(outside.hit.rate.item.order.curiosity.median[SAcc < 0])
 outside.hit.rate.item.order.curiosity.median[SAcc < 0, ]
 ```
 
-```{r, echo = FALSE}
-# , eval=FALSE, include=FALSE}
+```{r, echo = FALSE, eval=FALSE, include=FALSE}
 outside.hit.rate.item.order.curiosity.median[SAcc < 0]$SAcc <- 0
 ```
 
@@ -465,8 +458,7 @@ There are `r n.negative.SAcc` negative values in a total of `r nrow(outside.hit.
 outside.hit.rate.per.room[SAcc < 0]
 ```
 
-```{r, echo=FALSE}
-# , eval=FALSE, include=FALSE}
+```{r, echo=FALSE, eval=FALSE, include=FALSE}
 outside.hit.rate.per.room[SAcc < 0]$SAcc <- 0
 ```
 

@@ -119,6 +119,7 @@ load("../GroupData/InsideObjectResponseNoveltyGroups.RData")
 ```
 
 * **Is there any corrected hit rate < 0?**
+
 ```{r, echo=FALSE}
 n.negative.SAcc <- nrow(inside.hit.rate.novelty.group[SAcc < 0])
 ```
@@ -149,6 +150,7 @@ load("../GroupData/InsideObjectResponseItemOrders.RData")
 ### Check the data
 
 * **Is there any corrected hit rate < 0?**
+
 ```{r, echo=FALSE}
 n.negative.SAcc <- nrow(inside.hit.rate.item.order.novelty[SAcc < 0 ])
 ```
@@ -199,7 +201,8 @@ n.negative.SAcc <- nrow(inside.hit.rate.per.room[SAcc < 0])
 inside.hit.rate.per.room[SAcc < 0, ]
 ```
 
-```{r, echo=FALSE, eval=FALSE, include=FALSE}
+```{r, echo=FALSE}
+# , eval=FALSE, include=FALSE}
 inside.hit.rate.per.room[SAcc < 0]$SAcc <- 0
 ```
 
@@ -278,17 +281,20 @@ summary(cur.grp.model)
 ##### Check the data
 
 * **Is there any corrected hit rate < 0?**
+
 ```{r, echo=FALSE}
 n.negative.SAcc <- nrow(inside.hit.rate.item.order.curiosity[SAcc < 0])
 ```
 
   * There are `r n.negative.SAcc` negative values out of a total of `r nrow(inside.hit.rate.item.order.curiosity)` values.
 
-```{r, echo=FALSE, eval=FALSE, include=FALSE}
+```{r, echo=FALSE}
+# , eval=FALSE, include=FALSE}
 inside.hit.rate.item.order.curiosity[SAcc < 0, ]
 ```
 
-```{r, echo=FALSE, eval=FALSE, include=FALSE}
+```{r, echo=FALSE}
+# , eval=FALSE, include=FALSE}
 inside.hit.rate.item.order.curiosity[SAcc < 0]$SAcc <- 0
 ```
 
@@ -322,15 +328,6 @@ anova(baseline, ord.model, cur.model, int.model)
 summary(int.model)
 ```
 
-##### *Post hoc*
-```{r, echo=FALSE}
-contrast.matrix <- rbind(
-        "Early: High vs. Low"         = c(0, 0, 1, 0),
-        "Late:  High vs. Low"         = c(0, 0, 1, 1)
-)
-comps <- glht(int.model, contrast.matrix)
-summary(comps, test = adjusted("none"))
-```
 
 ### Separate the groups according to the median rating of each participant
 - *High*: curiosity rating > median of the participant
@@ -360,6 +357,7 @@ summary(cur.grp.model)
 ##### Check the data
 
 * **Is there any corrected hit rate < 0?**
+
 ```{r, echo=FALSE}
 n.negative.SAcc <- nrow(inside.hit.rate.item.order.curiosity.median[SAcc < 0])
 ```
@@ -370,7 +368,8 @@ n.negative.SAcc <- nrow(inside.hit.rate.item.order.curiosity.median[SAcc < 0])
 inside.hit.rate.item.order.curiosity.median[SAcc < 0, ]
 ```
 
-```{r, echo = FALSE, eval=FALSE, include=FALSE}
+```{r, echo = FALSE}
+# , eval=FALSE, include=FALSE}
 inside.hit.rate.item.order.curiosity.median[SAcc < 0]$SAcc <- 0
 ```
 
@@ -404,14 +403,6 @@ anova(baseline, ord.model, cur.model, int.model)
 summary(int.model)
 ```
 
-<!-- ##### *Post hoc* -->
-```{r, echo=FALSE, eval=FALSE, include=FALSE}
-contrast.matrix <- rbind(
-        "Early: High vs. Low"         = c(0, 0, 1, 0),
-        "Late:  High vs. Low"         = c(0, 0, 1, 1)
-)
-comps <- glht(int.model, contrast.matrix)
-summary(comps, test = adjusted("none"))
-```
+
 
 

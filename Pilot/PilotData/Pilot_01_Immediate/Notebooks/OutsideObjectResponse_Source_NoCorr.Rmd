@@ -203,15 +203,15 @@ summary(comps, test = adjusted("none"))
 - *Low*: curiosity rating < median of the participant
 
 ```{r echo=FALSE}
-outside.hit.rate.curiosity.group.median$CurGrp <- factor(outside.hit.rate.curiosity.group.median$CurGrp)
-outside.hit.rate.curiosity.group.median$CurGrp <- factor(outside.hit.rate.curiosity.group.median$CurGrp, levels = levels(outside.hit.rate.curiosity.group.median$CurGrp)[c(2, 1)])
+outside.hit.rate.curiosity.group.median$CurGrpMedian <- factor(outside.hit.rate.curiosity.group.median$CurGrpMedian)
+outside.hit.rate.curiosity.group.median$CurGrpMedian <- factor(outside.hit.rate.curiosity.group.median$CurGrpMedian, levels = levels(outside.hit.rate.curiosity.group.median$CurGrpMedian)[c(2, 1)])
 
 outside.hit.rate.item.order.curiosity.median$CurGrpMedian <- factor(outside.hit.rate.item.order.curiosity.median$CurGrpMedian)
 outside.hit.rate.item.order.curiosity.median$CurGrpMedian <- factor(outside.hit.rate.item.order.curiosity.median$CurGrpMedian, levels = levels(outside.hit.rate.item.order.curiosity.median$CurGrpMedian)[c(2, 1)])
 ```
 
 ```{r, echo=FALSE, warning=FALSE, fig.align='center', fig.width=3.6, fig.height=3}
-MeanSrcHitCurGrpCmpPlot <- ggplot(outside.hit.rate.curiosity.group.median, aes(x = CurGrp, y = SrcHit)) +
+MeanSrcHitCurGrpCmpPlot <- ggplot(outside.hit.rate.curiosity.group.median, aes(x = CurGrpMedian, y = SrcHit)) +
   stat_summary(fun.y = mean, geom = "bar") +
   stat_summary(fun.data = mean_cl_boot, geom = "errorbar", width = 0.2) +
   labs(x = "Curiosity group", y = "Hit rate for source memory")
@@ -220,7 +220,7 @@ MeanSrcHitCurGrpCmpPlot
 ```
 
 ```{r, echo=FALSE}
-cur.grp.model <- lme(SrcHit ~ CurGrp,random = ~ 1 + CurGrp|SubjectNo,  data = outside.hit.rate.curiosity.group.median, method = "ML")
+cur.grp.model <- lme(SrcHit ~ CurGrpMedian,random = ~ 1 + CurGrpMedian|SubjectNo,  data = outside.hit.rate.curiosity.group.median, method = "ML")
 summary(cur.grp.model)
 ```
 
