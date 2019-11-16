@@ -12,43 +12,49 @@ library(ggplot2); library(data.table); library(cowplot)
 
 #  Individual plots
 ## Load the data
-load("Pilot_01_Immediate/GroupData/InsideObjectsResponsePerRoom.RData")
-load("Pilot_01_Immediate/GroupData/OutsideObjectsResponsePerRoom.RData")
+# load("Pilot_01_Immediate/GroupData/InsideObjectsResponsePerRoom.RData")
+# load("Pilot_01_Immediate/GroupData/OutsideObjectsResponsePerRoom.RData")
 
-inside.hit.rate.per.room$Condition  <- "Immediate"
-outside.hit.rate.per.room$Condition <- "Immediate"
+# inside.hit.rate.per.room$Condition  <- "Immediate"
+# outside.hit.rate.per.room$Condition <- "Immediate"
 
-pilot.1.inside.hit.rate.per.room 	<- inside.hit.rate.per.room
-pilot.1.outside.hit.rate.per.room 	<- outside.hit.rate.per.room
+# pilot.1.inside.hit.rate.per.room 	<- inside.hit.rate.per.room
+# pilot.1.outside.hit.rate.per.room 	<- outside.hit.rate.per.room
 
-load("Pilot_02_Delayed/GroupData/InsideObjectsResponsePerRoom.RData")
-load("Pilot_02_Delayed/GroupData/OutsideObjectsResponsePerRoom.RData")
+# load("Pilot_02_Delayed/GroupData/InsideObjectsResponsePerRoom.RData")
+# load("Pilot_02_Delayed/GroupData/OutsideObjectsResponsePerRoom.RData")
 
-inside.hit.rate.per.room$Condition  <- "Delayed"
-outside.hit.rate.per.room$Condition <- "Delayed"
+# inside.hit.rate.per.room$Condition  <- "Delayed"
+# outside.hit.rate.per.room$Condition <- "Delayed"
 
-pilot.2.inside.hit.rate.per.room 	<- inside.hit.rate.per.room
-pilot.2.outside.hit.rate.per.room 	<- outside.hit.rate.per.room
+# pilot.2.inside.hit.rate.per.room 	<- inside.hit.rate.per.room
+# pilot.2.outside.hit.rate.per.room 	<- outside.hit.rate.per.room
 
-rm(list = c("inside.hit.rate.per.room", "outside.hit.rate.per.room"))
+# rm(list = c("inside.hit.rate.per.room", "outside.hit.rate.per.room"))
 
-inside.hit.rate.per.room  			<- rbind(pilot.1.inside.hit.rate.per.room,  pilot.2.inside.hit.rate.per.room)
-outside.hit.rate.per.room 			<- rbind(pilot.1.outside.hit.rate.per.room, pilot.2.outside.hit.rate.per.room)
+# inside.hit.rate.per.room  			<- rbind(pilot.1.inside.hit.rate.per.room,  pilot.2.inside.hit.rate.per.room)
+# outside.hit.rate.per.room 			<- rbind(pilot.1.outside.hit.rate.per.room, pilot.2.outside.hit.rate.per.room)
 
-rm(list = c("pilot.1.inside.hit.rate.per.room", "pilot.1.outside.hit.rate.per.room", "pilot.2.inside.hit.rate.per.room", "pilot.2.outside.hit.rate.per.room"))
+# rm(list = c("pilot.1.inside.hit.rate.per.room", "pilot.1.outside.hit.rate.per.room", "pilot.2.inside.hit.rate.per.room", "pilot.2.outside.hit.rate.per.room"))
 
-inside.hit.rate.per.room$phase 		<- "Inside"
-outside.hit.rate.per.room$phase 	<- "Outside"
+# inside.hit.rate.per.room$phase 		<- "Inside"
+# outside.hit.rate.per.room$phase 	<- "Outside"
 
-hit.rate.per.room 					<- rbind(inside.hit.rate.per.room, outside.hit.rate.per.room)
+# hit.rate.per.room 					<- rbind(inside.hit.rate.per.room, outside.hit.rate.per.room)
 
-rm(list = c("inside.hit.rate.per.room", "outside.hit.rate.per.room"))
+# rm(list = c("inside.hit.rate.per.room", "outside.hit.rate.per.room"))
+
+# save(hit.rate.per.room, file = "Together/Data/ResponsePerRoom.RData")
+
+load("Together/Data/ResponsePerRoom.RData")
 
 ## Plot the figure
-ggplot(data = hit.rate.per.room[Condition == "Delayed" & phase == "Outside"], aes(x = Context, y = SAcc)) + 
+ggplot(data = hit.rate.per.room[Condition == "Delayed" & phase == "Outside"], aes(x = Context, y = SHit)) + 
 	geom_point(size = 2, aes(color = Group)) +
 	geom_hline(aes(yintercept = SFalse), size = 0.75, linetype = "dashed") +
 	geom_hline(yintercept = 0, colour = "#595959") +
 	facet_wrap( ~ SubjectNo, nrow = 8) +
-	labs(x = "Room", y = "Corrected hit rate for \"Seen\" response")
+	labs(x = "Room", y = "Hit rate for \"Seen\" response") +
+	scale_shape_discrete(name = "source") +
+	theme(axis.text.x = element_text(angle = 45, vjust = 0.5))
 
