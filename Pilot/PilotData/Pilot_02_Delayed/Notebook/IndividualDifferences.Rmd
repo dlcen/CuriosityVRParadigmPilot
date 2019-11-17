@@ -49,7 +49,7 @@ options(knitr.table.format = "html", cache=TRUE) # "latex" for PDF
 ```
 
 ```{r import packages, echo = FALSE, message=FALSE, warning=FALSE}
-library(data.table); library(ggplot2); library(nlme); library(cowplot)
+library(data.table); library(ggplot2); library(nlme); library(cowplot); library(reshape)
 ```
 
 ```{r load the data, echo=FALSE, message=FALSE, warning=FALSE}
@@ -62,6 +62,12 @@ outside.hit.rate.per.room[SrcAcc < 0]$SrcAcc <- 0
 
 inside.hit.rate.per.room[SAcc < 0]$SAcc <- 0
 inside.hit.rate.per.room[SrcAcc < 0]$SrcAcc <- 0
+
+participants.to.be.excluded <- c("P17", "P54")
+
+questionnaire <- questionnaire[!SubjectNo %in% participants.to.be.excluded]
+outside.hit.rate.per.room <- outside.hit.rate.per.room[!SubjectNo %in% participants.to.be.excluded]
+inside.hit.rate.per.room  <- inside.hit.rate.per.room[! SubjectNo %in% participants.to.be.excluded]
 ```
 
 
@@ -248,6 +254,145 @@ EC.intercept     <- update(rating.slope, .~. + EC)
 EC.slope         <- update(EC.intercept, .~. + CurRating : EC)
 
 anova(baseline.rating, rating.intercept, rating.slope, EC.intercept, EC.slope)
+```
+
+# Relationship between trait score and difference between high and low curiosity groups (median-split)
+## Outside
+```{r, echo=FALSE, message=FALSE, warning=FALSE}
+load("../GroupData/OutsideObjectResponseCuriosityGroups.RData")
+
+rm(list = c("outside.hit.rate.curiosity.group", "outside.hit.rate.curiosity.group.mean"))
+
+outside.hit.rate.curiosity.group.median[SAcc < 0]$SAcc <- 0
+outside.hit.rate.curiosity.group.median[SrcAcc < 0]$SrcAcc <- 0
+
+outside.hit.rate.curiosity.group.median <- outside.hit.rate.curiosity.group.median[!SubjectNo %in% participants.to.be.excluded]
+outside.hit.rate.curiosity.group.median <- merge(outside.hit.rate.curiosity.group.median, questionnaire[, c("SubjectNo", "PC", "EC", "GN")])
+
+outside.hit.rate.curiosity.group.median.high <- outside.hit.rate.curiosity.group.median[CurGrpMedian == "High"]
+outside.hit.rate.curiosity.group.median.low  <- outside.hit.rate.curiosity.group.median[CurGrpMedian == "Low"]
+
+outside.hit.rate.curiosity.group.median.low  <- outside.hit.rate.curiosity.group.median.low[SubjectNo %in% as.character(unique(outside.hit.rate.curiosity.group.median.high$SubjectNo))]
+
+outside.hit.rate.curiosity.group.median.diff <- outside.hit.rate.curiosity.group.median[CurGrpMedian == "High", c("SubjectNo", "PC", "EC", "GN")]
+outside.hit.rate.curiosity.group.median.diff$diffSAcc <- outside.hit.rate.curiosity.group.median.high$SAcc - outside.hit.rate.curiosity.group.median.low$SAcc
+outside.hit.rate.curiosity.group.median.diff$diffSrcAcc <- outside.hit.rate.curiosity.group.median.high$SrcAcc - outside.hit.rate.curiosity.group.median.low$SrcAcc
+```
+
+### Visualise the relationships
+```{r, echo=FALSE}
+melt.data <- reshape::melt(outside.hit.rate.curiosity.group.median.diff, id.vars = c("SubjectNo", "PC", "EC", "GN"), measure.vars = c("diffSAcc", "diffSrcAcc"))
+names(melt.data)[c(5, 6)] <- c("Type", "Diff")
+```
+
+```{r, echo=FALSE, fig.align="centre", fig.width=13.5, height = 7.2}
+PC_plot <- ggplot(data = melt.data, aes(x = PC, y = Diff, group = Type)) +
+  geom_point(size = 2, aes(color = Type)) +
+  stat_smooth(method = "lm", se = FALSE, aes(color = Type)) +
+  labs(x = "PC score", y = "Difference in item recollection between high and low curiosity") +
+  theme(legend.position = "none")
+
+EC_plot <- ggplot(data = melt.data, aes(x = EC, y = Diff, group = Type)) +
+  geom_point(size = 2, aes(color = Type)) +
+  stat_smooth(method = "lm", se = FALSE, aes(color = Type)) +
+  labs(x = "EC score", y = "") +
+  theme(axis.title.y = element_blank(),
+        legend.position = "none")
+
+GN_plot <- ggplot(data = melt.data, aes(x = GN, y = Diff, group = Type)) +
+  geom_point(size = 2, aes(color = Type)) +
+  stat_smooth(method = "lm", se = FALSE, aes(color = Type)) +
+  labs(x = "GN score", y = "") +
+  theme(axis.title.y = element_blank())
+
+prow <- plot_grid(PC_plot, EC_plot, GN_plot + theme(legend.position = "none"), nrow = 1)
+legt <- get_legend(GN_plot)
+
+plot_grid(prow, legt, nrow = 1, rel_widths = c(3, 0.25))
+```
+
+### Calculate the correlations
+#### Item recollection
+```{r, echo=FALSE}
+cor.test(outside.hit.rate.curiosity.group.median.diff$diffSAcc, outside.hit.rate.curiosity.group.median.diff$PC, method = "pearson")
+cor.test(outside.hit.rate.curiosity.group.median.diff$diffSAcc, outside.hit.rate.curiosity.group.median.diff$EC, method = "pearson")
+cor.test(outside.hit.rate.curiosity.group.median.diff$diffSAcc, outside.hit.rate.curiosity.group.median.diff$GN, method = "pearson")
+```
+
+#### Source memory
+```{r, echo=FALSE}
+cor.test(outside.hit.rate.curiosity.group.median.diff$diffSrcAcc, outside.hit.rate.curiosity.group.median.diff$PC, method = "pearson")
+cor.test(outside.hit.rate.curiosity.group.median.diff$diffSrcAcc, outside.hit.rate.curiosity.group.median.diff$EC, method = "pearson")
+cor.test(outside.hit.rate.curiosity.group.median.diff$diffSrcAcc, outside.hit.rate.curiosity.group.median.diff$GN, method = "pearson")
+```
+
+## Inside
+```{r, echo=FALSE, message=FALSE, warning=FALSE}
+load("../GroupData/InsideObjectResponseCuriosityGroups.RData")
+
+rm(list = c("inside.hit.rate.curiosity.group", "inside.hit.rate.curiosity.group.mean"))
+
+inside.hit.rate.curiosity.group.median[SAcc < 0]$SAcc <- 0
+inside.hit.rate.curiosity.group.median[SrcAcc < 0]$SrcAcc <- 0
+
+inside.hit.rate.curiosity.group.median <- inside.hit.rate.curiosity.group.median[!SubjectNo %in% participants.to.be.excluded]
+inside.hit.rate.curiosity.group.median <- merge(inside.hit.rate.curiosity.group.median, questionnaire[, c("SubjectNo", "PC", "EC", "GN")])
+
+inside.hit.rate.curiosity.group.median.high <- inside.hit.rate.curiosity.group.median[CurGrpMedian == "High"]
+inside.hit.rate.curiosity.group.median.low  <- inside.hit.rate.curiosity.group.median[CurGrpMedian == "Low"]
+
+inside.hit.rate.curiosity.group.median.low  <- inside.hit.rate.curiosity.group.median.low[SubjectNo %in% as.character(unique(inside.hit.rate.curiosity.group.median.high$SubjectNo))]
+
+inside.hit.rate.curiosity.group.median.diff <- inside.hit.rate.curiosity.group.median[CurGrpMedian == "High", c("SubjectNo", "PC", "EC", "GN")]
+inside.hit.rate.curiosity.group.median.diff$diffSAcc <- inside.hit.rate.curiosity.group.median.high$SAcc - inside.hit.rate.curiosity.group.median.low$SAcc
+inside.hit.rate.curiosity.group.median.diff$diffSrcAcc <- inside.hit.rate.curiosity.group.median.high$SrcAcc - inside.hit.rate.curiosity.group.median.low$SrcAcc
+```
+
+### Visualise the relationships
+```{r, echo=FALSE}
+melt.data <- reshape::melt(inside.hit.rate.curiosity.group.median.diff, id.vars = c("SubjectNo", "PC", "EC", "GN"), measure.vars = c("diffSAcc", "diffSrcAcc"))
+names(melt.data)[c(5, 6)] <- c("Type", "Diff")
+```
+
+```{r, echo=FALSE, fig.align="centre", fig.width=13.5, height = 9}
+PC_plot <- ggplot(data = melt.data, aes(x = PC, y = Diff, group = Type)) +
+  geom_point(size = 2, aes(color = Type)) +
+  stat_smooth(method = "lm", se = FALSE, aes(color = Type)) +
+  labs(x = "PC score", y = "Difference in item recollection between high and low curiosity") +
+  theme(legend.position = "none")
+
+EC_plot <- ggplot(data = melt.data, aes(x = EC, y = Diff, group = Type)) +
+  geom_point(size = 2, aes(color = Type)) +
+  stat_smooth(method = "lm", se = FALSE, aes(color = Type)) +
+  labs(x = "EC score", y = "") +
+  theme(axis.title.y = element_blank(),
+        legend.position = "none")
+
+GN_plot <- ggplot(data = melt.data, aes(x = GN, y = Diff, group = Type)) +
+  geom_point(size = 2, aes(color = Type)) +
+  stat_smooth(method = "lm", se = FALSE, aes(color = Type)) +
+  labs(x = "GN score", y = "") +
+  theme(axis.title.y = element_blank())
+
+prow <- plot_grid(PC_plot, EC_plot, GN_plot + theme(legend.position = "none"), nrow = 1)
+legt <- get_legend(GN_plot)
+
+plot_grid(prow, legt, nrow = 1, rel_widths = c(3, 0.25))
+```
+
+### Calculate the correlations
+#### Item recollection
+```{r, echo=FALSE}
+cor.test(inside.hit.rate.curiosity.group.median.diff$diffSAcc, inside.hit.rate.curiosity.group.median.diff$PC, method = "pearson")
+cor.test(inside.hit.rate.curiosity.group.median.diff$diffSAcc, inside.hit.rate.curiosity.group.median.diff$EC, method = "pearson")
+cor.test(inside.hit.rate.curiosity.group.median.diff$diffSAcc, inside.hit.rate.curiosity.group.median.diff$GN, method = "pearson")
+```
+
+#### Source memory
+```{r, echo=FALSE}
+cor.test(inside.hit.rate.curiosity.group.median.diff$diffSrcAcc, inside.hit.rate.curiosity.group.median.diff$PC, method = "pearson")
+cor.test(inside.hit.rate.curiosity.group.median.diff$diffSrcAcc, inside.hit.rate.curiosity.group.median.diff$EC, method = "pearson")
+cor.test(inside.hit.rate.curiosity.group.median.diff$diffSrcAcc, inside.hit.rate.curiosity.group.median.diff$GN, method = "pearson")
 ```
 
 # Relationship between trait score and curiosity ratings
