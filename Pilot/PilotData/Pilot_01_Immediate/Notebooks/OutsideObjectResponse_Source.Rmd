@@ -85,6 +85,7 @@ Curiosity.Recall.Freq.Rsp[SubjectNo %in% bad.ps.less.strict]$Type2 <- "Bad"
 ## Check the data
 ```{r, echo=FALSE}
 load("../GroupData/OutsideObjectResponseNoveltyGroups.RData")
+outside.hit.rate.novelty.group$Group <- factor(outside.hit.rate.novelty.group$Group)
 ```
 
 **Is there any corrected hit rate < 0?**
@@ -493,3 +494,59 @@ anova(base.model, nov.md.model, cur.md.model)
 ```{r, echo=FALSE}
 summary(nov.md.model)
 ```
+
+## For mean curiosity ratings for the *novel* and *familiar* rooms respectively
+### Curiosity first, novelty next
+```{r}
+basic <- lme(SrcAcc ~ 1, random = ~ 1 + Group|SubjectNo, data = outside.hit.rate.novelty.group, method = "ML", control = list(msMaxIter = 500, opt = "optim", msVerbose=FALSE), na.action = na.exclude)
+
+cur.m <- update(basic, .~. + MeanCurRt)
+nov.m <- update(cur.m, .~. + Group)
+
+anova(basic, cur.m, nov.m)
+```
+
+```{r, echo=FALSE}
+summary(cur.m)$tTable
+```
+
+### Novelty first, curiosity next
+```{r}
+nov.m <- update(basic, .~. + Group)
+cur.m <- update(nov.m, .~. + MeanCurRt)
+
+anova(basic, nov.m, cur.m)
+```
+
+```{r, echo=FALSE}
+summary(cur.m)$tTable
+```
+
+
+### Testing mediation effect
+```{r, echo=FALSE}
+fit.1 <- lme(SrcAcc ~ Group, random = ~ 1 + Group|SubjectNo, data = outside.hit.rate.novelty.group, method = "ML")
+summary(fit.1)
+```
+
+```{r, echo=FALSE}
+fit.2 <- lme(MeanCurRt ~ Group, random = ~ 1 + Group|SubjectNo, data = outside.hit.rate.novelty.group, method = "ML")
+summary(fit.2)
+```
+
+```{r, echo=FALSE}
+fit.3 <- lme(SrcAcc ~ MeanCurRt + Group, random = ~ 1 + Group|SubjectNo, data = outside.hit.rate.novelty.group, method = "ML")
+summary(fit.3)
+```
+
+```{r}
+library(RMediation)
+a = summary(fit.2)$tTable[2, 1]
+se.a = summary(fit.2)$tTable[2,2]
+b = summary(fit.3)$tTable[2,1]
+se.b = summary(fit.3)$tTable[2,2]
+
+medci(mu.x=a, mu.y=b, se.x=se.a, se.y=se.b, rho=0, alpha=.05, type="prodclin", plot=TRUE, plotCI=TRUE)
+```
+
+

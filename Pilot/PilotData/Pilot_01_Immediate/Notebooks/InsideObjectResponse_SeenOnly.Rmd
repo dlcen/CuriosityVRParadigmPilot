@@ -117,6 +117,7 @@ IdvRspTypeNoveltyPlot
 
 ```{r, echo=FALSE}
 load("../GroupData/InsideObjectResponseNoveltyGroups.RData")
+inside.hit.rate.novelty.group$Group <- factor(inside.hit.rate.novelty.group$Group)
 ```
 
 ## Check the data
@@ -131,7 +132,7 @@ n.negative.SAcc <- nrow(inside.hit.rate.novelty.group[SAcc < 0])
   
 ## Compare mean accuracy between *novel* and *familiar* rooms
 ```{r, echo=FALSE, warning=FALSE, fig.align='center', fig.width=3.6, fig.height=3, fig.cap='Figure1. Mean accuracy for item memory respectively for Familiar and Novel rooms.'}
-MeanSAccNoveltyCmpPlot <- ggplot(inside.hit.rate.novelty.group[!SubjectNo %in% bad.ps.less.strict], aes(x = Group, y = SAcc)) +
+MeanSAccNoveltyCmpPlot <- ggplot(inside.hit.rate.novelty.group, aes(x = Group, y = SAcc)) +
   stat_summary(fun.y = mean, geom = "bar") +
   stat_summary(fun.data = mean_cl_boot, geom = "errorbar", width = 0.2) +
   labs(x = "Room novelty", y = "corrected hit rate for \"Seen\"")
@@ -204,7 +205,8 @@ n.negative.SAcc <- nrow(inside.hit.rate.per.room[SAcc < 0])
 inside.hit.rate.per.room[SAcc < 0, ]
 ```
 
-```{r, echo=FALSE, eval=FALSE, include = FALSE}
+```{r, echo=FALSE}
+# , eval=FALSE, include = FALSE}
 inside.hit.rate.per.room[SAcc < 0]$SAcc <- 0
 ```
 
@@ -295,7 +297,8 @@ n.negative.SAcc <- nrow(inside.hit.rate.item.order.curiosity[SAcc < 0])
 inside.hit.rate.item.order.curiosity[SAcc < 0, ]
 ```
 
-```{r, echo=FALSE, eval=FALSE, include = FALSE}
+```{r, echo=FALSE}
+# , eval=FALSE, include = FALSE}
 inside.hit.rate.item.order.curiosity[SAcc < 0]$SAcc <- 0
 ```
 
@@ -376,7 +379,8 @@ n.negative.SAcc <- nrow(inside.hit.rate.item.order.curiosity.median[SAcc < 0])
 inside.hit.rate.item.order.curiosity.median[SAcc < 0, ]
 ```
 
-```{r, echo = FALSE, eval=FALSE, include = FALSE}
+```{r, echo = FALSE}
+# , eval=FALSE, include = FALSE}
 inside.hit.rate.item.order.curiosity.median[SAcc < 0]$SAcc <- 0
 ```
 
@@ -437,7 +441,8 @@ inside.hit.rate.per.room[, CurGrpMedian    := mapply(CurGrpMedianSep, CurRating,
 inside.hit.rate.per.room[, CurGrp          := mapply(CurGrpSep,       CurRating)]
 ```
 
-```{r, echo=FALSE, eval = FALSE, include = FALSE}
+```{r, echo=FALSE}
+# , eval = FALSE, include = FALSE}
 inside.hit.rate.per.room[SAcc < 0]$SAcc <- 0
 ```
 
@@ -455,7 +460,7 @@ anova(base.model, cur.scr.model, nov.scr.model)
 ```
 
 ```{r, echo=FALSE}
-summary(cur.scr.model)
+summary(cur.scr.model)$tTable
 ```
 
 
@@ -469,7 +474,7 @@ anova(base.model, nov.scr.model, cur.scr.model)
 ```
 
 ```{r, echo=FALSE}
-summary(nov.scr.model)
+summary(cur.scr.model)
 ```
 
 
@@ -485,10 +490,6 @@ nov.md.model <- update(cur.md.model, .~. + Group)
 anova(base.model, cur.md.model, nov.md.model)
 ```
 
-```{r, echo=FALSE}
-summary(cur.md.model)
-```
-
 
 ### Novelty first, curiosity next
 ```{r, echo=FALSE}
@@ -500,8 +501,63 @@ anova(base.model, nov.md.model, cur.md.model)
 ```
 
 ```{r, echo=FALSE}
-summary(nov.md.model)
+summary(cur.md.model)
 ```
+
+## For mean curiosity ratings for the *novel* and *familiar* rooms respectively
+### Curiosity first, novelty next
+```{r}
+basic <- lme(SAcc ~ 1, random = ~ 1 + Group|SubjectNo, data = inside.hit.rate.novelty.group, method = "ML", control = list(msMaxIter = 500, opt = "optim", msVerbose=FALSE), na.action = na.exclude)
+
+cur.m <- update(basic, .~. + MeanCurRt)
+nov.m <- update(cur.m, .~. + Group)
+
+anova(basic, cur.m, nov.m)
+```
+
+```{r, echo=FALSE}
+summary(cur.m)$tTable
+```
+
+### Novelty first, curiosity next
+```{r}
+nov.m <- update(basic, .~. + Group)
+cur.m <- update(nov.m, .~. + MeanCurRt)
+
+anova(basic, nov.m, cur.m)
+```
+
+```{r, echo=FALSE}
+summary(cur.m)$tTable
+```
+
+### Testing mediation effect
+```{r}
+fit.1 <- lme(SAcc ~ Group, random = ~ 1 + Group|SubjectNo, data = inside.hit.rate.novelty.group, method = "ML")
+summary(fit.1)
+```
+
+```{r}
+fit.2 <- lme(MeanCurRt ~ Group, random = ~ 1 + Group|SubjectNo, data = inside.hit.rate.novelty.group, method = "ML")
+summary(fit.2)
+```
+
+```{r}
+fit.3 <- lme(SAcc ~ MeanCurRt + Group, random = ~ 1 + Group|SubjectNo, data = inside.hit.rate.novelty.group, method = "ML")
+summary(fit.3)
+```
+
+```{r}
+library(RMediation)
+a = summary(fit.2)$tTable[2, 1]
+se.a = summary(fit.2)$tTable[2,2]
+b = summary(fit.3)$tTable[2,1]
+se.b = summary(fit.3)$tTable[2,2]
+
+medci(mu.x=a, mu.y=b, se.x=se.a, se.y=se.b, rho=0, alpha=.05, type="prodclin", plot=TRUE, plotCI=TRUE)
+```
+
+
 
 
 

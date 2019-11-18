@@ -117,6 +117,7 @@ IdvRspTypeNoveltyPlot
 ```{r, echo=FALSE}
 load("../GroupData/OutsideObjectResponseNoveltyGroups.RData")
 outside.hit.rate.novelty.group <- outside.hit.rate.novelty.group[!SubjectNo %in% bad.ps.less.strict]
+outside.hit.rate.novelty.group$Group <- factor(outside.hit.rate.novelty.group$Group)
 ```
 
 **Is there any corrected hit rate < 0?**
@@ -130,7 +131,8 @@ n.negative.SAcc <- nrow(outside.hit.rate.novelty.group[SAcc < 0])
 outside.hit.rate.novelty.group[SAcc < 0]
 ```
   
-```{r, echo=FALSE, eval=FALSE, include=FALSE}
+```{r, echo=FALSE}
+# , eval=FALSE, include=FALSE}
 outside.hit.rate.novelty.group[SAcc < 0]$SAcc <- 0
 ```
 
@@ -154,6 +156,8 @@ t.test(SAcc ~ Group, data = outside.hit.rate.novelty.group, paired = TRUE)
 ```{r, echo = FALSE}
 load("../GroupData/OutsideObjectResponseItemOrders.RData")
 outside.hit.rate.item.order.novelty <- outside.hit.rate.item.order.novelty[!SubjectNo %in% bad.ps.less.strict]
+outside.hit.rate.item.order.novelty$Group <- factor(outside.hit.rate.item.order.novelty$Group)
+outside.hit.rate.item.order.novelty$ObjOrdGrp <- factor(outside.hit.rate.item.order.novelty$ObjOrdGrp)
 ```
 
 ### Check the data
@@ -169,9 +173,12 @@ n.negative.SAcc <- nrow(outside.hit.rate.item.order.novelty[SAcc < 0 ])
 outside.hit.rate.item.order.novelty[SAcc < 0]
 ```
 
-```{r, echo=FALSE, eval=FALSE, include=FALSE}
+```{r, echo=FALSE}
+# E, eval=FALSE, include=FALSE}
 outside.hit.rate.item.order.novelty[SAcc < 0]$SAcc <- 0
 ```
+
+### Visualise the data
 
 ```{r, echo=FALSE, warning=FALSE, fig.align='center', fig.width=4.8, fig.height=3}
 MeanSAccNoveltyTmpOrdCmpPlot <- ggplot(outside.hit.rate.item.order.novelty, aes(x = Group, y = SAcc)) +
@@ -183,10 +190,24 @@ MeanSAccNoveltyTmpOrdCmpPlot <- ggplot(outside.hit.rate.item.order.novelty, aes(
 MeanSAccNoveltyTmpOrdCmpPlot
 ```
 
+### Repeated-measures ANOVA
 ```{r, echo = FALSE, warning=FALSE}
 outside.hit.rate.item.order.novelty[, .(Mean = mean(SAcc, na.rm = TRUE), SD = sd(SAcc, na.rm = TRUE), N = length(SAcc)), by = c("Group", "ObjOrdGrp")]
 
 ezANOVA(outside.hit.rate.item.order.novelty, dv = .(SAcc), wid = .(SubjectNo), within = .(Group, ObjOrdGrp))
+```
+
+### *Post hoc*
+#### Early
+
+```{r, echo=FALSE}
+t.test(SAcc ~ Group, data = outside.hit.rate.item.order.novelty[ObjOrdGrp == "Early"], paired = T)
+```
+
+#### Later
+
+```{r, echo=FALSE}
+t.test(SAcc ~ Group, data = outside.hit.rate.item.order.novelty[ObjOrdGrp == "Later"], paired = T)
 ```
 
 # Curiosity Enhancement
@@ -212,7 +233,8 @@ n.negative.SAcc <- nrow(outside.hit.rate.per.room[SAcc < 0])
 outside.hit.rate.per.room[SAcc < 0, ]
 ```
 
-```{r, echo=FALSE, eval=FALSE, include=FALSE}
+```{r, echo=FALSE}
+# , eval=FALSE, include=FALSE}
 outside.hit.rate.per.room[SAcc < 0]$SAcc <- 0
 ```
 
@@ -228,7 +250,8 @@ n.negative.SAcc <- nrow(outside.hit.rate.curiosity.group[SAcc < 0])
 outside.hit.rate.curiosity.group[SAcc < 0, ]
 ```
 
-```{r, echo=FALSE, eval=FALSE, include=FALSE}
+```{r, echo=FALSE}
+# , eval=FALSE, include=FALSE}
 outside.hit.rate.curiosity.group[SAcc < 0]$SAcc <- 0
 ```
 
@@ -243,7 +266,8 @@ n.negative.SAcc <- nrow(outside.hit.rate.curiosity.group.median[SAcc < 0])
 outside.hit.rate.curiosity.group.median[SAcc < 0, ]
 ```
 
-```{r, echo=FALSE, eval=FALSE, include=FALSE}
+```{r, echo=FALSE}
+# , eval=FALSE, include=FALSE}
 outside.hit.rate.curiosity.group.median[SAcc < 0]$SAcc <- 0
 ```
 
@@ -320,7 +344,8 @@ n.negative.SAcc <- nrow(outside.hit.rate.item.order.curiosity[SAcc < 0])
 outside.hit.rate.item.order.curiosity[SAcc < 0, ]
 ```
 
-```{r, echo=FALSE, eval=FALSE, include=FALSE}
+```{r, echo=FALSE}
+# , eval=FALSE, include=FALSE}
 outside.hit.rate.item.order.curiosity[SAcc < 0]$SAcc <- 0
 ```
 
@@ -383,6 +408,7 @@ summary(cur.grp.model)
 ##### Check the data
 ```{r, echo=FALSE}
 outside.hit.rate.item.order.curiosity.median <- outside.hit.rate.item.order.curiosity.median[!SubjectNo %in% bad.ps.less.strict]
+outside.hit.rate.item.order.curiosity.median$ObjOrdGrp <- factor(outside.hit.rate.item.order.curiosity.median$ObjOrdGrp)
 ```
 
 
@@ -397,7 +423,8 @@ n.negative.SAcc <- nrow(outside.hit.rate.item.order.curiosity.median[SAcc < 0])
 outside.hit.rate.item.order.curiosity.median[SAcc < 0, ]
 ```
 
-```{r, echo = FALSE, eval=FALSE, include=FALSE}
+```{r, echo = FALSE}
+# , eval=FALSE, include=FALSE}
 outside.hit.rate.item.order.curiosity.median[SAcc < 0]$SAcc <- 0
 ```
 
@@ -408,6 +435,8 @@ outside.hit.rate.item.order.curiosity.median$CurGrpMedian <- factor(outside.hit.
 outside.hit.rate.item.order.curiosity.median$CurGrpMedian <- factor(outside.hit.rate.item.order.curiosity.median$CurGrpMedian, levels = levels(outside.hit.rate.item.order.curiosity.median$CurGrpMedian)[c(2, 1)])
 ```
 
+##### Visualise the data
+
 ```{r, echo=FALSE, warning=FALSE, fig.align='center', fig.width=6.4, fig.height=3}
 MeanSAccCurGrpOrdPlot <- ggplot(outside.hit.rate.item.order.curiosity.median, aes(x = CurGrpMedian, y = SAcc)) +
   stat_summary(fun.y = mean, geom = "bar") +
@@ -417,6 +446,8 @@ MeanSAccCurGrpOrdPlot <- ggplot(outside.hit.rate.item.order.curiosity.median, ae
 
 MeanSAccCurGrpOrdPlot
 ```
+
+##### Run the analysis
 
 ```{r, echo = FALSE, warning=FALSE}
 outside.hit.rate.item.order.curiosity.median[, .(Mean = mean(SAcc, na.rm = TRUE), SD = sd(SAcc, na.rm = TRUE), N = length(SAcc)), by = c("CurGrpMedian", "ObjOrdGrp")]
@@ -429,6 +460,16 @@ int.model <- update(cur.model, .~. + ObjOrdGrp : CurGrpMedian)
 anova(baseline, ord.model, cur.model, int.model)
 
 summary(cur.model)
+```
+
+###### *Post hoc*
+```{r, echo=FALSE}
+contrast.matrix <- rbind(
+        "Early: High vs. Low"         = c(0, 0, 1, 0),
+        "Late:  High vs. Low"         = c(0, 0, 1, 1)
+)
+comps <- glht(int.model, contrast.matrix)
+summary(comps, test = adjusted("none"))
 ```
 
 # **Novelty** or **Curiosity**?
@@ -458,7 +499,8 @@ There are `r n.negative.SAcc` negative values in a total of `r nrow(outside.hit.
 outside.hit.rate.per.room[SAcc < 0]
 ```
 
-```{r, echo=FALSE, eval=FALSE, include=FALSE}
+```{r, echo=FALSE}
+# , eval=FALSE, include=FALSE}
 outside.hit.rate.per.room[SAcc < 0]$SAcc <- 0
 ```
 
