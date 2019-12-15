@@ -1,6 +1,15 @@
 ---
 title: "Time spent outside and inside the rooms"
 output:
+  html_document:
+    fig_caption: yes
+    highlight: default
+    number_sections: yes
+    theme: lumen
+    toc: yes
+    toc_depth: 5
+    toc_float: yes
+    
   html_notebook:
     fig_caption: yes
     highlight: default
@@ -13,10 +22,7 @@ output:
   - \usepackage{xcolor}
   - \usepackage{framed}
   - \usepackage{fontspec}
-  html_document:
-    df_print: paged
-    toc: yes
-    toc_depth: '5'
+
 ---
 
 \setmainfont{Noto Sans}

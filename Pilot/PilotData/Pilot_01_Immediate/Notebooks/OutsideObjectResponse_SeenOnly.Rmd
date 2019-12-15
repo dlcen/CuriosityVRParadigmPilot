@@ -1,6 +1,15 @@
 ---
 title: "Recall performance for objects outside the rooms"
 output: 
+      html_document:
+          fig_caption: yes
+          highlight: default
+          number_sections: yes
+          theme: lumen
+          toc: yes
+          toc_depth: 5
+          toc_float: true
+          
       html_notebook:
           fig_caption: yes
           highlight: default
@@ -105,12 +114,31 @@ IdvRspTypeNoveltyPlot
 
 # Novelty Benefits 
 
-## Compare mean accuracy between *novel* and *familiar* rooms
 ```{r, echo=FALSE}
 load("../GroupData/OutsideObjectResponseNoveltyGroups.RData")
-outside.hit.rate.novelty.group$Group <- factor(outside.hit.rate.novelty.group$Group)
-outside.hit.rate.novelty.group$Group <- factor(outside.hit.rate.novelty.group$Group, levels = levels(outside.hit.rate.novelty.group$Group)[c(2, 1)])
 ```
+
+## Check the data
+
+* **Is there any corrected hit rate < 0?**
+
+```{r, echo=FALSE}
+n.negative.SAcc <- nrow(outside.hit.rate.novelty.group[SAcc < 0])
+```
+
+  * There are `r n.negative.SAcc` negative value out of a total of `r nrow(outside.hit.rate.novelty.group)` values.
+  
+```{r, echo=FALSE}
+outside.hit.rate.novelty.group[SAcc < 0]
+```
+
+```{r, echo=FALSE}
+# , eval=FALSE, include=FALSE}
+outside.hit.rate.novelty.group[SAcc < 0]$SAcc <- 0
+```
+
+
+## Compare mean accuracy between *novel* and *familiar* rooms
 
 ```{r, echo=FALSE, warning=FALSE, fig.align='center', fig.width=3.6, fig.height=3, fig.cap='Figure1. Mean accuracy for item memory respectively for Familiar and Novel rooms.'}
 MeanSAccNoveltyCmpPlot <- ggplot(outside.hit.rate.novelty.group[!SubjectNo %in% bad.ps.less.strict], aes(x = Group, y = SAcc)) +
@@ -129,8 +157,25 @@ t.test(SAcc ~ Group, data = outside.hit.rate.novelty.group, paired = TRUE)
 ## Any difference between *Early* and *Later* object groups?
 ```{r, echo = FALSE}
 load("../GroupData/OutsideObjectResponseItemOrders.RData")
-outside.hit.rate.item.order.novelty$Group <- factor(outside.hit.rate.item.order.novelty$Group)
-outside.hit.rate.item.order.novelty$Group <- factor(outside.hit.rate.item.order.novelty$Group, levels = levels(outside.hit.rate.item.order.novelty$Group)[c(2, 1)])
+```
+
+### Check the data
+
+* **Is there any corrected hit rate < 0?**
+
+```{r, echo=FALSE}
+n.negative.SAcc <- nrow(outside.hit.rate.item.order.novelty[SAcc < 0 ])
+```
+
+  * There are `r n.negative.SAcc` negative values out of a total of `r nrow(outside.hit.rate.item.order.novelty)` values.
+
+```{r, echo=FALSE}
+outside.hit.rate.item.order.novelty[SAcc < 0, ]
+```
+
+```{r, echo=FALSE}
+# , eval=FALSE, include=FALSE}
+outside.hit.rate.item.order.novelty[SAcc < 0]$SAcc <- 0
 ```
 
 ```{r, echo=FALSE, warning=FALSE, fig.align='center', fig.width=4.8, fig.height=3}
@@ -154,7 +199,59 @@ ezANOVA(outside.hit.rate.item.order.novelty, dv = .(SAcc), wid = .(SubjectNo), w
 load("../GroupData/OutsideObjectsResponsePerRoom.RData")
 load("../GroupData/OutsideObjectResponseCuriosityGroups.RData")
 ```
+
+## Check the data
+
+### Is there any corrected hit rate < 0?
+#### For the data per room
+```{r, echo=FALSE}
+n.negative.SAcc <- nrow(outside.hit.rate.per.room[SAcc < 0])
+```
+
+  * There are `r n.negative.SAcc` negative value out of a total of `r nrow(outside.hit.rate.per.room)` values.
+
+```{r, echo=FALSE}
+outside.hit.rate.per.room[SAcc < 0, ]
+```
+
+```{r, echo = FALSE}
+# , eval=FALSE, include=FALSE}
+outside.hit.rate.per.room[SAcc < 0]$SAcc <- 0
+```
+
+
+#### For the data per curiosity group
+```{r, echo=FALSE}
+n.negative.SAcc <- nrow(outside.hit.rate.curiosity.group[SAcc < 0])
+```
+
+  * There are `r n.negative.SAcc` negative value for curiosity group (1 ~ 3 and 5 ~ 7) out of a total of `r nrow(outside.hit.rate.curiosity.group)` values.
+
+```{r, echo=FALSE}
+outside.hit.rate.curiosity.group[SAcc < 0]
+```
+
+```{r, echo=FALSE}
+# , eval=FALSE, include=FALSE}
+outside.hit.rate.curiosity.group[SAcc < 0]$SAcc <- 0
+```
   
+#### For the data per curiosity group (median)
+```{r, echo=FALSE}
+n.negative.SAcc <- nrow(outside.hit.rate.curiosity.group.median[SAcc < 0])
+```
+
+  * There are `r n.negative.SAcc` negative value for curiosity group (median) out of a total of `r nrow(outside.hit.rate.curiosity.group.median)` values.
+  
+```{r, echo=FALSE}
+outside.hit.rate.curiosity.group.median[SAcc < 0]
+```
+
+```{r, echo=FALSE}
+# , eval=FALSE, include=FALSE}
+outside.hit.rate.curiosity.group.median[SAcc < 0]$SAcc <- 0
+```
+
 ## Mean accuracy of item memory as a function of curiosity rating
 ```{r, echo=FALSE, fig.align='center', fig.width=3.6, fig.height=3}
 ggplot(outside.hit.rate.per.room, aes(x = CurRating, y = SAcc)) +
@@ -183,9 +280,15 @@ anova(baseline.rating, rating.intercept, rating.slope)
 
 ## Check the curiosity groups
 
+### Separate the groups according to the rating
 - *High*: curiosity rating > 4
 - *Low*: curiosity rating < 4
 - For curiosity rating = 4, discarded
+
+```{r echo=FALSE}
+outside.hit.rate.curiosity.group$CurGrp <- factor(outside.hit.rate.curiosity.group$CurGrp)
+outside.hit.rate.curiosity.group$CurGrp <- factor(outside.hit.rate.curiosity.group$CurGrp, levels = levels(outside.hit.rate.curiosity.group$CurGrp)[c(2, 1)])
+```
 
 ```{r, echo=FALSE, warning=FALSE, fig.align='center', fig.width=3.6, fig.height=3}
 MeanSAccCurGrpCmpPlot <- ggplot(outside.hit.rate.curiosity.group[!SubjectNo %in% bad.ps.less.strict], aes(x = CurGrp, y = SAcc)) +
@@ -196,7 +299,30 @@ MeanSAccCurGrpCmpPlot <- ggplot(outside.hit.rate.curiosity.group[!SubjectNo %in%
 MeanSAccCurGrpCmpPlot
 ```
 
-## Curiosity groups and temporal order of the objects
+#### Curiosity groups and temporal order of the objects
+##### Check the data
+
+**Is there any corrected hit rate < 0?**
+```{r, echo=FALSE}
+n.negative.SAcc <- nrow(outside.hit.rate.item.order.curiosity[SAcc < 0])
+```
+
+There are `r n.negative.SAcc` negative values.
+
+```{r, echo=FALSE}
+outside.hit.rate.item.order.curiosity[SAcc < 0, ]
+```
+
+```{r, echo = FALSE}
+# , eval=FALSE, include=FALSE}
+outside.hit.rate.item.order.curiosity[SAcc < 0]$SAcc <- 0
+```
+
+```{r echo=FALSE}
+outside.hit.rate.item.order.curiosity$CurGrp <- factor(outside.hit.rate.item.order.curiosity$CurGrp)
+outside.hit.rate.item.order.curiosity$CurGrp <- factor(outside.hit.rate.item.order.curiosity$CurGrp, levels = levels(outside.hit.rate.item.order.curiosity$CurGrp)[c(2, 1)])
+```
+
 ```{r, echo=FALSE, warning=FALSE, fig.align='center', fig.width=6.4, fig.height=3}
 MeanSAccCurGrpOrdPlot <- ggplot(outside.hit.rate.item.order.curiosity[!SubjectNo %in% bad.ps.less.strict & !is.na(CurGrp)], aes(x = CurGrp, y = SAcc)) +
   stat_summary(fun.y = mean, geom = "bar") +
@@ -221,7 +347,7 @@ anova(baseline, ord.model, cur.model, int.model)
 summary(int.model)
 ```
 
-### *Post hoc*
+##### *Post hoc*
 ```{r, echo=FALSE}
 contrast.matrix <- rbind(
         "Early: High vs. Low"         = c(0, 0, 1, 0),
@@ -230,3 +356,86 @@ contrast.matrix <- rbind(
 comps <- glht(int.model, contrast.matrix)
 summary(comps, test = adjusted("none"))
 ```
+
+### Separate the groups according to the median rating of each participant
+- *High*: curiosity rating > median of the participant
+- *Low*: curiosity rating < median of the participant
+
+```{r echo=FALSE}
+outside.hit.rate.curiosity.group.median$CurGrpMedian <- factor(outside.hit.rate.curiosity.group.median$CurGrpMedian)
+outside.hit.rate.curiosity.group.median$CurGrpMedian <- factor(outside.hit.rate.curiosity.group.median$CurGrpMedian, levels = levels(outside.hit.rate.curiosity.group.median$CurGrpMedian)[c(2, 1)])
+```
+
+```{r, echo=FALSE, warning=FALSE, fig.align='center', fig.width=3.6, fig.height=3}
+MeanSAccCurGrpMedianCmpPlot <- ggplot(outside.hit.rate.curiosity.group.median[!SubjectNo %in% bad.ps.less.strict], aes(x = CurGrpMedian, y = SAcc)) +
+  stat_summary(fun.y = mean, geom = "bar") +
+  stat_summary(fun.data = mean_cl_boot, geom = "errorbar", width = 0.2) +
+  labs(x = "Curiosity group", y = "Corrected hit rate for \"seen\"")
+
+MeanSAccCurGrpMedianCmpPlot
+```
+
+```{r, echo=FALSE}
+cur.grp.model <- lme(SAcc ~ CurGrpMedian, random = ~ 1 + CurGrpMedian|SubjectNo,  data = outside.hit.rate.curiosity.group.median, method = "ML")
+summary(cur.grp.model)
+```
+
+#### Curiosity groups and temporal order of the objects
+##### Check the data
+
+* **Is there any corrected hit rate < 0?**
+```{r, echo=FALSE}
+n.negative.SAcc <- nrow(outside.hit.rate.item.order.curiosity.median[SAcc < 0])
+```
+
+  * There are `r n.negative.SAcc` negative values out of a total of `r nrow(outside.hit.rate.item.order.curiosity.median)` values.
+
+```{r, echo=FALSE}
+outside.hit.rate.item.order.curiosity.median[SAcc < 0, ]
+```
+
+```{r, echo = FALSE}
+# , eval=FALSE, include=FALSE}
+outside.hit.rate.item.order.curiosity.median[SAcc < 0]$SAcc <- 0
+```
+
+
+```{r echo=FALSE}
+outside.hit.rate.item.order.curiosity.median$CurGrpMedian <- factor(outside.hit.rate.item.order.curiosity.median$CurGrpMedian)
+outside.hit.rate.item.order.curiosity.median$CurGrpMedian <- factor(outside.hit.rate.item.order.curiosity.median$CurGrpMedian, levels = levels(outside.hit.rate.item.order.curiosity.median$CurGrpMedian)[c(2, 1)])
+```
+
+```{r, echo=FALSE, warning=FALSE, fig.align='center', fig.width=6.4, fig.height=3}
+MeanSAccCurGrpMedianOrdPlot <- ggplot(outside.hit.rate.item.order.curiosity.median[!SubjectNo %in% bad.ps.less.strict & !is.na(CurGrpMedian)], aes(x = CurGrpMedian, y = SAcc)) +
+  stat_summary(fun.y = mean, geom = "bar") +
+  stat_summary(fun.data = mean_cl_boot, geom = "errorbar", width = 0.2) +
+  facet_wrap( ~ ObjOrdGrp) + 
+  labs(x = "Curiosity group", y = "Corrected hit rate for \"seen\"")
+
+MeanSAccCurGrpMedianOrdPlot
+```
+
+```{r, echo = FALSE, warning=FALSE}
+outside.hit.rate.item.order.curiosity.median[, .(Mean = mean(SAcc, na.rm = TRUE), SD = sd(SAcc, na.rm = TRUE), N = length(SAcc)), by = c("CurGrpMedian", "ObjOrdGrp")]
+
+baseline  <- lme(SAcc ~ 1, random = ~ 1 + CurGrpMedian + ObjOrdGrp|SubjectNo, data = outside.hit.rate.item.order.curiosity.median[!is.na(CurGrpMedian)], method = "ML", control = list(msMaxIter = 500, opt = "optim", msVerbose=FALSE), na.action = na.exclude)
+ord.model <- update(baseline,  .~. + ObjOrdGrp)
+cur.model <- update(ord.model, .~. + CurGrpMedian)
+int.model <- update(cur.model, .~. + ObjOrdGrp : CurGrpMedian)
+
+anova(baseline, ord.model, cur.model, int.model)
+
+summary(int.model)
+```
+
+##### *Post hoc*
+```{r, echo=FALSE}
+contrast.matrix <- rbind(
+        "Early: High vs. Low"         = c(0, 0, 1, 0),
+        "Late:  High vs. Low"         = c(0, 0, 1, 1)
+)
+comps <- glht(int.model, contrast.matrix)
+summary(comps, test = adjusted("none"))
+```
+
+
