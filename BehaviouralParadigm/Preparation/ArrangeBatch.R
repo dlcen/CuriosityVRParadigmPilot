@@ -17,6 +17,6 @@ flipped.objects <- c("AmazonEcho", "Buiscuits", "Cake", "Calculator", "Canister"
 
 source("ArrangeObjects.R")
 
-for (p in c(3:15)) {
+for (p in c(1:15)) {
 	ArrangeObjects(p, familiarisation.rooms, exploration.rooms, object.list, flipped.objects)
 }

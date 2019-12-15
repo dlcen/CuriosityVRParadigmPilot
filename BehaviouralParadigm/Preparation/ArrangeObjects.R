@@ -79,11 +79,15 @@ ArrangeObjects <- function(this.participant.no, familiarisation.rooms, explorati
 	## *Familiarisation*
 	if (!dir.exists(file.path(p.folder, "Familiarisation", "Room"))) {dir.create(file.path(p.folder, "Familiarisation", "Room"))}
 	room.order <- c("Prepractice", sample(familiarisation.rooms))
+	room.order <- paste(room.order, collapse = ",")
+	room.order <- paste0(room.order, ',')
 	write(noquote( room.order), paste( p.folder, "Familiarisation", "Room",  "RoomOrder.csv", sep = .Platform$file.sep), sep = ",")
 
 	## "Exploration"
 	if (!dir.exists(file.path(p.folder, "Exploration", "Room"))) {dir.create(file.path(p.folder, "Exploration", "Room"))}
 	room.order <- sample(exploration.rooms)
+	room.order <- paste(room.order, collapse = ",")
+	room.order <- paste0(room.order, ',')
 	write(noquote( room.order), paste( p.folder, "Exploration", "Room",  "RoomOrder.csv", sep = .Platform$file.sep), sep = ",")
 
 	# Generate a file for the memory test
