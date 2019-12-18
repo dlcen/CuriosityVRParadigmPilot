@@ -94,6 +94,12 @@ ArrangeObjects <- function(this.participant.no, familiarisation.rooms, explorati
 	## Exclude those in the *Familiarisation* task
 	memory.list <- obj.tbl[! Scene %in% familiarisation.rooms]
 
+	lbls <- c("Flip", "NoFlip")
+
+	lbl.list <- c(rep(lbls, (nrow(memory.list) - 48) /2), rep(c("NoFlip"), 48))
+
+	memory.list$Label <- lbl.list
+
 	random.memory.list <- memory.list[sample(nrow(memory.list)),]
 
 	if (!dir.exists(file.path(p.folder, "TestOrder"))) {dir.create(file.path(p.folder, "TestOrder"))}

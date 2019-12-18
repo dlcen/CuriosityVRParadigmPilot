@@ -6,7 +6,7 @@ library(data.table)
 familiarisation.rooms <- c("Cinema", "BridalShop")
 
 ## Rooms for *Encoding Task"
-exploration.rooms <- c("ArtStudio", "Bedroom", "Cafe", "Classroom", "Gym", "Kindergarten", "Kitchen", "KTV", "Library", "LivingRoom", "Lounge", "MeetingRoom", "Museum", "Office", "SPA", "StorageRoom")
+exploration.rooms <- c("ArtStudio", "Bedroom", "Cafe", "Classroom", "Gym", "Kindergarten", "Kitchen", "KTV", "Library", "LivingRoom", "Lounge", "Marmite", "MeetingRoom", "Museum", "Office", "SPA", "StorageRoom")
 
 # Read the list of objects
 object.list <- read.csv("AllObjectList.csv", header = TRUE)
