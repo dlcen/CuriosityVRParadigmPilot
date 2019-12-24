@@ -60,10 +60,38 @@ individual.data <- data.table(individual.data)
 individual.data[, Surprise := (Interest - Curiosity)]
 
 ## Plot the data
+### Curiosity
 ggplot(individual.data, aes(x = Curiosity, y = InsideDuration)) + 
 	geom_point(size = 3) +
 	stat_smooth(method = "lm", se = FALSE, color = "red") +
-	facet_wrap( ~ SubjectNo)
+  labs(x = "Curiosity rating", y = "Time spent inside the room (s)") +
+	facet_wrap( ~ SubjectNo) +
+  theme(axis.title = element_text(size = 12),
+        strip.text = element_text(size = 12, face = "bold"))
+  
 
+ggsave("./Figures/CuriosityInsideDurations.png", width = 12, height = 4)
+
+### Interesting
+ggplot(individual.data, aes(x = Interest, y = InsideDuration)) + 
+  geom_point(size = 3) +
+  stat_smooth(method = "lm", se = FALSE, color = "red") +
+  labs(x = "Interest rating", y = "Time spent inside the room (s)") +
+  facet_wrap( ~ SubjectNo) +
+  theme(axis.title = element_text(size = 12),
+        strip.text = element_text(size = 12, face = "bold"))
+
+ggsave("./Figures/InterestInsideDurations.png", width = 12, height = 4)
+
+### Surprise (difference between Curiosity and Interest)
+ggplot(individual.data, aes(x = Surprise, y = InsideDuration)) + 
+  geom_point(size = 3) +
+  stat_smooth(method = "lm", se = FALSE, color = "red") +
+  labs(x = "Surprise rating", y = "Time spent inside the room (s)") +
+  facet_wrap( ~ SubjectNo) +
+  theme(axis.title = element_text(size = 12),
+        strip.text = element_text(size = 12, face = "bold"))
+
+ggsave("./Figures/SurpriseInsideDurations.png", width = 12, height = 4)
 
 
