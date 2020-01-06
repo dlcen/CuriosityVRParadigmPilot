@@ -14,4 +14,6 @@ source("./PilotAnalysis/Preprocessing.R")
 
 # 2. Plot individual data
 
+load("./PilotData/IndividualData.RData")
+
 source("./PilotAnalysis/PlotIndividualData.R")

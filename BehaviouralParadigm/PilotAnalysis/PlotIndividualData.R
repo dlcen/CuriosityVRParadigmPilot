@@ -148,3 +148,31 @@ for (this.p in participant.list) {
 	ggsave(paste0("./Figures/IndividualPlots/", this.p, "_RatingsDurations.png"), width = 12, height = 4)
 }
 
+# Memory performance
+
+## Percentage of option selection for "Old", "Familiar" and "New" respectively for old and new items.
+RespFreqCal <- function(ObjResp, ... ){
+  FreqTable <- as.data.frame(table(ObjResp)/sum(table(ObjResp)))
+  names(FreqTable) <- c("Response", "Frequency")
+  return(FreqTable)
+}
+
+Recall.Freq.Rsp <- object.recognition[, c(RespFreqCal(Response)), by = c("SubjectNo", "Group")]
+
+Recall.Freq.Rsp$Response <- factor(Recall.Freq.Rsp$Response, levels = levels(Recall.Freq.Rsp$Response)[c(3, 1, 2)])
+
+
+for (this.p in participant.list) {
+	this.data <- Recall.Freq.Rsp[SubjectNo == this.p]
+
+	ggplot(this.data, aes(x = Response, y = Frequency, color = Group, fill = Group)) +
+		geom_point(aes(group = Group, color = Group, fill = Group), size = 3) +
+		geom_line(aes(group = Group, color = Group), size = 0.5) +
+		facet_wrap(~ SubjectNo) +
+		scale_color_aaas() +
+		scale_fill_aaas() +
+		theme(strip.text = element_text(face = "bold", size = 12), 
+			  legend.position = c(0.1, 0.9))
+
+	ggsave(paste0("./Figures/IndividualPlots/", this.p, "_RespFreq.png"), width = 6, height = 4)
+}
