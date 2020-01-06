@@ -165,14 +165,48 @@ Recall.Freq.Rsp$Response <- factor(Recall.Freq.Rsp$Response, levels = levels(Rec
 for (this.p in participant.list) {
 	this.data <- Recall.Freq.Rsp[SubjectNo == this.p]
 
-	ggplot(this.data, aes(x = Response, y = Frequency, color = Group, fill = Group)) +
+	ggplot(this.data, aes(x = Response, y = Frequency, color = Group, fill = Group)) + theme_gray() +
 		geom_point(aes(group = Group, color = Group, fill = Group), size = 3) +
 		geom_line(aes(group = Group, color = Group), size = 0.5) +
 		facet_wrap(~ SubjectNo) +
 		scale_color_aaas() +
 		scale_fill_aaas() +
 		theme(strip.text = element_text(face = "bold", size = 12), 
-			  legend.position = c(0.1, 0.9))
+			  legend.position = c(0.1, 0.8))
 
 	ggsave(paste0("./Figures/IndividualPlots/", this.p, "_RespFreq.png"), width = 6, height = 4)
 }
+
+## Ratings and memory performance
+
+for (this.p in participant.list) {
+
+	this.data <- outside.hit.rate.per.rating[SubjectNo == this.p]
+
+	ggplot(this.data, aes(CurRating, SAcc)) + theme_gray() +
+		geom_point(size = 2) +
+		stat_smooth(method = "lm", se = FALSE, color = "red") +
+		scale_x_continuous(breaks = c(0:6)) +
+		xlim(0, 6) + ylim(-0.25, 0.5) +
+		labs(x = "Curiosity rating", y = "Corrected hit rate") +
+		facet_wrap( ~ SubjectNo) +
+		theme( strip.text = element_text(face = "bold", size = 12))
+
+	ggsave(paste0("./Figures/IndividualPlots//", this.p, "_CurHitRate.png"), width = 6, height = 4)}
+
+## Rating groups and memory performance
+
+for (this.p in participant.list) {
+
+	this.data <- outside.hit.rate.per.rating[SubjectNo == this.p]
+
+	ggplot(this.data, aes(CurRating, SAcc)) + theme_gray() +
+		geom_point(size = 2) +
+		stat_smooth(method = "lm", se = FALSE, color = "red") +
+		scale_x_continuous(breaks = c(0:6)) +
+		xlim(0, 6) + ylim(-0.25, 0.5) +
+		labs(x = "Curiosity rating", y = "Corrected hit rate") +
+		facet_wrap( ~ SubjectNo) +
+		theme( strip.text = element_text(face = "bold", size = 12))
+
+	ggsave(paste0("./Figures/IndividualPlots//", this.p, "_CurHitRate.png"), width = 6, height = 4)}
