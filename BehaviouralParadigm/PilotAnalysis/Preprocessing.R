@@ -1,12 +1,6 @@
-library(data.table); library(ggplot2)
+library(data.table)
 
-# Get the participant no.s
-
-participant.list <- list.files(path = "./PilotData/IndividualData/", pattern = "^P")
-
-# First look at the curiosity rating and interesting rating for each participants
-
-## Get the curiosity ratings for each participant
+# Ratings
 ratings <- NULL
 
 for (this.p in participant.list) {
@@ -16,38 +10,12 @@ for (this.p in participant.list) {
 }
 
 ratings <- data.table(ratings)
+ratings <- ratings[, c(4, 1, 2, 3)]
+ratings$Surprise <- ratings$Interest - ratings$Curiosity
 
 rooms <- as.character(unique(ratings$Room))
 
-## Plot a histogram for each participant, respectively for curiosity ratings and interesting ratings
-
-### Curiosity ratings
-ggplot(ratings, aes(x = Curiosity)) + 
-	geom_histogram(binwidth = 0.5) +
-	geom_vline(aes(xintercept = median(Curiosity)), color = "red", size = 1) +
-	scale_x_continuous(breaks = c(1, 2, 3, 4, 5, 6))+
-	scale_y_continuous(breaks = c(0:10)) +
-	labs(x = "Curiosity Rating", y = "Count") + 
-	facet_wrap( ~ SubjectNo) +
-	theme(axis.text = element_text(size = 12),
-		  strip.text = element_text(size = 12, face = "bold"))
-ggsave("./Figures/CuriosityRatings.png", width = 12, height = 4)
-
-
-### Interesting ratings
-ggplot(ratings, aes(x = Interest)) + 
-	geom_histogram(binwidth = 0.5) +
-	geom_vline(aes(xintercept = median(Interest)), color = "red", size = 1) +
-	scale_x_continuous(breaks = c(1, 2, 3, 4, 5, 6))+
-	scale_y_continuous(breaks = c(0:10)) +
-	labs(x = "Interest Rating", y = "Count") + 
-	facet_wrap( ~ SubjectNo) +
-	theme(axis.text = element_text(size = 12),
-		  strip.text = element_text(size = 12, face = "bold"))
-ggsave("./Figures/InterestRatings.png", width = 12, height = 4)
-
-# Second, look at the time spent in each room
-## Get the duration data
+# Durations
 durations <- NULL
 
 for (this.p in participant.list) {
@@ -63,47 +31,12 @@ individual.data <- data.table(individual.data)
 
 individual.data[, Surprise := (Interest - Curiosity)]
 
-## Plot the data
-### Curiosity
-ggplot(individual.data, aes(x = Curiosity, y = InsideDuration)) + 
-	geom_point(size = 3) +
-	stat_smooth(method = "lm", se = FALSE, color = "red") +
-  labs(x = "Curiosity rating", y = "Time spent inside the room (s)") +
-	facet_wrap( ~ SubjectNo) +
-  theme(axis.title = element_text(size = 12),
-        strip.text = element_text(size = 12, face = "bold"))
-  
-
-ggsave("./Figures/CuriosityInsideDurations.png", width = 12, height = 4)
-
-### Interesting
-ggplot(individual.data, aes(x = Interest, y = InsideDuration)) + 
-  geom_point(size = 3) +
-  stat_smooth(method = "lm", se = FALSE, color = "red") +
-  labs(x = "Interest rating", y = "Time spent inside the room (s)") +
-  facet_wrap( ~ SubjectNo) +
-  theme(axis.title = element_text(size = 12),
-        strip.text = element_text(size = 12, face = "bold"))
-
-ggsave("./Figures/InterestInsideDurations.png", width = 12, height = 4)
-
-### Surprise (difference between Curiosity and Interest)
-ggplot(individual.data, aes(x = Surprise, y = InsideDuration)) + 
-  geom_point(size = 3) +
-  stat_smooth(method = "lm", se = FALSE, color = "red") +
-  labs(x = "Surprise rating", y = "Time spent inside the room (s)") +
-  facet_wrap( ~ SubjectNo) +
-  theme(axis.title = element_text(size = 12),
-        strip.text = element_text(size = 12, face = "bold"))
-
-ggsave("./Figures/SurpriseInsideDurations.png", width = 12, height = 4)
-
-
-# Third, look at the memory performance
-
+# Memory performance
 object.recognition <- NULL
 
-for (thisFolder in participant.list) {
+all.participant.list <- list.files(path = "./PilotData/IndividualData/", pattern = "^P")
+
+for (thisFolder in all.participant.list) {
   this.response <- read.csv(paste0("PilotData", .Platform$file.sep, "IndividualData", .Platform$file.sep, thisFolder, .Platform$file.sep, "TestOrder", .Platform$file.sep, "MemoryTestResponse.csv"), header = T)
   this.response<- data.table(this.response)
   
