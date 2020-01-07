@@ -26,6 +26,7 @@ for (this.p in participant.list) {
 
 individual.data <- ratings
 individual.data$InsideDuration <- durations$InsideDuration
+individual.data$OutsideDuration <- durations$OutsideDuration
 
 individual.data <- data.table(individual.data)
 
