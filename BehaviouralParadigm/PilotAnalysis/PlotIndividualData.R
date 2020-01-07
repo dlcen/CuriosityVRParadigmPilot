@@ -89,6 +89,42 @@ for (this.p in participant.list) {
 }
 
 # Ratings and durations
+
+## Outside the rooms
+lmEqn <- function(data, x) {
+	m <- lm(sprintf("OutsideDuration ~ %s", x), data = data)
+
+	if(coef(m)[2] > 0) {
+		eq <- substitute(italic(y) == a + b%.%italic(x)*","~~italic(adjusted)~italic(r)^2~"="~r2,
+						 list(a = format(unname(coef(m)[1]), digits = 4),
+						 	 b = format(unname(abs(coef(m)[2])), digits = 3),
+						 	r2 = format(summary(m)$r.squared, digits = 3)))
+	} else {
+		eq <- substitute(italic(y) == a - b%.%italic(x)*","~~italic(adjusted)~italic(r)^2~"="~r2,
+						 list(a = format(unname(coef(m)[1]), digits = 4),
+						 	 b = format(unname(abs(coef(m)[2])), digits = 3),
+						 	r2 = format(summary(m)$r.squared, digits = 3)))
+	}
+
+	as.character(as.expression(eq))
+}
+
+for (this.p in participant.list) {
+
+	ggplot(individual.data[SubjectNo == this.p], aes(x = Curiosity, y = OutsideDuration)) + 
+		geom_point(size = 3) +
+		stat_smooth(method = "lm", se = FALSE, color = "red") +
+		geom_text(x = 3.5, y = min(individual.data[SubjectNo == this.p]$OutsideDuration) - 5, label = lmEqn(individual.data[SubjectNo == this.p], "Curiosity"), parse = T) +
+	    xlim(0, 7) + ylim(min(individual.data[SubjectNo == this.p]$OutsideDuration) - 7.5, max(individual.data[SubjectNo == this.p]$OutsideDuration) + 5) +
+	    labs(x = "Curiosity rating", y = "Time spent on the pathway (s)") +
+		facet_wrap( ~ SubjectNo) +
+	    theme(axis.title = element_text(size = 12),
+	          strip.text = element_text(size = 12, face = "bold"))
+
+	ggsave(paste0("./Figures/IndividualPlots/", this.p, "_RatingsOutsideDurations.png"), width = 6, height = 4)
+}
+
+## Inside the rooms
 lmEqn <- function(data, x) {
 	m <- lm(sprintf("InsideDuration ~ %s", x), data = data)
 
@@ -156,7 +192,7 @@ RespFreqCal <- function(ObjResp, ... ){
   names(FreqTable) <- c("Response", "Frequency")
   return(FreqTable)
 }
-
+`
 Recall.Freq.Rsp <- object.recognition[, c(RespFreqCal(Response)), by = c("SubjectNo", "Group")]
 
 Recall.Freq.Rsp$Response <- factor(Recall.Freq.Rsp$Response, levels = levels(Recall.Freq.Rsp$Response)[c(3, 1, 2)])
@@ -179,6 +215,24 @@ for (this.p in participant.list) {
 
 ## Ratings and memory performance
 
+lmEqn <- function(data) {
+	m <- lm(SAcc ~ CurRating, data = data)
+
+	if(coef(m)[2] > 0) {
+		eq <- substitute(italic(y) == a + b%.%italic(x)*","~~italic(adjusted)~italic(r)^2~"="~r2,
+						 list(a = format(unname(coef(m)[1]), digits = 4),
+						 	 b = format(unname(abs(coef(m)[2])), digits = 3),
+						 	r2 = format(summary(m)$r.squared, digits = 3)))
+	} else {
+		eq <- substitute(italic(y) == a - b%.%italic(x)*","~~italic(adjusted)~italic(r)^2~"="~r2,
+						 list(a = format(unname(coef(m)[1]), digits = 4),
+						 	 b = format(unname(abs(coef(m)[2])), digits = 3),
+						 	r2 = format(summary(m)$r.squared, digits = 3)))
+	}
+
+	as.character(as.expression(eq))
+}
+
 for (this.p in participant.list) {
 
 	this.data <- outside.hit.rate.per.rating[SubjectNo == this.p]
@@ -186,6 +240,7 @@ for (this.p in participant.list) {
 	ggplot(this.data, aes(CurRating, SAcc)) + theme_gray() +
 		geom_point(size = 2) +
 		stat_smooth(method = "lm", se = FALSE, color = "red") +
+		geom_text(x = 3.5, y = 0.45, label = lmEqn(this.data), parse = T) +
 		scale_x_continuous(breaks = c(0:6)) +
 		xlim(0, 6) + ylim(-0.25, 0.5) +
 		labs(x = "Curiosity rating", y = "Corrected hit rate") +
@@ -196,17 +251,23 @@ for (this.p in participant.list) {
 
 ## Rating groups and memory performance
 
+## Rating groups, item order and memory performance
+
+outside.hit.rate.item.order.curiosity$CurGrp <- factor(outside.hit.rate.item.order.curiosity$CurGrp, levels = levels(outside.hit.rate.item.order.curiosity$CurGrp)[c(2, 1)])
+
 for (this.p in participant.list) {
 
-	this.data <- outside.hit.rate.per.rating[SubjectNo == this.p]
+	this.data <- outside.hit.rate.item.order.curiosity[SubjectNo == this.p]
 
-	ggplot(this.data, aes(CurRating, SAcc)) + theme_gray() +
-		geom_point(size = 2) +
-		stat_smooth(method = "lm", se = FALSE, color = "red") +
-		scale_x_continuous(breaks = c(0:6)) +
-		xlim(0, 6) + ylim(-0.25, 0.5) +
-		labs(x = "Curiosity rating", y = "Corrected hit rate") +
-		facet_wrap( ~ SubjectNo) +
+	ggplot(this.data, aes(CurGrp, SAcc)) +
+		geom_point(aes(group = ObjOrdGrp, color = ObjOrdGrp, fill = ObjOrdGrp), size = 5, position = position_dodge(width = 0.9)) +
+		labs(x = "Curiosity group", y = "Corrected hit rate") + 
+		scale_fill_uchicago(name = "Item order") +
+		scale_color_uchicago(name = "Item order") +
+		facet_wrap(~ SubjectNo) +
 		theme( strip.text = element_text(face = "bold", size = 12))
 
-	ggsave(paste0("./Figures/IndividualPlots//", this.p, "_CurHitRate.png"), width = 6, height = 4)}
+
+	ggsave(paste0("./Figures/IndividualPlots/", this.p, "_CurOrdHitRate.png"), width = 6, height = 4)
+
+}
