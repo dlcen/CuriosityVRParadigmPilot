@@ -4,6 +4,18 @@
 		"selected_items":
 		[
 			[
+				"rating",
+				"rating.up"
+			],
+			[
+				"ratin",
+				"rating.up"
+			],
+			[
+				"ratn",
+				"rating.up"
+			],
+			[
 				"Cur",
 				"CurRating"
 			],
@@ -496,6 +508,10 @@
 		"selected_items":
 		[
 			[
+				"term",
+				"Terminus: Open Default Shell in Tab (View)"
+			],
+			[
 				"remo",
 				"Package Control: Remove Package"
 			],
@@ -506,10 +522,6 @@
 			[
 				"in",
 				"Package Control: Install Package"
-			],
-			[
-				"term",
-				"Terminus: Open Default Shell in Tab (View)"
 			],
 			[
 				"send",
@@ -574,8 +586,8 @@
 	"file_history":
 	[
 		"/home/danlu/Desktop/Git/CuriosityVRParadigmPilot/BehaviouralParadigm/PilotAnalysis/Preprocessing.R",
-		"/home/danlu/Desktop/Git/CuriosityVRParadigmPilot/BehaviouralParadigm/PilotAnalysis/Pipeline.R",
 		"/home/danlu/Desktop/Git/CuriosityVRParadigmPilot/BehaviouralParadigm/PilotAnalysis/PlotIndividualData.R",
+		"/home/danlu/Desktop/Git/CuriosityVRParadigmPilot/BehaviouralParadigm/PilotAnalysis/Pipeline.R",
 		"/home/c1254825/Desktop/Git/CuriosityVRParadigmPilot/BehaviouralParadigm/PilotAnalysis/PlotIndividualData.R",
 		"/home/c1254825/Desktop/Git/CuriosityVRParadigmPilot/BehaviouralParadigm/PilotAnalysis/Pipeline.R",
 		"/home/c1254825/Documents/PrismPaper/Github/WalkingWithPriorExperience/WalkingWithPriorExperience/Code/Clustering/clusterThreshSum.m",

@@ -2,6 +2,8 @@ library(data.table); library(ggplot2); library(ggsci); library(cowplot); library
 
 # Ratings
 
+rating.up <- 10
+
 ## Histogram respectively for *Curiosity* and *Interest* ratings for each participant
 
 for (this.p in participant.list) {
@@ -9,9 +11,9 @@ for (this.p in participant.list) {
 	cur.plot <- ggplot(ratings[SubjectNo == this.p], aes(x = Curiosity)) + 
 					geom_histogram(binwidth = 0.5) +
 					geom_vline(aes(xintercept = median(Curiosity)), color = "red", size = 1) +
-					scale_x_continuous(breaks = c(1, 2, 3, 4, 5, 6))+
+					scale_x_continuous(breaks = c(1:rating.up))+
 					scale_y_continuous(breaks = c(0:10)) +
-					xlim(0 ,7) + ylim(0, 8) + 
+					xlim(0 ,rating.up + 1) + ylim(0, 8) + 
 					facet_wrap( ~ SubjectNo) +
 					labs(x = "Curiosity Rating", y = "Count") + 
 					theme(axis.text = element_text(size = 12),
@@ -20,9 +22,9 @@ for (this.p in participant.list) {
 	int.plot <- ggplot(ratings[SubjectNo == this.p], aes(x = Interest)) + 
 					geom_histogram(binwidth = 0.5) +
 					geom_vline(aes(xintercept = median(Interest)), color = "red", size = 1) +
-					scale_x_continuous(breaks = c(1, 2, 3, 4, 5, 6))+
+					scale_x_continuous(breaks = c(1:rating.up))+
 					scale_y_continuous(breaks = c(0:10)) +
-					xlim(0, 7) + ylim(0, 8) + 
+					xlim(0, rating.up + 1) + ylim(0, 8) + 
 					facet_wrap( ~ SubjectNo) +
 					labs(x = "Interest Rating", y = "Count") + 
 					theme(axis.text = element_text(size = 12),
@@ -34,8 +36,8 @@ for (this.p in participant.list) {
 	sur.plot <- ggplot(ratings[SubjectNo == this.p], aes(x = Surprise)) + 
 					geom_histogram(binwidth = 0.5) +
 					geom_vline(aes(xintercept = median(Surprise)), color = "red", size = 1) +
-					scale_x_continuous(breaks = c(-4:4)) +
-					xlim(-4, 4) + ylim(0, 8) + 
+					scale_x_continuous(breaks = c(-5:5)) +
+					xlim(-5, 5) + ylim(0, 8) + 
 					facet_wrap( ~ SubjectNo) +
 					labs(x = "Difference between the two ratings", y = "Count") + 
 					theme(axis.text = element_text(size = 12),
@@ -114,8 +116,8 @@ for (this.p in participant.list) {
 	ggplot(individual.data[SubjectNo == this.p], aes(x = Curiosity, y = OutsideDuration)) + 
 		geom_point(size = 3) +
 		stat_smooth(method = "lm", se = FALSE, color = "red") +
-		geom_text(x = 3.5, y = min(individual.data[SubjectNo == this.p]$OutsideDuration) - 5, label = lmEqn(individual.data[SubjectNo == this.p], "Curiosity"), parse = T) +
-	    xlim(0, 7) + ylim(min(individual.data[SubjectNo == this.p]$OutsideDuration) - 7.5, max(individual.data[SubjectNo == this.p]$OutsideDuration) + 5) +
+		geom_text(x = 5.5, y = min(individual.data[SubjectNo == this.p]$OutsideDuration) - 5, label = lmEqn(individual.data[SubjectNo == this.p], "Curiosity"), parse = T) +
+	    xlim(0, rating.up + 1) + ylim(min(individual.data[SubjectNo == this.p]$OutsideDuration) - 7.5, max(individual.data[SubjectNo == this.p]$OutsideDuration) + 5) +
 	    labs(x = "Curiosity rating", y = "Time spent on the pathway (s)") +
 		facet_wrap( ~ SubjectNo) +
 	    theme(axis.title = element_text(size = 12),
@@ -148,8 +150,8 @@ for (this.p in participant.list) {
 	cur.dur <- ggplot(individual.data[SubjectNo == this.p], aes(x = Curiosity, y = InsideDuration)) + 
 		geom_point(size = 3) +
 		stat_smooth(method = "lm", se = FALSE, color = "red") +
-		geom_text(x = 3.5, y = min(individual.data[SubjectNo == this.p]$InsideDuration) - 5, label = lmEqn(individual.data[SubjectNo == this.p], "Curiosity"), parse = T) +
-	    xlim(0, 7) + ylim(min(individual.data[SubjectNo == this.p]$InsideDuration) - 7.5, max(individual.data[SubjectNo == this.p]$InsideDuration)) +
+		geom_text(x = 5.5, y = min(individual.data[SubjectNo == this.p]$InsideDuration) - 5, label = lmEqn(individual.data[SubjectNo == this.p], "Curiosity"), parse = T) +
+	    xlim(0, rating.up + 1) + ylim(min(individual.data[SubjectNo == this.p]$InsideDuration) - 7.5, max(individual.data[SubjectNo == this.p]$InsideDuration)) +
 	    labs(x = "Curiosity rating", y = "Time spent inside the room (s)") +
 		facet_wrap( ~ SubjectNo) +
 	    theme(axis.title = element_text(size = 12),
@@ -158,8 +160,8 @@ for (this.p in participant.list) {
 	int.dur <- ggplot(individual.data[SubjectNo == this.p], aes(x = Interest, y = InsideDuration)) + 
 	  	geom_point(size = 3) +
 	  	stat_smooth(method = "lm", se = FALSE, color = "red") +
-	  	geom_text(x = 3.5, y = min(individual.data[SubjectNo == this.p]$InsideDuration) - 5, label = lmEqn(individual.data[SubjectNo == this.p], "Interest"), parse = T) +
-	  	xlim(0, 7) + ylim(min(individual.data[SubjectNo == this.p]$InsideDuration) - 7.5, max(individual.data[SubjectNo == this.p]$InsideDuration)) +
+	  	geom_text(x = 5.5, y = min(individual.data[SubjectNo == this.p]$InsideDuration) - 5, label = lmEqn(individual.data[SubjectNo == this.p], "Interest"), parse = T) +
+	  	xlim(0, rating.up + 1) + ylim(min(individual.data[SubjectNo == this.p]$InsideDuration) - 7.5, max(individual.data[SubjectNo == this.p]$InsideDuration)) +
 	  	labs(x = "Interest rating", y = "Time spent inside the room (s)") +
 	  	facet_wrap( ~ SubjectNo) +
 	  	theme(axis.title = element_text(size = 12),
@@ -171,7 +173,7 @@ for (this.p in participant.list) {
 	  	geom_point(size = 3) +
 	  	stat_smooth(method = "lm", se = FALSE, color = "red") +
 	  	geom_text(x = 0, y = min(individual.data[SubjectNo == this.p]$InsideDuration) - 5, label = lmEqn(individual.data[SubjectNo == this.p], "Surprise"), parse = T) +
-	  	xlim(-4, 4) + ylim(min(individual.data[SubjectNo == this.p]$InsideDuration) - 7.5, max(individual.data[SubjectNo == this.p]$InsideDuration)) +
+	  	xlim(-5, 5) + ylim(min(individual.data[SubjectNo == this.p]$InsideDuration) - 7.5, max(individual.data[SubjectNo == this.p]$InsideDuration)) +
 	  	labs(x = "Surprise rating", y = "Time spent inside the room (s)") +
 	  	facet_wrap( ~ SubjectNo) +
 	  	theme(axis.title = element_text(size = 12),
