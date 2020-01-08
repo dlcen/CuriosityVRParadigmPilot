@@ -194,7 +194,7 @@ RespFreqCal <- function(ObjResp, ... ){
   names(FreqTable) <- c("Response", "Frequency")
   return(FreqTable)
 }
-`
+
 Recall.Freq.Rsp <- object.recognition[, c(RespFreqCal(Response)), by = c("SubjectNo", "Group")]
 
 Recall.Freq.Rsp$Response <- factor(Recall.Freq.Rsp$Response, levels = levels(Recall.Freq.Rsp$Response)[c(3, 1, 2)])
@@ -242,14 +242,15 @@ for (this.p in participant.list) {
 	ggplot(this.data, aes(CurRating, SAcc)) + theme_gray() +
 		geom_point(size = 2) +
 		stat_smooth(method = "lm", se = FALSE, color = "red") +
-		geom_text(x = 3.5, y = 0.45, label = lmEqn(this.data), parse = T) +
-		scale_x_continuous(breaks = c(0:6)) +
-		xlim(0, 6) + ylim(-0.25, 0.5) +
+		geom_text(x = 5.5, y = 0.45, label = lmEqn(this.data), parse = T) +
+		scale_x_continuous(breaks = c(0:rating.up + 1)) +
+		xlim(0, rating.up + 1) + ylim(-0.25, 0.5) +
 		labs(x = "Curiosity rating", y = "Corrected hit rate") +
 		facet_wrap( ~ SubjectNo) +
 		theme( strip.text = element_text(face = "bold", size = 12))
 
-	ggsave(paste0("./Figures/IndividualPlots//", this.p, "_CurHitRate.png"), width = 6, height = 4)}
+	ggsave(paste0("./Figures/IndividualPlots//", this.p, "_CurHitRate.png"), width = 6, height = 4)
+}
 
 ## Rating groups and memory performance
 
