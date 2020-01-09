@@ -256,6 +256,7 @@ for (this.p in participant.list) {
 
 ## Rating groups, item order and memory performance
 
+outside.hit.rate.item.order.curiosity$CurGrp <- factor(outside.hit.rate.item.order.curiosity$CurGrp)
 outside.hit.rate.item.order.curiosity$CurGrp <- factor(outside.hit.rate.item.order.curiosity$CurGrp, levels = levels(outside.hit.rate.item.order.curiosity$CurGrp)[c(2, 1)])
 
 for (this.p in participant.list) {
