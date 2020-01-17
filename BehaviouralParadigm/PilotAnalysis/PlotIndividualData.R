@@ -312,18 +312,18 @@ for (this.p in participant.list) {
 
 ## Rating groups, item order and memory performance
 
-outside.hit.rate.item.order.curiosity$CurGrp <- factor(outside.hit.rate.item.order.curiosity$CurGrp)
-outside.hit.rate.item.order.curiosity$CurGrp <- factor(outside.hit.rate.item.order.curiosity$CurGrp, levels = levels(outside.hit.rate.item.order.curiosity$CurGrp)[c(2, 1)])
+outside.hit.rate.item.order.curiosity.median$CurGrpMd <- factor(outside.hit.rate.item.order.curiosity.median$CurGrpMd)
+outside.hit.rate.item.order.curiosity.median$CurGrpMd <- factor(outside.hit.rate.item.order.curiosity.median$CurGrpMd, levels = levels(outside.hit.rate.item.order.curiosity.median$CurGrpMd)[c(2, 1)])
 
 for (this.p in participant.list) {
 
-	this.data <- outside.hit.rate.item.order.curiosity[SubjectNo == this.p]
+	this.data <- outside.hit.rate.item.order.curiosity.median[SubjectNo == this.p]
 
-	ggplot(this.data, aes(CurGrp, SAcc)) +
-		geom_point(aes(group = ObjOrdGrp, color = ObjOrdGrp, fill = ObjOrdGrp), size = 5, position = position_dodge(width = 0.9)) +
+	ggplot(this.data, aes(CurGrpMd, SAcc)) +
+		geom_bar(stat="identity", aes(group = ObjOrdGrp, color = ObjOrdGrp, fill = ObjOrdGrp), position = position_dodge(width = 0.9)) +
 		labs(x = "Curiosity group", y = "Corrected hit rate") + 
-		scale_fill_uchicago(name = "Item order") +
-		scale_color_uchicago(name = "Item order") +
+		scale_fill_jama(name = "Item order") +
+		scale_color_jama(name = "Item order") +
 		facet_wrap(~ SubjectNo) +
 		theme( strip.text = element_text(face = "bold", size = 12))
 
