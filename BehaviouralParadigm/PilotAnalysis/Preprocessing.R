@@ -37,9 +37,12 @@ object.recognition <- NULL
 
 all.participant.list <- list.files(path = "./PilotData/IndividualData/", pattern = "^P")
 
+source("./PilotAnalysis/RoomOrder.r")
+room.order.sorted <- room.order[with(room.order, order(SubjectNo, Room))]
+
 for (thisFolder in all.participant.list) {
   this.response <- read.csv(paste0("PilotData", .Platform$file.sep, "IndividualData", .Platform$file.sep, thisFolder, .Platform$file.sep, "TestOrder", .Platform$file.sep, "MemoryTestResponse.csv"), header = T)
-  this.response<- data.table(this.response)
+  this.response <- data.table(this.response)
   
   this.response$SubjectNo <- thisFolder
 
@@ -49,14 +52,17 @@ for (thisFolder in all.participant.list) {
   # Add the curiosity rating to the response file
   this.response$CurRating <- 0
   this.response$IntRating <- 0
+  this.response$RoomOrder <- 0
   
   for (this.room in rooms) {
     this.response[Scene == this.room]$CurRating <- this.ratings[Room == this.room]$Curiosity
     this.response[Scene == this.room]$IntRating <- this.ratings[Room == this.room]$Interest
+    this.response[Scene == this.room]$RoomOrder <- room.order[SubjectNo == this.p & Room == this.room]$Order
   }
 
   this.response[CurRating == 0]$CurRating <- NA
   this.response[IntRating == 0]$IntRating <- NA
+  this.response[RoomOrder == 0]$RoomOrder <- NA
 
   # Add the outside duration 
   this.durations <- individual.data[SubjectNo == thisFolder]
@@ -81,8 +87,13 @@ for (thisFolder in all.participant.list) {
   this.response[Scene != "None"]$ItemOrder <- this.order$Order
   
   this.response[ItemOrder == 0]$ItemOrder <- NA
-  
+
+  # Get the score for the previous room that has been visited
+  this.room.order <- room.order.sorted[SubjectNo == this.p]
+  this.response   <- merge(this.response, this.room.order[, c(Order, SubjectNo)], all = TRUE)
+
   object.recognition <- rbind(object.recognition, this.response)
+
 }
 
 object.recognition$Group <- "OldItem"
@@ -128,3 +139,18 @@ outside.hit.rate.item.order.curiosity        <- merge(outside.hit.rate.item.orde
 outside.hit.rate.item.order.curiosity[, c("SFAcc", "SAcc") := list( (SFHit - SFFalse), (SHit - SFalse))]
 
 save(rooms, individual.data, object.recognition, outside.hit.rate.per.room, outside.hit.rate.per.rating, outside.hit.rate.item.curiosity, outside.hit.rate.item.order.curiosity, file = "./PilotData/IndividualData.RData")
+
+# Get the score for the previous room that has been visited
+source("./PilotAnalysis/RoomOrder.r")
+
+
+outside.hit.rate.per.room$RoomOrder <- room.order.sorted$Order
+
+
+
+
+
+
+
+
+
