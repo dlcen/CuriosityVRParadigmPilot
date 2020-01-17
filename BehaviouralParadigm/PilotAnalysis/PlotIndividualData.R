@@ -252,7 +252,63 @@ for (this.p in participant.list) {
 	ggsave(paste0("./Figures/IndividualPlots//", this.p, "_CurHitRate.png"), width = 6, height = 4)
 }
 
+## Pre-ratings and memory performance
+
+for (this.p in participant.list) {
+
+	this.data.int <- outside.hit.rate.preInt[SubjectNo == this.p]
+	this.data.sur <- outside.hit.rate.preSur[SubjectNo == this.p]
+
+
+	int.plot <- ggplot(this.data.int, aes(PreInt, SAcc)) + theme_gray() +
+		geom_point(size = 2) +
+		stat_smooth(method = "lm", se = FALSE, color = "red") +
+		# geom_text(x = 5.5, y = 0.45, label = lmEqn(this.data), parse = T) +
+		# scale_x_continuous(breaks = c(0:rating.up + 1)) +
+		xlim(0, rating.up + 1) + ylim(-0.25, 0.5) +
+		labs(x = "Interestingness rating in previous trial", y = "Corrected hit rate") +
+		facet_wrap( ~ SubjectNo) +
+		theme( strip.text = element_text(face = "bold", size = 12))
+
+	sur.plot <- ggplot(this.data.sur, aes(PreSur, SAcc)) + theme_gray() +
+		geom_point(size = 2) +
+		stat_smooth(method = "lm", se = FALSE, color = "red") +
+		# geom_text(x = 5.5, y = 0.45, label = lmEqn(this.data), parse = T) +
+		# scale_x_continuous(breaks = c(0:rating.up + 1)) +
+		# xlim(0, rating.up + 1) + 
+		ylim(-0.25, 0.5) +
+		labs(x = "Surprise rating in previous trial", y = "Corrected hit rate") +
+		facet_wrap( ~ SubjectNo) +
+		theme( strip.text = element_text(face = "bold", size = 12),
+			   axis.title.y = element_blank())
+
+	plot_grid(int.plot, sur.plot, nrow = 1, rel_widths = c(1.15, 1))
+
+	ggsave(paste0("./Figures/IndividualPlots//", this.p, "_PreRatingsHitRate.png"), width = 8, height = 4)
+}
+
 ## Rating groups and memory performance
+
+### Median split groups
+outside.hit.rate.item.curiosity.median$CurGrpMd <- factor(outside.hit.rate.item.curiosity.median$CurGrpMd)
+outside.hit.rate.item.curiosity.median$CurGrpMd <- factor(outside.hit.rate.item.curiosity.median$CurGrpMd, levels = levels(outside.hit.rate.item.curiosity.median$CurGrpMd)[c(2, 1)])
+
+for (this.p in participant.list) {
+
+	this.data <- outside.hit.rate.item.curiosity.median[SubjectNo == this.p]
+
+	ggplot(this.data, aes(CurGrpMd, SAcc)) + 
+		geom_bar( stat="identity", aes(color = CurGrpMd, fill = CurGrpMd)) +
+		labs(x = "Curiosity group (median-splitted)", y = "Corrected hit rate") + 
+		scale_fill_jama(name = "") +
+		scale_color_jama(name = "") +
+		facet_wrap(~ SubjectNo) +
+		theme( strip.text = element_text(face = "bold", size = 12))
+
+
+	ggsave(paste0("./Figures/IndividualPlots/", this.p, "_CurMedianHitRate.png"), width = 6, height = 4)
+
+}
 
 ## Rating groups, item order and memory performance
 

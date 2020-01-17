@@ -48,7 +48,7 @@ CurGrpMedianSep <- function(thisCur, medianCur) {
       if (is.na(thisCur)) {
             CurGrp <- NA
       } else {
-            if (thisCur < medianCur) {
+            if (thisCur <= medianCur) {
                   CurGrp <- "Low"
             } else if (thisCur > medianCur) {
                   CurGrp <- "High"
