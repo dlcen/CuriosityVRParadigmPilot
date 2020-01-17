@@ -26,10 +26,11 @@ for (this.p in participant.list) {
 
 individual.data <- ratings
 individual.data$InsideDuration <- durations$InsideDuration
+individual.data$OutsideDuration <- durations$OutsideDuration
 
 individual.data <- data.table(individual.data)
 
-individual.data[, Surprise := (Interest - Curiosity)]
+# individual.data[, Surprise := (Interest - Curiosity)]
 
 # Memory performance
 object.recognition <- NULL
@@ -56,6 +57,17 @@ for (thisFolder in all.participant.list) {
 
   this.response[CurRating == 0]$CurRating <- NA
   this.response[IntRating == 0]$IntRating <- NA
+
+  # Add the outside duration 
+  this.durations <- individual.data[SubjectNo == thisFolder]
+
+  this.response$OutDur <- 0
+
+  for (this.room in rooms) {
+    this.response[Scene == this.room]$OutDur <- this.durations[Room == this.room]$OutsideDuration
+  }
+
+  this.response[OutDur == 0]$OutDur <- NA
 
   # Add the order of items inside each room
   source("./PilotAnalysis/OutsideOrder.r")

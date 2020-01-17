@@ -78,9 +78,9 @@ CurGrpSep <- function(thisCur) {
   if (is.na(thisCur)) {
             CurGrp <- NA
       } else {
-            if (thisCur < 4) {
+            if (thisCur < 6) {
                   CurGrp <- "Low"
-            } else if (thisCur >= 4) {
+            } else if (thisCur >= 6) {
                   CurGrp <- "High"
             } else {
                   CurGrp <- NA

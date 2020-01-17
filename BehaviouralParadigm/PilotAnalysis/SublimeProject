@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 {
 	"folders":
 	[
@@ -6,3 +7,16 @@
 		}
 	]
 }
+=======
+{
+	"folders":
+	[
+		{
+			"path": "/home/danlu/Desktop/Git/CuriosityVRParadigmPilot/BehaviouralParadigm"
+		},
+		{
+			"path": "/home/danlu/Desktop/Git/CuriosityVRParadigmPilot/Pilot"
+		}
+	]
+}
+>>>>>>> a9cab5b3b2273e9300d7392ccc5720e7438c7e95
