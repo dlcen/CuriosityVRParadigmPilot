@@ -37,8 +37,7 @@ object.recognition <- NULL
 
 all.participant.list <- list.files(path = "./PilotData/IndividualData/", pattern = "^P")
 
-source("./PilotAnalysis/RoomOrder.r")
-room.order.sorted <- room.order[with(room.order, order(SubjectNo, Room))]
+source("./PilotAnalysis/RoomOrder.R")
 
 for (thisFolder in all.participant.list) {
   this.response <- read.csv(paste0("PilotData", .Platform$file.sep, "IndividualData", .Platform$file.sep, thisFolder, .Platform$file.sep, "TestOrder", .Platform$file.sep, "MemoryTestResponse.csv"), header = T)
@@ -48,21 +47,36 @@ for (thisFolder in all.participant.list) {
 
   # Read the curiosity rating 
   this.ratings <- ratings[SubjectNo == thisFolder]
+  this.room.order <- room.order[SubjectNo == thisFolder]
 
   # Add the curiosity rating to the response file
   this.response$CurRating <- 0
   this.response$IntRating <- 0
   this.response$RoomOrder <- 0
+
+  this.response$PreCur    <- 0
+  this.response$PreInt    <- 0
+  this.response$PreSur    <- 0
   
   for (this.room in rooms) {
     this.response[Scene == this.room]$CurRating <- this.ratings[Room == this.room]$Curiosity
     this.response[Scene == this.room]$IntRating <- this.ratings[Room == this.room]$Interest
-    this.response[Scene == this.room]$RoomOrder <- room.order[SubjectNo == this.p & Room == this.room]$Order
+    this.response[Scene == this.room]$RoomOrder <- this.room.order[Room == this.room]$Order
+    
+    if ( ! is.na(this.room.order[Room == this.room]$PreRoom)) {
+      this.response[Scene == this.room]$PreCur    <- this.ratings[Room == this.room.order[Room == this.room]$PreRoom]$Curiosity
+      this.response[Scene == this.room]$PreInt    <- this.ratings[Room == this.room.order[Room == this.room]$PreRoom]$Interest
+      this.response[Scene == this.room]$PreSur    <- this.ratings[Room == this.room.order[Room == this.room]$PreRoom]$Surprise
+    } 
   }
 
   this.response[CurRating == 0]$CurRating <- NA
   this.response[IntRating == 0]$IntRating <- NA
   this.response[RoomOrder == 0]$RoomOrder <- NA
+
+  this.response[PreCur == 0]$PreCur <- NA
+  this.response[PreInt == 0]$PreInt <- NA
+  this.response[PreSur == 0]$PreSur <- NA
 
   # Add the outside duration 
   this.durations <- individual.data[SubjectNo == thisFolder]
@@ -87,10 +101,6 @@ for (thisFolder in all.participant.list) {
   this.response[Scene != "None"]$ItemOrder <- this.order$Order
   
   this.response[ItemOrder == 0]$ItemOrder <- NA
-
-  # Get the score for the previous room that has been visited
-  this.room.order <- room.order.sorted[SubjectNo == this.p]
-  this.response   <- merge(this.response, this.room.order[, c(Order, SubjectNo)], all = TRUE)
 
   object.recognition <- rbind(object.recognition, this.response)
 
@@ -138,13 +148,13 @@ outside.hit.rate.item.order.curiosity        <- object.recognition[Scene != "Non
 outside.hit.rate.item.order.curiosity        <- merge(outside.hit.rate.item.order.curiosity, idv.false.alarm.rate, all = TRUE)
 outside.hit.rate.item.order.curiosity[, c("SFAcc", "SAcc") := list( (SFHit - SFFalse), (SHit - SFalse))]
 
+# Get the score for the previous room that has been visited
+outside.hit.rate.per.preroom <- object.recognition[!is.na(PreCur), .(SFHit = mean(SFHit, na.rm = TRUE), SHit = mean(SHit, na.rm = TRUE)), by = c("SubjectNo", "CurGrp")]
+
+
 save(rooms, individual.data, object.recognition, outside.hit.rate.per.room, outside.hit.rate.per.rating, outside.hit.rate.item.curiosity, outside.hit.rate.item.order.curiosity, file = "./PilotData/IndividualData.RData")
 
-# Get the score for the previous room that has been visited
-source("./PilotAnalysis/RoomOrder.r")
 
-
-outside.hit.rate.per.room$RoomOrder <- room.order.sorted$Order
 
 
 
