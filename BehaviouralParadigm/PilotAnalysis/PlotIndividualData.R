@@ -49,7 +49,7 @@ for (this.p in participant.list) {
 	plot_grid(cur.plot, int.plot, sur.plot, nrow = 1, rel_widths = c(1.15, 1, 1))
 
 	
-	if (!dir.exists(paste0("./Figures/IndividualPlots/", this.p)) { dir.create(paste0("./Figures/IndividualPlots/", this.p)) }
+	if (!dir.exists(paste0("./Figures/IndividualPlots/", this.p))) { dir.create(paste0("./Figures/IndividualPlots/", this.p)) }
 	 
 	ggsave(paste0("./Figures/IndividualPlots/", this.p, "/", this.p, "_Ratings.png"), width = 12, height = 4)
 
@@ -91,7 +91,7 @@ for (this.p in participant.list) {
 			   strip.text = element_text(face = "bold", size = 12)
 			  )
 
-	if (!dir.exists(paste0("./Figures/IndividualPlots/", this.p)) { dir.create(paste0("./Figures/IndividualPlots/", this.p)) }
+	if (!dir.exists(paste0("./Figures/IndividualPlots/", this.p))) { dir.create(paste0("./Figures/IndividualPlots/", this.p)) }
 
 	ggsave(paste0("./Figures/IndividualPlots/", this.p, "/", this.p, "_RatingsComp.png"), width = 8, height = 5)
 }
@@ -129,7 +129,7 @@ for (this.p in participant.list) {
 	    theme(axis.title = element_text(size = 12),
 	          strip.text = element_text(size = 12, face = "bold"))
 
-	if (!dir.exists(paste0("./Figures/IndividualPlots/", this.p)) { dir.create(paste0("./Figures/IndividualPlots/", this.p)) }
+	if (!dir.exists(paste0("./Figures/IndividualPlots/", this.p))) { dir.create(paste0("./Figures/IndividualPlots/", this.p)) }
 	ggsave(paste0("./Figures/IndividualPlots/", this.p, "/", this.p, "_RatingsOutsideDurations.png"), width = 6, height = 4)
 }
 
@@ -190,7 +190,7 @@ for (this.p in participant.list) {
 
 	plot_grid(cur.dur, int.dur, sur.dur, nrow = 1, rel_widths = c(1.2, 1, 1))
 
-	if (!dir.exists(paste0("./Figures/IndividualPlots/", this.p)) { dir.create(paste0("./Figures/IndividualPlots/", this.p)) }
+	if (!dir.exists(paste0("./Figures/IndividualPlots/", this.p))) { dir.create(paste0("./Figures/IndividualPlots/", this.p)) }
 	ggsave(paste0("./Figures/IndividualPlots/", this.p, "/", this.p, "_RatingsDurations.png"), width = 12, height = 4)
 }
 
@@ -220,7 +220,7 @@ for (this.p in participant.list) {
 		theme(strip.text = element_text(face = "bold", size = 12), 
 			  legend.position = c(0.1, 0.8))
 
-	if (!dir.exists(paste0("./Figures/IndividualPlots/", this.p)) { dir.create(paste0("./Figures/IndividualPlots/", this.p)) }
+	if (!dir.exists(paste0("./Figures/IndividualPlots/", this.p))) { dir.create(paste0("./Figures/IndividualPlots/", this.p)) }
 	ggsave(paste0("./Figures/IndividualPlots/", this.p, "/", this.p, "_RespFreq.png"), width = 6, height = 4)
 }
 
@@ -258,7 +258,7 @@ for (this.p in participant.list) {
 		facet_wrap( ~ SubjectNo) +
 		theme( strip.text = element_text(face = "bold", size = 12))
 
-	if (!dir.exists(paste0("./Figures/IndividualPlots/", this.p)) { dir.create(paste0("./Figures/IndividualPlots/", this.p)) }
+	if (!dir.exists(paste0("./Figures/IndividualPlots/", this.p))) { dir.create(paste0("./Figures/IndividualPlots/", this.p)) }
 	ggsave(paste0("./Figures/IndividualPlots//", this.p, "/", this.p, "_CurHitRate.png"), width = 6, height = 4)
 }
 
@@ -294,7 +294,7 @@ for (this.p in participant.list) {
 
 	plot_grid(int.plot, sur.plot, nrow = 1, rel_widths = c(1.15, 1))
 
-	if (!dir.exists(paste0("./Figures/IndividualPlots/", this.p)) { dir.create(paste0("./Figures/IndividualPlots/", this.p)) }
+	if (!dir.exists(paste0("./Figures/IndividualPlots/", this.p))) { dir.create(paste0("./Figures/IndividualPlots/", this.p)) }
 	ggsave(paste0("./Figures/IndividualPlots//", this.p, "/", this.p, "_PreRatingsHitRate.png"), width = 8, height = 4)
 }
 
@@ -316,7 +316,7 @@ for (this.p in participant.list) {
 		facet_wrap(~ SubjectNo) +
 		theme( strip.text = element_text(face = "bold", size = 12))
 
-	if (!dir.exists(paste0("./Figures/IndividualPlots/", this.p)) { dir.create(paste0("./Figures/IndividualPlots/", this.p)) }
+	if (!dir.exists(paste0("./Figures/IndividualPlots/", this.p))) { dir.create(paste0("./Figures/IndividualPlots/", this.p)) }
 	ggsave(paste0("./Figures/IndividualPlots/", this.p, "/", this.p, "_CurMedianHitRate.png"), width = 6, height = 4)
 
 }
@@ -338,7 +338,7 @@ for (this.p in participant.list) {
 		facet_wrap(~ SubjectNo) +
 		theme( strip.text = element_text(face = "bold", size = 12))
 
-	if (!dir.exists(paste0("./Figures/IndividualPlots/", this.p)) { dir.create(paste0("./Figures/IndividualPlots/", this.p)) }
+	if (!dir.exists(paste0("./Figures/IndividualPlots/", this.p))) { dir.create(paste0("./Figures/IndividualPlots/", this.p)) }
 	ggsave(paste0("./Figures/IndividualPlots/", this.p, "/", this.p, "_CurOrdHitRate.png"), width = 6, height = 4)
 
 }
