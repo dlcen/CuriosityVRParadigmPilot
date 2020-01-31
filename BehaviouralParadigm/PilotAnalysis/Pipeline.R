@@ -16,5 +16,10 @@ source("./PilotAnalysis/Preprocessing.R")
 
 load("./PilotData/IndividualData.RData")
 
+## Check the number of rooms in each split curiosity groups
+source("./PilotAnalysis/GroupRoomNo.R")
+
+for (this.p in participant.list) { GroupRoomNo(this.p) }
+
 source("./PilotAnalysis/PlotIndividualData.R")
 
