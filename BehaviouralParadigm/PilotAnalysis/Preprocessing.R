@@ -152,6 +152,13 @@ outside.hit.rate.item.curiosity.median   <- object.recognition[Scene != "None", 
 outside.hit.rate.item.curiosity.median   <- merge(outside.hit.rate.item.curiosity.median, idv.false.alarm.rate, all = TRUE)
 outside.hit.rate.item.curiosity.median[, c("SFAcc", "SAcc") := list( (SFHit - SFFalse), (SHit - SFalse))]
 
+## Calculate the hit rates for each curiosity group that is mean split
+object.recognition[, CurGrpMn := mapply(CurGrpMeanSep, CurRating, MeanCur)]
+
+outside.hit.rate.item.curiosity.mean   <- object.recognition[Scene != "None", .(SFHit = mean(SFHit, na.rm = TRUE), SHit = mean(SHit, na.rm = TRUE)), by = c("SubjectNo", "CurGrpMn")]
+outside.hit.rate.item.curiosity.mean   <- merge(outside.hit.rate.item.curiosity.mean, idv.false.alarm.rate, all = TRUE)
+outside.hit.rate.item.curiosity.mean[, c("SFAcc", "SAcc") := list( (SFHit - SFFalse), (SHit - SFalse))]
+
 ## Calculate the hit rates for each curiosity group and order group
 object.recognition[, ObjOrdGrp := mapply(ObjOrdGrpSep, ItemOrder) ]
 
@@ -165,6 +172,13 @@ object.recognition[, ObjOrdGrp := mapply(ObjOrdGrpSep, ItemOrder) ]
 outside.hit.rate.item.order.curiosity.median   <- object.recognition[Scene != "None", .(SFHit = mean(SFHit, na.rm = TRUE), SHit = mean(SHit, na.rm = TRUE)), by = c("SubjectNo", "CurGrpMd", "ObjOrdGrp")]
 outside.hit.rate.item.order.curiosity.median   <- merge(outside.hit.rate.item.order.curiosity.median, idv.false.alarm.rate, all = TRUE)
 outside.hit.rate.item.order.curiosity.median[, c("SFAcc", "SAcc") := list( (SFHit - SFFalse), (SHit - SFalse))]
+
+## Calculate the hit rates for each curiosity group (median-splited) and order group
+object.recognition[, ObjOrdGrp := mapply(ObjOrdGrpSep, ItemOrder) ]
+
+outside.hit.rate.item.order.curiosity.mean   <- object.recognition[Scene != "None", .(SFHit = mean(SFHit, na.rm = TRUE), SHit = mean(SHit, na.rm = TRUE)), by = c("SubjectNo", "CurGrpMn", "ObjOrdGrp")]
+outside.hit.rate.item.order.curiosity.mean   <- merge(outside.hit.rate.item.order.curiosity.mean, idv.false.alarm.rate, all = TRUE)
+outside.hit.rate.item.order.curiosity.mean[, c("SFAcc", "SAcc") := list( (SFHit - SFFalse), (SHit - SFalse))]
 
 # Calculate the hit rates for each pre interesting rating
 outside.hit.rate.preInt <- object.recognition[PreInt != 0, .(SFHit = mean(SFHit, na.rm = TRUE), SHit = mean(SHit, na.rm = TRUE)), by = c("SubjectNo", "PreInt")]

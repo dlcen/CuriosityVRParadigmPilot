@@ -322,7 +322,7 @@ for (this.p in participant.list) {
 
 }
 
-## Rating groups, item order and memory performance
+#### Rating groups, item order and memory performance
 
 outside.hit.rate.item.order.curiosity.median$CurGrpMd <- factor(outside.hit.rate.item.order.curiosity.median$CurGrpMd)
 outside.hit.rate.item.order.curiosity.median$CurGrpMd <- factor(outside.hit.rate.item.order.curiosity.median$CurGrpMd, levels = levels(outside.hit.rate.item.order.curiosity.median$CurGrpMd)[c(2, 1)])
@@ -345,3 +345,45 @@ for (this.p in participant.list) {
 }
 
 
+### Mean split groups
+outside.hit.rate.item.curiosity.mean$CurGrpMn <- factor(outside.hit.rate.item.curiosity.mean$CurGrpMn)
+outside.hit.rate.item.curiosity.mean$CurGrpMn <- factor(outside.hit.rate.item.curiosity.mean$CurGrpMn, levels = levels(outside.hit.rate.item.curiosity.mean$CurGrpMn)[c(2, 1)])
+
+for (this.p in participant.list) {
+
+	this.data <- outside.hit.rate.item.curiosity.mean[SubjectNo == this.p]
+
+	ggplot(this.data, aes(CurGrpMn, SAcc)) + 
+		geom_bar( stat="identity", aes(color = CurGrpMn, fill = CurGrpMn)) +
+		labs(x = "Curiosity group (mean-splitted)", y = "Corrected hit rate") + 
+		scale_fill_jama(name = "") +
+		scale_color_jama(name = "") +
+		facet_wrap(~ SubjectNo) +
+		theme( strip.text = element_text(face = "bold", size = 12))
+
+	if (!dir.exists(paste0("./Figures/IndividualPlots/", this.p))) { dir.create(paste0("./Figures/IndividualPlots/", this.p)) }
+	ggsave(paste0("./Figures/IndividualPlots/", this.p, "/", this.p, "_CurMeanHitRate.png"), width = 6, height = 4)
+
+}
+
+#### Rating groups, item order and memory performance
+
+outside.hit.rate.item.order.curiosity.mean$CurGrpMn <- factor(outside.hit.rate.item.order.curiosity.mean$CurGrpMn)
+outside.hit.rate.item.order.curiosity.mean$CurGrpMn <- factor(outside.hit.rate.item.order.curiosity.mean$CurGrpMn, levels = levels(outside.hit.rate.item.order.curiosity.mean$CurGrpMn)[c(2, 1)])
+
+for (this.p in participant.list) {
+
+	this.data <- outside.hit.rate.item.order.curiosity.mean[SubjectNo == this.p]
+
+	ggplot(this.data, aes(ObjOrdGrp, SAcc)) +
+		geom_bar(stat="identity", aes(group = CurGrpMn, color = CurGrpMn, fill = CurGrpMn), position = position_dodge(width = 0.9)) +
+		labs(x = "Item order", y = "Corrected hit rate") + 
+		scale_fill_jama(name = "Curiosity group") +
+		scale_color_jama(name = "Curiosity group") +
+		facet_wrap(~ SubjectNo) +
+		theme( strip.text = element_text(face = "bold", size = 12))
+
+	if (!dir.exists(paste0("./Figures/IndividualPlots/", this.p))) { dir.create(paste0("./Figures/IndividualPlots/", this.p)) }
+	ggsave(paste0("./Figures/IndividualPlots/", this.p, "/", this.p, "_CurMeanOrdHitRate.png"), width = 6, height = 4)
+
+}
