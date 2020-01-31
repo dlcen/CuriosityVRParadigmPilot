@@ -3,6 +3,12 @@
 	[
 		{
 			"path": "/home/danlu/Desktop/Git/CuriosityVRParadigmPilot"
+		},
+		{
+			"path": "/home/danlu/Desktop/01_VR_Curiosity_Memory/CuriosityVRParadigm/BehaviouralParadigm"
+		},
+		{
+			"path": "/home/danlu/Desktop/01_VR_Curiosity_Memory/CuriosityVRParadigm/Pilot"
 		}
 	]
 }
