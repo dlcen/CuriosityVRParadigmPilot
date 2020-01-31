@@ -148,7 +148,7 @@ outside.hit.rate.item.curiosity[, c("SFAcc", "SAcc") := list( (SFHit - SFFalse),
 ## Calculate the hit rates for each curiosity group that is median split
 object.recognition[, CurGrpMd := mapply(CurGrpMedianSep, CurRating, MedianCur)]
 
-outside.hit.rate.item.curiosity.median   <- object.recognition[Scene != "None", .(SFHit = mean(SFHit, na.rm = TRUE), SHit = mean(SHit, na.rm = TRUE)), by = c("SubjectNo", "CurGrpMd")]
+outside.hit.rate.item.curiosity.median   <- object.recognition[!is.na(CurGrpMd), .(SFHit = mean(SFHit, na.rm = TRUE), SHit = mean(SHit, na.rm = TRUE)), by = c("SubjectNo", "CurGrpMd")]
 outside.hit.rate.item.curiosity.median   <- merge(outside.hit.rate.item.curiosity.median, idv.false.alarm.rate, all = TRUE)
 outside.hit.rate.item.curiosity.median[, c("SFAcc", "SAcc") := list( (SFHit - SFFalse), (SHit - SFalse))]
 
@@ -169,7 +169,7 @@ outside.hit.rate.item.order.curiosity[, c("SFAcc", "SAcc") := list( (SFHit - SFF
 ## Calculate the hit rates for each curiosity group (median-splited) and order group
 object.recognition[, ObjOrdGrp := mapply(ObjOrdGrpSep, ItemOrder) ]
 
-outside.hit.rate.item.order.curiosity.median   <- object.recognition[Scene != "None", .(SFHit = mean(SFHit, na.rm = TRUE), SHit = mean(SHit, na.rm = TRUE)), by = c("SubjectNo", "CurGrpMd", "ObjOrdGrp")]
+outside.hit.rate.item.order.curiosity.median   <- object.recognition[!is.na(CurGrpMd), .(SFHit = mean(SFHit, na.rm = TRUE), SHit = mean(SHit, na.rm = TRUE)), by = c("SubjectNo", "CurGrpMd", "ObjOrdGrp")]
 outside.hit.rate.item.order.curiosity.median   <- merge(outside.hit.rate.item.order.curiosity.median, idv.false.alarm.rate, all = TRUE)
 outside.hit.rate.item.order.curiosity.median[, c("SFAcc", "SAcc") := list( (SFHit - SFFalse), (SHit - SFalse))]
 

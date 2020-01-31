@@ -48,7 +48,7 @@ CurGrpMedianSep <- function(thisCur, medianCur) {
       if (is.na(thisCur)) {
             CurGrp <- NA
       } else {
-            if (thisCur <= medianCur) {
+            if (thisCur < medianCur) {   # Used to be <=, now switch to a more extreme median split by removing the rooms with median equal values
                   CurGrp <- "Low"
             } else if (thisCur > medianCur) {
                   CurGrp <- "High"
