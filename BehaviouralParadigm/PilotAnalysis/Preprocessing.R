@@ -196,7 +196,7 @@ outside.hit.rate.preSur <- merge(outside.hit.rate.preSur, idv.false.alarm.rate, 
 outside.hit.rate.preSur[, SFAcc  := (SFHit - SFFalse)]
 outside.hit.rate.preSur[, SAcc   := (SHit  - SFalse)]
 
-save(rooms, individual.data, object.recognition, outside.hit.rate.per.room, outside.hit.rate.per.rating, outside.hit.rate.item.curiosity, outside.hit.rate.item.curiosity.median, outside.hit.rate.item.order.curiosity, outside.hit.rate.item.order.curiosity.median, outside.hit.rate.preInt, outside.hit.rate.preSur, file = "./PilotData/IndividualData.RData")
+save(rooms, ratings, individual.data, object.recognition, outside.hit.rate.per.room, outside.hit.rate.per.rating, outside.hit.rate.item.curiosity, outside.hit.rate.item.curiosity.median, outside.hit.rate.item.order.curiosity, outside.hit.rate.item.order.curiosity.median, outside.hit.rate.preInt, outside.hit.rate.preSur, file = "./PilotData/IndividualData.RData")
 
 
 

@@ -25,3 +25,8 @@ for (this.p in participant.list) { GroupRoomNo2(this.p) }
 
 source("./PilotAnalysis/PlotIndividualData.R")
 
+# 3. Check the group data
+
+## Check how the curiosity ratings are distributed for each room.
+source("./PilotAnalysis/RoomRatings.R")
+
