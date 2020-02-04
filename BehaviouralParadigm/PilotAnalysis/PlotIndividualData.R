@@ -247,14 +247,14 @@ lmEqn <- function(data) {
 
 for (this.p in participant.list) {
 
-	this.data <- outside.hit.rate.per.rating[SubjectNo == this.p]
+	this.data <- outside.hit.rate.per.room[SubjectNo == this.p]
 
 	ggplot(this.data, aes(CurRating, SAcc)) + theme_gray() +
 		geom_point(size = 2) +
 		stat_smooth(method = "lm", se = FALSE, color = "red") +
-		geom_text(x = 5.5, y = 0.45, label = lmEqn(this.data), parse = T) +
+		geom_text(x = 5.5, y = 0.7, label = lmEqn(this.data), parse = T) +
 		scale_x_continuous(breaks = c(0:rating.up + 1)) +
-		xlim(0, rating.up + 1) + ylim(-0.25, 0.5) +
+		xlim(0, rating.up + 1) + ylim(-0.25, 0.75) +
 		labs(x = "Curiosity rating", y = "Corrected hit rate") +
 		facet_wrap( ~ SubjectNo) +
 		theme( strip.text = element_text(face = "bold", size = 12))
