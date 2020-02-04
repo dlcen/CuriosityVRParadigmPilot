@@ -389,4 +389,28 @@ if (!is.day1.only) {
 		ggsave(paste0("./Figures/IndividualPlots/", this.p, "/", this.p, "_CurMeanOrdHitRate.png"), width = 6, height = 4)
 
 	}
+
+
+	## Relationships between exploration time and memory performance
+
+	### Compare the long- and low-exploration groups
+	outside.hit.rate.item.exploration.median$DurGrpMd <- factor(outside.hit.rate.item.exploration.median$DurGrpMd)
+	outside.hit.rate.item.exploration.median$DurGrpMd <- factor(outside.hit.rate.item.exploration.median$DurGrpMd, levels = levels(outside.hit.rate.item.exploration.median$DurGrpMd)[c(2, 1)], labels = c("Short", "Long"))
+
+	for (this.p in participant.list) {
+
+		this.data <- outside.hit.rate.item.exploration.median[SubjectNo == this.p]
+
+		ggplot(this.data, aes(DurGrpMd, SAcc)) + 
+			geom_bar( stat="identity", aes(color = DurGrpMd, fill = DurGrpMd)) +
+			labs(x = "Exploration time group (median-splitted)", y = "Corrected hit rate") + 
+			scale_fill_jama(name = "") +
+			scale_color_jama(name = "") +
+			facet_wrap(~ SubjectNo) +
+			theme( strip.text = element_text(face = "bold", size = 12))
+
+		if (!dir.exists(paste0("./Figures/IndividualPlots/", this.p))) { dir.create(paste0("./Figures/IndividualPlots/", this.p)) }
+		ggsave(paste0("./Figures/IndividualPlots/", this.p, "/", this.p, "_DurMedianHitRate.png"), width = 6, height = 4)
+
+	}
 }

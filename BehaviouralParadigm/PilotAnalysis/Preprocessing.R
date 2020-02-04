@@ -26,6 +26,9 @@ for (this.p in all.participant.list) {
 	durations  	 <- rbind(durations, this.durs)
 }
 
+durations <- data.table(durations)
+names(durations)[1] <- "Scene"
+
 individual.data <- ratings
 individual.data$InsideDuration <- durations$InsideDuration
 individual.data$OutsideDuration <- durations$OutsideDuration
@@ -122,17 +125,21 @@ if (!is.day1.only) {
   idv.false.alarm.rate <- object.recognition[Scene == "None", .(SFFalse = mean(SFFalse), SFalse = mean(SFalse)), by = c("SubjectNo")]
 
   ## Calculate the hit rates for each individual participant and each room
-  outside.hit.rate.per.room <- object.recognition[Scene != "None", .(SFHit = mean(SFHit, na.rm = TRUE), SHit = mean(SHit, na.rm = TRUE)), by = c("SubjectNo", "Scene", "CurRating", "IntRating", "PreInt", "PreSur")]
+  outside.hit.rate.per.room <- object.recognition[Scene != "None", .(SFHit = mean(SFHit, na.rm = TRUE), SHit = mean(SHit, na.rm = TRUE)), by = c("SubjectNo", "Scene", "CurRating", "IntRating", "PreInt", "PreSur", "InsideDuration", "OutsideDuration", "MeanDur", "MedianDur")]
   outside.hit.rate.per.room <- outside.hit.rate.per.room[order(SubjectNo, Scene), ]
   outside.hit.rate.per.room <- merge(outside.hit.rate.per.room, idv.false.alarm.rate, all = TRUE)
 
   outside.hit.rate.per.room[, SFAcc  := (SFHit - SFFalse)]
   outside.hit.rate.per.room[, SAcc   := (SHit  - SFalse)]
 
-
   ## Calculate average ratings (median and mean)
   average.curiosity.rating  <- outside.hit.rate.per.room[, .(MeanCur = mean(CurRating, na.rm = TRUE), MedianCur = median(CurRating, na.rm = TRUE), MeanPreInt = mean(PreInt, na.rm = TRUE), MedianPreInt = median(PreInt, na.rm = TRUE), MeanPreSur = mean(PreSur, na.rm = TRUE), MedianPreSur = median(PreSur, na.rm = TRUE)),  by = c("SubjectNo")]
   object.recognition        <- merge(object.recognition, average.curiosity.rating, by = "SubjectNo")
+
+  ## Calculate average exploration time (median and mean)
+  average.inside.duration   <- durations[, .(MeanDur = mean(InsideDuration, na.rm = TRUE), MedianDur = median(InsideDuration, na.rm = TRUE)), by = c("SubjectNo") ]
+  object.recognition        <- merge(object.recognition, durations, by = c("SubjectNo", "Scene"))
+  object.recognition        <- merge(object.recognition, average.inside.duration, by = "SubjectNo")
 
   ## Calculate the hit rates for each individual participant and each curiosity rating
   outside.hit.rate.per.rating <- object.recognition[Scene != "None", .(SFHit = mean(SFHit, na.rm = TRUE), SHit = mean(SHit, na.rm = TRUE)), by = c("SubjectNo", "CurRating")]
@@ -200,7 +207,26 @@ if (!is.day1.only) {
   outside.hit.rate.preSur[, SFAcc  := (SFHit - SFFalse)]
   outside.hit.rate.preSur[, SAcc   := (SHit  - SFalse)]
 
-  save(rooms, ratings, individual.data, object.recognition, outside.hit.rate.per.room, outside.hit.rate.per.rating, outside.hit.rate.item.curiosity, outside.hit.rate.item.curiosity.median, outside.hit.rate.item.order.curiosity, outside.hit.rate.item.order.curiosity.median, outside.hit.rate.preInt, outside.hit.rate.preSur, file = "./PilotData/IndividualData.RData")
+  # Calculate the hit rates for each exploration group (median-split based on exploration time)
+  object.recognition[, DurGrpMd := mapply(CurGrpMedianSep, InsideDuration, MedianDur)]
+
+  outside.hit.rate.item.exploration.median   <- object.recognition[Scene != "None", .(SFHit = mean(SFHit, na.rm = TRUE), SHit = mean(SHit, na.rm = TRUE)), by = c("SubjectNo", "DurGrpMd")]
+  outside.hit.rate.item.exploration.median   <- merge(outside.hit.rate.item.exploration.median, idv.false.alarm.rate, all = TRUE)
+  outside.hit.rate.item.exploration.median[, c("SFAcc", "SAcc") := list( (SFHit - SFFalse), (SHit - SFalse))]
+
+  ## Calculate the hit rates for each exploration group (median-splited) and order group
+  outside.hit.rate.item.order.exploration.median   <- object.recognition[Scene != "None", .(SFHit = mean(SFHit, na.rm = TRUE), SHit = mean(SHit, na.rm = TRUE)), by = c("SubjectNo", "DurGrpMd", "ObjOrdGrp")]
+  outside.hit.rate.item.order.exploration.median   <- merge(outside.hit.rate.item.order.exploration.median, idv.false.alarm.rate, all = TRUE)
+  outside.hit.rate.item.order.exploration.median[, c("SFAcc", "SAcc") := list( (SFHit - SFFalse), (SHit - SFalse))]
+
+
+  save(rooms, ratings, individual.data, object.recognition, 
+    outside.hit.rate.per.room, outside.hit.rate.per.rating, 
+    outside.hit.rate.item.curiosity, outside.hit.rate.item.curiosity.median, 
+    outside.hit.rate.item.order.curiosity, outside.hit.rate.item.order.curiosity.median, 
+    outside.hit.rate.preInt, outside.hit.rate.preSur, 
+    outside.hit.rate.item.exploration.median, outside.hit.rate.item.order.exploration.median, 
+    file = "./PilotData/IndividualData.RData")
 
 }
 
