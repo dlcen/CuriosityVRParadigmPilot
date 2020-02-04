@@ -9,7 +9,9 @@ if (!is.subset) { participant.list <- list.files(path = "./PilotData/IndividualD
 ## For a sub-group of participants
 else { participant.list <- c(paste0("P0", c(1:9)), paste0("P", c(11:20)) }
 
-participant.list <- c(paste0("P", c(12:15)))
+participant.list <- c(paste0("P", c(13)))
+
+is.day1.only <- FALSE
 
 source("./PilotAnalysis/Preprocessing.R")
 
@@ -19,6 +21,9 @@ source("./PilotAnalysis/Preprocessing.R")
 load("./PilotData/IndividualData.RData")
 
 ## Check the number of rooms in each split curiosity groups
+
+is.day1.only <- TRUE
+
 source("./PilotAnalysis/GroupRoomNo.R")
 
 # for (this.p in participant.list) { GroupRoomNo(this.p) }

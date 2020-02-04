@@ -3,3 +3,7 @@
 .DS_Store
 .Rproj.user
 *.Rhistory
+
+# Ignore Sublime project workspace
+SublimeProject
+*.sublime-workspace
