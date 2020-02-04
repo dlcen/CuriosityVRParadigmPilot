@@ -317,10 +317,11 @@ if (!is.day1.only) {
 			scale_fill_jama(name = "") +
 			scale_color_jama(name = "") +
 			facet_wrap(~ SubjectNo) +
-			theme( strip.text = element_text(face = "bold", size = 12))
+			theme( strip.text = element_text(face = "bold", size = 12),
+				   legend.position = "none")
 
 		if (!dir.exists(paste0("./Figures/IndividualPlots/", this.p))) { dir.create(paste0("./Figures/IndividualPlots/", this.p)) }
-		ggsave(paste0("./Figures/IndividualPlots/", this.p, "/", this.p, "_CurMedianHitRate.png"), width = 6, height = 4)
+		ggsave(paste0("./Figures/IndividualPlots/", this.p, "/", this.p, "_CurMedianHitRate.png"), width = 5, height = 4)
 
 	}
 
@@ -407,10 +408,11 @@ if (!is.day1.only) {
 			scale_fill_jama(name = "") +
 			scale_color_jama(name = "") +
 			facet_wrap(~ SubjectNo) +
-			theme( strip.text = element_text(face = "bold", size = 12))
+			theme( strip.text = element_text(face = "bold", size = 12),
+				   legend.position = "none")
 
 		if (!dir.exists(paste0("./Figures/IndividualPlots/", this.p))) { dir.create(paste0("./Figures/IndividualPlots/", this.p)) }
-		ggsave(paste0("./Figures/IndividualPlots/", this.p, "/", this.p, "_DurMedianHitRate.png"), width = 6, height = 4)
+		ggsave(paste0("./Figures/IndividualPlots/", this.p, "/", this.p, "_DurMedianHitRate.png"), width = 5, height = 4)
 
 	}
 }
