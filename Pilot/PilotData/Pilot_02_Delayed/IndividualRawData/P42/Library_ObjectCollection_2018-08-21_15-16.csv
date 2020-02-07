@@ -1,8 +1,0 @@
-BoxNo,BoxPos_X,BoxPos_Y,BoxPos_Z,Object,Side
-1,7.5,9.6,58,RugbyBall,Right
-2,7,9.6,52,JBLSpeaker,Left
-3,2.2,9.6,49,PencilSharpener,Right
-4,-5.25,9.6,43.75,HTCViveController,Left
-5,-3.4,9.6,52.25,BaseballBat,Left
-6,-3.66,9.6,57.675,MechanicalGloves,Right
-

@@ -1,5 +1,0 @@
-In the living room, the following objects were not seen:
-- JBLSpeaker,
-- SaltSub,
-- Paprika,
-- MechanicalGloves,

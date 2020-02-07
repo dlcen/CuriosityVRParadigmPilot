@@ -1,8 +1,0 @@
-BoxNo,BoxPos_X,BoxPos_Y,BoxPos_Z,Object,Side
-1,7,9.6,52,Chaynik,Left
-2,7.5,9.6,58,Hammer,Right
-3,2.2,9.6,49,MobilePhone,Left
-4,-3.4,9.6,52.25,CokeCan,Right
-5,-3.66,9.6,57.675,Canister,Left
-6,-5.25,9.6,43.75,NailScissors,Right
-

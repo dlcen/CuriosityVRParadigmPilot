@@ -1,8 +1,0 @@
-BoxNo,BoxPos_X,BoxPos_Y,BoxPos_Z,Object,Side
-1,0,0,0,MosquitoRacket,Left
-2,-6,9.6,44,StrawberryDonut,Right
-3,-1,12.5,57,ShowerHead,Left
-4,7.5,11.02,58,Bread,Right
-5,-2.95,9.6,53,FirstAidKit,Right
-6,-0.5,9.6,58,Router,Left
-

@@ -1,8 +1,0 @@
-BoxNo,BoxPos_X,BoxPos_Y,BoxPos_Z,Object,Side
-1,7.25,9.6,50,Stapler,Right
-2,0.8,9.6,44.2,Grape,Left
-3,-7.5,9.6,44,NikonCamera,Right
-4,-7,9.6,56,Spoons,Left
-5,-1,9.6,57,Avocado,Left
-6,5,9.6,55,MilkCarton,Left
-

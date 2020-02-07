@@ -1,8 +1,0 @@
-BoxNo,BoxPos_X,BoxPos_Y,BoxPos_Z,Object,Side
-1,5.5,9.6,50.25,ShowerHead,Left
-2,7.5,11.02,58,Basket,Left
-3,-0.5,9.6,58,FireExtinguisher,Left
-4,-2.95,9.6,53,FirstAidKit,Right
-5,-6,9.6,44,MosquitoRacket,Right
-6,-1,12.5,57,HTCVive,Right
-

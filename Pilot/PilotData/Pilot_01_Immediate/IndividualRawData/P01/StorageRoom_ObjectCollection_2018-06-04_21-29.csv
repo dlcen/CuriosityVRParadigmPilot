@@ -1,8 +1,0 @@
-BoxNo,BoxPos_X,BoxPos_Y,BoxPos_Z,Object,Side
-1,3.5,9.6,43,Router,Right
-2,5,9.6,48,FirstAidKit,Right
-3,7.5,9.6,54.5,Microphone,Left
-4,3.5,11.2,58.5,CokeCan,Right
-5,-4.75,9.6,53.5,Laptop,Left
-6,-7.5,9.6,44,PaperCoffeeCup,Right
-

@@ -1,8 +1,0 @@
-BoxNo,BoxPos_X,BoxPos_Y,BoxPos_Z,Object,Side
-1,7.25,9.6,50,MechanicalGloves,Left
-2,0.8,9.6,44.2,Squeezer,Left
-3,-7.5,9.6,44,Toaster,Right
-4,-7,9.6,56,HTCViveController,Left
-5,-1,9.6,57,Mushroom,Right
-6,5,9.6,55,OfficeBin,Left
-

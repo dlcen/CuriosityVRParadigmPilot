@@ -1,8 +1,0 @@
-BoxNo,BoxPos_X,BoxPos_Y,BoxPos_Z,Object,Side
-1,-7.5,9.6,44,MobilePhone,Left
-2,-4.75,9.6,53.5,BallonDog,Right
-3,3.5,11.2,58.5,FireExtinguisher,Left
-4,7.5,9.6,54.5,Router,Right
-5,5,9.6,48,Jug,Left
-6,3.5,9.6,43,Basket,Right
-

@@ -1,8 +1,0 @@
-BoxNo,BoxPos_X,BoxPos_Y,BoxPos_Z,Object,Side
-1,7,9.6,52,TennisBall,Right
-2,7.5,9.6,58,DeskLight,Left
-3,-3.4,9.6,52.25,MobilePhone,Right
-4,-3.66,9.6,57.675,CoffeeMachine,Left
-5,-5.25,9.6,43.75,StrawberryDonut,Right
-6,2.2,9.6,49,PaperCoffeeCup,Right
-

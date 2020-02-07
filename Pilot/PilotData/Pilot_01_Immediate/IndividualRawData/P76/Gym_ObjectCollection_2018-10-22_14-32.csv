@@ -1,8 +1,0 @@
-BoxNo,BoxPos_X,BoxPos_Y,BoxPos_Z,Object,Side
-1,0.8,9.6,44.2,MilkCarton,Right
-2,-7.5,9.6,44,Pineapple,Right
-3,-7,9.6,56,HandDrill,Left
-4,-1,9.6,57,Toaster,Left
-5,5,9.6,55,JBLSpeaker,Left
-6,7.25,9.6,50,Mouse,Left
-

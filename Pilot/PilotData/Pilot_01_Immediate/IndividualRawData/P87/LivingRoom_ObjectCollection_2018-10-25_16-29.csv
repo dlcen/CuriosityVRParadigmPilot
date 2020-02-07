@@ -1,8 +1,0 @@
-BoxNo,BoxPos_X,BoxPos_Y,BoxPos_Z,Object,Side
-1,5.5,9.6,50.25,Stapler,Left
-2,-6,9.6,44,Grape,Left
-3,-2.95,9.6,53,Pineapple,Left
-4,-0.5,9.6,58,OfficeBin,Right
-5,7.5,11.02,58,HTCViveController,Left
-6,-1,12.5,57,MilkCarton,Right
-

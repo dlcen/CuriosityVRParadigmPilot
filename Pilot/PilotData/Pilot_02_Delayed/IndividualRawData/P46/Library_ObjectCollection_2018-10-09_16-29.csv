@@ -1,8 +1,0 @@
-BoxNo,BoxPos_X,BoxPos_Y,BoxPos_Z,Object,Side
-1,7,9.6,52,Teacup,Left
-2,7.5,9.6,58,Mouse,Right
-3,-3.66,9.6,57.675,Grape,Left
-4,-3.4,9.6,52.25,Openner,Right
-5,-5.25,9.6,43.75,HTCViveController,Left
-6,2.2,9.6,49,Stapler,Left
-

@@ -1,8 +1,0 @@
-The participant should have visited all the six rooms as the curiosity ratings were recorded.
-
-Two rooms are missing: Classroom and Gym, so I will leave the last objects in the two rooms from the response file.
-
-Gym - WineBottle
-Classroom - Toothpaste
-
-

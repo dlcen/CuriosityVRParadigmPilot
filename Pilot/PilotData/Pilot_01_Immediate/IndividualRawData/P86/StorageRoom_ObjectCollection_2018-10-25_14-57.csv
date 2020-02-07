@@ -1,8 +1,0 @@
-BoxNo,BoxPos_X,BoxPos_Y,BoxPos_Z,Object,Side
-1,-4.75,9.6,53.5,Controller,Left
-2,7.5,9.6,54.5,SaltSub,Right
-3,5,9.6,48,Toaster,Left
-4,3.5,9.6,43,PiggyBank,Left
-5,-7.5,9.6,44,Muffin,Right
-6,3.5,11.2,58.5,MokeExpress,Left
-

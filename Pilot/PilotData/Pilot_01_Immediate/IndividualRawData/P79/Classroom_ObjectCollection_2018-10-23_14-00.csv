@@ -1,8 +1,0 @@
-BoxNo,BoxPos_X,BoxPos_Y,BoxPos_Z,Object,Side
-1,7,9.6,50.5,Router,Right
-2,-4,9.6,43,FireExtinguisher,Left
-3,-7.25,9.6,49.5,Pinza,Right
-4,7,9.6,58,TennisBall,Left
-5,4.7,11.871,51,Canister,Right
-6,-3,9.6,55,Clamps,Right
-

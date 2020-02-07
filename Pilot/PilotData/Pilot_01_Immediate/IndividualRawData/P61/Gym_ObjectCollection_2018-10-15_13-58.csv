@@ -1,8 +1,0 @@
-BoxNo,BoxPos_X,BoxPos_Y,BoxPos_Z,Object,Side
-1,7.25,9.6,50,StrawberryDonut,Right
-2,5,9.6,55,Basket,Left
-3,-1,9.6,57,CokeCan,Left
-4,-7,9.6,56,MosquitoRacket,Right
-5,-7.5,9.6,44,MobilePhone,Left
-6,0.8,9.6,44.2,Matrioshka,Right
-
