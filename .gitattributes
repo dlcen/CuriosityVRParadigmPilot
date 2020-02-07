@@ -1,4 +1,2 @@
 # Specify filepatterns you want to assign special attributes.
-
-$ cat .gitattributes
 *.rb linguist-language=R
