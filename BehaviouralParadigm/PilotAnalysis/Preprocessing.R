@@ -1,11 +1,9 @@
 library(data.table)
 
-all.participant.list <- list.files(path = "./PilotData/IndividualData/", pattern = "^P")
-
 # Ratings
 ratings <- NULL
 
-for (this.p in all.participant.list) {
+for (this.p in participant.list) {
 	this.ratings <- read.csv(paste0("./PilotData/IndividualData/", this.p, "/Exploration/Ratings.csv"), header = TRUE)
 	this.ratings$SubjectNo <- this.p
 	ratings  	 <- rbind(ratings, this.ratings)
@@ -20,7 +18,7 @@ rooms <- as.character(unique(ratings$Room))
 # Durations
 durations <- NULL
 
-for (this.p in all.participant.list) {
+for (this.p in participant.list) {
 	this.durs <- read.csv(paste0("./PilotData/IndividualData/", this.p, "/Exploration/TaskDurations.csv"), header = TRUE)
 	this.durs$SubjectNo <- this.p
 	durations  	 <- rbind(durations, this.durs)
@@ -39,13 +37,13 @@ individual.data <- data.table(individual.data)
 
 
 # Memory performance
+
+object.recognition <- NULL
+
+source("./PilotAnalysis/RoomOrder.R")
+
 if (!is.day1.only) {
-
-  object.recognition <- NULL
-
-  source("./PilotAnalysis/RoomOrder.R")
-
-  for (thisFolder in all.participant.list) {
+  for (thisFolder in participant.list) {
     this.response <- read.csv(paste0("PilotData", .Platform$file.sep, "IndividualData", .Platform$file.sep, thisFolder, .Platform$file.sep, "TestOrder", .Platform$file.sep, "MemoryTestResponse.csv"), header = T)
     this.response <- data.table(this.response)
     
@@ -102,7 +100,7 @@ if (!is.day1.only) {
 
     this.response <- this.response[order(SubjectNo, Scene, Object)]
     this.order    <- outside.orders[SubjectNo == thisFolder]
-    this.order	<- this.order[order(SubjectNo, Room, Item)]
+    this.order	  <- this.order[order(SubjectNo, Room, Item)]
     
     this.response[Scene != "None"]$ItemOrder <- this.order$Order
     
@@ -113,7 +111,7 @@ if (!is.day1.only) {
   }
 
   object.recognition$Group <- "OldItem"
-  object.recognition[is.na(ItemOrder)]$Group <- "Distractor"
+  object.recognition[Scene == "None"]$Group <- "Distractor"
 
   source("./PilotAnalysis/CalFunc.R")
 
@@ -227,8 +225,9 @@ if (!is.day1.only) {
     outside.hit.rate.preInt, outside.hit.rate.preSur, 
     outside.hit.rate.item.exploration.median, outside.hit.rate.item.order.exploration.median, 
     file = "./PilotData/IndividualData.RData")
-
 }
+
+
 
 
 
