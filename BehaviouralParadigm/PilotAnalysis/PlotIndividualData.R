@@ -232,7 +232,7 @@ if (!is.day1.only) {
 	## Ratings and memory performance
 
 	lmEqn <- function(data) {
-		m <- lm(SAcc ~ CurRating, data = data)
+		m <- lm(SAcc ~ Curiosity, data = data)
 
 		if(coef(m)[2] > 0) {
 			eq <- substitute(italic(y) == a + b%.%italic(x)*","~~italic(adjusted)~italic(r)^2~"="~r2,
@@ -253,7 +253,7 @@ if (!is.day1.only) {
 
 		this.data <- outside.hit.rate.per.room[SubjectNo == this.p]
 
-		ggplot(this.data, aes(CurRating, SAcc)) + theme_gray() +
+		ggplot(this.data, aes(Curiosity, SAcc)) + theme_gray() +
 			geom_point(size = 2) +
 			stat_smooth(method = "lm", se = FALSE, color = "red") +
 			geom_text(x = 5.5, y = 0.7, label = lmEqn(this.data), parse = T) +
