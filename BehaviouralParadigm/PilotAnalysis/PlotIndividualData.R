@@ -5,6 +5,8 @@ library(data.table); library(ggplot2); library(ggsci); library(cowplot); library
 
 rating.up <- 10
 
+source("./PilotAnalysis/PlotFuncs.R")
+
 ## Histogram respectively for *Curiosity* and *Interest* ratings for each participant
 
 for (this.p in participant.list) {
@@ -269,11 +271,9 @@ if (!is.day1.only) {
 
 	for (this.p in participant.list) {
 
-		this.data.int <- outside.hit.rate.preInt[SubjectNo == this.p]
-		this.data.sur <- outside.hit.rate.preSur[SubjectNo == this.p]
+		this.data <- outside.hit.rate.per.room[SubjectNo == this.p]
 
-
-		int.plot <- ggplot(this.data.int, aes(PreInt, SAcc)) + theme_gray() +
+		int.plot <- ggplot(this.data, aes(PreInt, SAcc)) + theme_gray() +
 			geom_point(size = 2) +
 			stat_smooth(method = "lm", se = FALSE, color = "red") +
 			# geom_text(x = 5.5, y = 0.45, label = lmEqn(this.data), parse = T) +
@@ -283,7 +283,7 @@ if (!is.day1.only) {
 			facet_wrap( ~ SubjectNo) +
 			theme( strip.text = element_text(face = "bold", size = 12))
 
-		sur.plot <- ggplot(this.data.sur, aes(PreSur, SAcc)) + theme_gray() +
+		sur.plot <- ggplot(this.data, aes(PreSur, SAcc)) + theme_gray() +
 			geom_point(size = 2) +
 			stat_smooth(method = "lm", se = FALSE, color = "red") +
 			# geom_text(x = 5.5, y = 0.45, label = lmEqn(this.data), parse = T) +
@@ -301,118 +301,35 @@ if (!is.day1.only) {
 		ggsave(paste0("./Figures/IndividualPlots//", this.p, "/", this.p, "_PreRatingsHitRate.png"), width = 8, height = 4)
 	}
 
-	## Rating groups and memory performance
-
+	## Curiosity groups and memory performance
 	### Median split groups
-	outside.hit.rate.item.curiosity.median$CurGrpMd <- factor(outside.hit.rate.item.curiosity.median$CurGrpMd)
-	outside.hit.rate.item.curiosity.median$CurGrpMd <- factor(outside.hit.rate.item.curiosity.median$CurGrpMd, levels = levels(outside.hit.rate.item.curiosity.median$CurGrpMd)[c(2, 1)])
+	BarGrpPlot(outside.hit.rate.item.curiosity.median, "CurGrpMd", "SAcc", "Curiosity group (median-splitted)", "Corrected hit rate", "CurMedianHitRate")
 
-	for (this.p in participant.list) {
-
-		this.data <- outside.hit.rate.item.curiosity.median[SubjectNo == this.p]
-
-		ggplot(this.data, aes(CurGrpMd, SAcc)) + 
-			geom_bar( stat="identity", aes(color = CurGrpMd, fill = CurGrpMd)) +
-			labs(x = "Curiosity group (median-splitted)", y = "Corrected hit rate") + 
-			scale_fill_jama(name = "") +
-			scale_color_jama(name = "") +
-			facet_wrap(~ SubjectNo) +
-			theme( strip.text = element_text(face = "bold", size = 12),
-				   legend.position = "none")
-
-		if (!dir.exists(paste0("./Figures/IndividualPlots/", this.p))) { dir.create(paste0("./Figures/IndividualPlots/", this.p)) }
-		ggsave(paste0("./Figures/IndividualPlots/", this.p, "/", this.p, "_CurMedianHitRate.png"), width = 5, height = 4)
-
-	}
-
-	#### Rating groups, item order and memory performance
-
-	outside.hit.rate.item.order.curiosity.median$CurGrpMd <- factor(outside.hit.rate.item.order.curiosity.median$CurGrpMd)
-	outside.hit.rate.item.order.curiosity.median$CurGrpMd <- factor(outside.hit.rate.item.order.curiosity.median$CurGrpMd, levels = levels(outside.hit.rate.item.order.curiosity.median$CurGrpMd)[c(2, 1)])
-
-	for (this.p in participant.list) {
-
-		this.data <- outside.hit.rate.item.order.curiosity.median[SubjectNo == this.p]
-
-		ggplot(this.data, aes(ObjOrdGrp, SAcc)) +
-			geom_bar(stat="identity", aes(group = CurGrpMd, color = CurGrpMd, fill = CurGrpMd), position = position_dodge(width = 0.9)) +
-			labs(x = "Item order", y = "Corrected hit rate") + 
-			scale_fill_jama(name = "Curiosity group") +
-			scale_color_jama(name = "Curiosity group") +
-			facet_wrap(~ SubjectNo) +
-			theme( strip.text = element_text(face = "bold", size = 12))
-
-		if (!dir.exists(paste0("./Figures/IndividualPlots/", this.p))) { dir.create(paste0("./Figures/IndividualPlots/", this.p)) }
-		ggsave(paste0("./Figures/IndividualPlots/", this.p, "/", this.p, "_CurOrdHitRate.png"), width = 6, height = 4)
-
-	}
-
-
-	### Mean split groups
-	outside.hit.rate.item.curiosity.mean$CurGrpMn <- factor(outside.hit.rate.item.curiosity.mean$CurGrpMn)
-	outside.hit.rate.item.curiosity.mean$CurGrpMn <- factor(outside.hit.rate.item.curiosity.mean$CurGrpMn, levels = levels(outside.hit.rate.item.curiosity.mean$CurGrpMn)[c(2, 1)])
-
-	for (this.p in participant.list) {
-
-		this.data <- outside.hit.rate.item.curiosity.mean[SubjectNo == this.p]
-
-		ggplot(this.data, aes(CurGrpMn, SAcc)) + 
-			geom_bar( stat="identity", aes(color = CurGrpMn, fill = CurGrpMn)) +
-			labs(x = "Curiosity group (mean-splitted)", y = "Corrected hit rate") + 
-			scale_fill_jama(name = "") +
-			scale_color_jama(name = "") +
-			facet_wrap(~ SubjectNo) +
-			theme( strip.text = element_text(face = "bold", size = 12))
-
-		if (!dir.exists(paste0("./Figures/IndividualPlots/", this.p))) { dir.create(paste0("./Figures/IndividualPlots/", this.p)) }
-		ggsave(paste0("./Figures/IndividualPlots/", this.p, "/", this.p, "_CurMeanHitRate.png"), width = 6, height = 4)
-
-	}
-
-	#### Rating groups, item order and memory performance
-
-	outside.hit.rate.item.order.curiosity.mean$CurGrpMn <- factor(outside.hit.rate.item.order.curiosity.mean$CurGrpMn)
-	outside.hit.rate.item.order.curiosity.mean$CurGrpMn <- factor(outside.hit.rate.item.order.curiosity.mean$CurGrpMn, levels = levels(outside.hit.rate.item.order.curiosity.mean$CurGrpMn)[c(2, 1)])
-
-	for (this.p in participant.list) {
-
-		this.data <- outside.hit.rate.item.order.curiosity.mean[SubjectNo == this.p]
-
-		ggplot(this.data, aes(ObjOrdGrp, SAcc)) +
-			geom_bar(stat="identity", aes(group = CurGrpMn, color = CurGrpMn, fill = CurGrpMn), position = position_dodge(width = 0.9)) +
-			labs(x = "Item order", y = "Corrected hit rate") + 
-			scale_fill_jama(name = "Curiosity group") +
-			scale_color_jama(name = "Curiosity group") +
-			facet_wrap(~ SubjectNo) +
-			theme( strip.text = element_text(face = "bold", size = 12))
-
-		if (!dir.exists(paste0("./Figures/IndividualPlots/", this.p))) { dir.create(paste0("./Figures/IndividualPlots/", this.p)) }
-		ggsave(paste0("./Figures/IndividualPlots/", this.p, "/", this.p, "_CurMeanOrdHitRate.png"), width = 6, height = 4)
-
-	}
-
+	#### Curiosity groups, item order and memory performance
+	BarOrdGrpPlot(outside.hit.rate.item.order.curiosity.median, "CurGrpMd", "SAcc", "Item order", "Corrected hit rate", "CurOrdHitRate", "Curiosity group", NULL)
 
 	## Relationships between exploration time and memory performance
-
 	### Compare the long- and low-exploration groups
-	outside.hit.rate.item.exploration.median$DurGrpMd <- factor(outside.hit.rate.item.exploration.median$DurGrpMd)
-	outside.hit.rate.item.exploration.median$DurGrpMd <- factor(outside.hit.rate.item.exploration.median$DurGrpMd, levels = levels(outside.hit.rate.item.exploration.median$DurGrpMd)[c(2, 1)], labels = c("Short", "Long"))
+	BarGrpPlot(outside.hit.rate.item.exploration.median, "DurGrpMd", "SAcc", "Exploration time group (median-splitted)", "Corrected hit rate", "DurMedianHitRate", c("Short", "Long"))
 
-	for (this.p in participant.list) {
+	#### Include item order
+	BarOrdGrpPlot(outside.hit.rate.item.order.exploration.median, "DurGrpMd", "SAcc", "Item order", "Corrected hit rate", "DurOrdHitRate", "Exploration time", c("Short", "Long"))
 
-		this.data <- outside.hit.rate.item.exploration.median[SubjectNo == this.p]
+	## Relationiships between interest ratings (median-split groups) and memory performance
+	BarGrpPlot(outside.hit.rate.item.interest.median, "IntGrpMd", "SAcc", "Interestingness group (median-splitted)", "Corrected hit rate", "IntMedianHitRate")
+	BarOrdGrpPlot(outside.hit.rate.item.order.interest.median, "IntGrpMd", "SAcc", "Item order", "Corrected hit rate", "IntOrdHitRate", "Interestingness", NULL)
 
-		ggplot(this.data, aes(DurGrpMd, SAcc)) + 
-			geom_bar( stat="identity", aes(color = DurGrpMd, fill = DurGrpMd)) +
-			labs(x = "Exploration time group (median-splitted)", y = "Corrected hit rate") + 
-			scale_fill_jama(name = "") +
-			scale_color_jama(name = "") +
-			facet_wrap(~ SubjectNo) +
-			theme( strip.text = element_text(face = "bold", size = 12),
-				   legend.position = "none")
+	## Relationiships between surprise (median-split groups) and memory performance
+	BarGrpPlot(outside.hit.rate.item.surprise.median, "SurGrpMd", "SAcc", "Surprise group (median-splitted)", "Corrected hit rate", "SurMedianHitRate")
+	BarOrdGrpPlot(outside.hit.rate.item.order.surprise.median, "SurGrpMd", "SAcc", "Item order", "Corrected hit rate", "SurOrdHitRate", "Surprise", NULL)
 
-		if (!dir.exists(paste0("./Figures/IndividualPlots/", this.p))) { dir.create(paste0("./Figures/IndividualPlots/", this.p)) }
-		ggsave(paste0("./Figures/IndividualPlots/", this.p, "/", this.p, "_DurMedianHitRate.png"), width = 5, height = 4)
+	## Relationiships between pre-Surerest ratings (median-split groups) and memory performance
+	BarGrpPlot(outside.hit.rate.item.preint.median, "PreIntGrpMd", "SAcc", "Interest (for previous room) group (median-splitted)", "Corrected hit rate", "PreIntMedianHitRate")
+	BarOrdGrpPlot(outside.hit.rate.item.order.preint.median, "PreIntGrpMd", "SAcc", "Item order", "Corrected hit rate", "PreIntOrdHitRate", "Pre Interest", NULL)
 
-	}
+	## Relationiships between pre-surprise ratings (median-split groups) and memory performance
+	BarGrpPlot(outside.hit.rate.item.presur.median, "PreSurGrpMd", "SAcc", "Surprise (for previous room) group (median-splitted)", "Corrected hit rate", "PreSurMedianHitRate")
+	BarOrdGrpPlot(outside.hit.rate.item.order.presur.median, "PreSurGrpMd", "SAcc", "Item order", "Corrected hit rate", "PreSurOrdHitRate", "Pre Surprise", NULL)
+
+
 }

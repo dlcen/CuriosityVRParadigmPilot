@@ -33,14 +33,34 @@ individual.data$OutsideDuration <- durations$OutsideDuration
 
 individual.data <- data.table(individual.data)
 
-# individual.data[, Surprise := (Interest - Curiosity)]
+source("./PilotAnalysis/RoomOrder.R")
 
+individual.data <- merge(individual.data, room.order, by = c("SubjectNo", "Room"))
+
+individual.data$PreCur <- 0
+individual.data$PreInt <- 0
+individual.data$PreSur <- 0
+
+for (this.p in participant.list) {
+  for (this.room in rooms) {
+    this.pre.room <- individual.data[SubjectNo == this.p & Room == this.room]$PreRoom
+    if (!is.na(this.pre.room)) {
+      individual.data[SubjectNo == this.p & Room == this.room]$PreCur <- individual.data[SubjectNo == this.p & Room == this.pre.room]$Curiosity
+      individual.data[SubjectNo == this.p & Room == this.room]$PreInt <- individual.data[SubjectNo == this.p & Room == this.pre.room]$Interest
+      individual.data[SubjectNo == this.p & Room == this.room]$PreSur <- individual.data[SubjectNo == this.p & Room == this.pre.room]$Surprise
+    }
+  }
+}
+
+individual.data[PreCur == 0]$PreCur <- NA
+individual.data[PreInt == 0]$PreInt <- NA
+individual.data[PreSur == 0]$PreSur <- NA
+
+names(individual.data)[2] <- "Scene"
 
 # Memory performance
 
 object.recognition <- NULL
-
-source("./PilotAnalysis/RoomOrder.R")
 
 if (!is.day1.only) {
   for (thisFolder in participant.list) {
@@ -49,51 +69,6 @@ if (!is.day1.only) {
     
     this.response$SubjectNo <- thisFolder
 
-    # Read the curiosity rating 
-    this.ratings <- ratings[SubjectNo == thisFolder]
-    this.room.order <- room.order[SubjectNo == thisFolder]
-
-    # Add the curiosity rating to the response file
-    this.response$CurRating <- 0
-    this.response$IntRating <- 0
-    this.response$RoomOrder <- 0
-
-    this.response$PreCur    <- 0
-    this.response$PreInt    <- 0
-    this.response$PreSur    <- 0
-    
-    for (this.room in rooms) {
-      this.response[Scene == this.room]$CurRating <- this.ratings[Room == this.room]$Curiosity
-      this.response[Scene == this.room]$IntRating <- this.ratings[Room == this.room]$Interest
-      this.response[Scene == this.room]$RoomOrder <- this.room.order[Room == this.room]$Order
-      
-      if ( ! is.na(this.room.order[Room == this.room]$PreRoom)) {
-        this.response[Scene == this.room]$PreCur    <- this.ratings[Room == this.room.order[Room == this.room]$PreRoom]$Curiosity
-        this.response[Scene == this.room]$PreInt    <- this.ratings[Room == this.room.order[Room == this.room]$PreRoom]$Interest
-        this.response[Scene == this.room]$PreSur    <- this.ratings[Room == this.room.order[Room == this.room]$PreRoom]$Surprise
-      } 
-    }
-
-    this.response[CurRating == 0]$CurRating <- NA
-    this.response[IntRating == 0]$IntRating <- NA
-    this.response[RoomOrder == 0]$RoomOrder <- NA
-
-    this.response[PreCur == 0]$PreCur <- NA
-    this.response[PreInt == 0]$PreInt <- NA
-    this.response[PreSur == 0]$PreSur <- NA
-
-    # # Add the outside duration 
-    # this.durations <- individual.data[SubjectNo == thisFolder]
-
-    # this.response$OutDur <- 0
-
-    # for (this.room in rooms) {
-    #   this.response[Scene == this.room]$OutDur <- this.durations[Room == this.room]$OutsideDuration
-    # }
-
-    # this.response[OutDur == 0]$OutDur <- NA
-
-    # Add the order of items inside each room
     source("./PilotAnalysis/OutsideOrder.r")
 
     this.response$ItemOrder <- 0
@@ -115,115 +90,82 @@ if (!is.day1.only) {
 
   source("./PilotAnalysis/CalFunc.R")
 
-  object.recognition[, SFHit   := mapply(SFHitCal,      Response, Scene)]
-  object.recognition[, SHit    := mapply(SHitCal,       Response, Scene)]
-  object.recognition[, SFFalse := mapply(SFFalseHitCal, Response, Scene)]
-  object.recognition[, SFalse  := mapply(SFalseHitCal,  Response, Scene)]
+  object.recognition[, c("SFHit", "SHit", "SFFalse", "SFalse") := list(mapply(SFHitCal, Response, Scene), mapply(SHitCal, Response, Scene), mapply(SFFalseHitCal, Response, Scene), mapply(SFalseHitCal,  Response, Scene))]
 
   idv.false.alarm.rate <- object.recognition[Scene == "None", .(SFFalse = mean(SFFalse), SFalse = mean(SFalse)), by = c("SubjectNo")]
   
   ## Calculate average exploration time (median and mean)
   average.inside.duration   <- durations[, .(MeanDur = mean(InsideDuration, na.rm = TRUE), MedianDur = median(InsideDuration, na.rm = TRUE)), by = c("SubjectNo") ]
-  object.recognition.old    <- merge(object.recognition, durations, by = c("SubjectNo", "Scene"))
+  object.recognition.old    <- merge(object.recognition, individual.data, by = c("SubjectNo", "Scene"))
   object.recognition.old    <- merge(object.recognition.old, average.inside.duration, by = "SubjectNo")
 
+  ## Calculate average ratings (median and mean)
+  average.ratings           <- individual.data[, .(MeanCur = mean(Curiosity, na.rm = TRUE), MedianCur = median(Curiosity, na.rm = TRUE), MeanInt = mean(Interest, na.rm = TRUE), MedianInt = median(Interest, na.rm = TRUE), MeanSur = mean(Surprise, na.rm = TRUE), MedianSur = median(Surprise, na.rm = TRUE), MeanPreInt = mean(PreInt, na.rm = TRUE), MedianPreInt = median(PreInt, na.rm = TRUE), MeanPreSur = mean(PreSur, na.rm = TRUE), MedianPreSur = median(PreSur, na.rm = TRUE)),  by = c("SubjectNo")]
+  object.recognition.old    <- merge(object.recognition.old, average.ratings, by = "SubjectNo")
+
   ## Calculate the hit rates for each individual participant and each room
-  outside.hit.rate.per.room <- object.recognition.old[Scene != "None", .(SFHit = mean(SFHit, na.rm = TRUE), SHit = mean(SHit, na.rm = TRUE)), by = c("SubjectNo", "Scene", "CurRating", "IntRating", "PreInt", "PreSur", "InsideDuration", "OutsideDuration", "MeanDur", "MedianDur")]
+  outside.hit.rate.per.room <- object.recognition.old[, .(SFHit = mean(SFHit, na.rm = TRUE), SHit = mean(SHit, na.rm = TRUE)), by = c("SubjectNo", "Scene", "Curiosity", "Interest", "Surprise", "PreInt", "PreSur", "InsideDuration", "OutsideDuration", "MedianDur", "MedianCur", "MedianInt", "MedianSur", "MedianPreInt", "MedianPreSur")]
   outside.hit.rate.per.room <- outside.hit.rate.per.room[order(SubjectNo, Scene), ]
   outside.hit.rate.per.room <- merge(outside.hit.rate.per.room, idv.false.alarm.rate, all = TRUE)
 
-  outside.hit.rate.per.room[, SFAcc  := (SFHit - SFFalse)]
-  outside.hit.rate.per.room[, SAcc   := (SHit  - SFalse)]
-
-  ## Calculate average ratings (median and mean)
-  average.curiosity.rating  <- outside.hit.rate.per.room[, .(MeanCur = mean(CurRating, na.rm = TRUE), MedianCur = median(CurRating, na.rm = TRUE), MeanPreInt = mean(PreInt, na.rm = TRUE), MedianPreInt = median(PreInt, na.rm = TRUE), MeanPreSur = mean(PreSur, na.rm = TRUE), MedianPreSur = median(PreSur, na.rm = TRUE)),  by = c("SubjectNo")]
-  object.recognition.old    <- merge(object.recognition.old, average.curiosity.rating, by = "SubjectNo")
-
-  ## Calculate the hit rates for each individual participant and each curiosity rating
-  outside.hit.rate.per.rating <- object.recognition.old[Scene != "None", .(SFHit = mean(SFHit, na.rm = TRUE), SHit = mean(SHit, na.rm = TRUE)), by = c("SubjectNo", "CurRating")]
-  outside.hit.rate.per.rating <- outside.hit.rate.per.rating[order(SubjectNo, CurRating), ]
-  outside.hit.rate.per.rating <- merge(outside.hit.rate.per.rating, idv.false.alarm.rate, all = TRUE)
-
-  outside.hit.rate.per.rating[, SFAcc  := (SFHit - SFFalse)]
-  outside.hit.rate.per.rating[, SAcc   := (SHit  - SFalse)]
+  outside.hit.rate.per.room[, c("SFAcc", "SAcc")  := list((SFHit - SFFalse), (SHit - SFalse)) ]
 
   ## Calculate the hit rates for each curiosity group
-  object.recognition.old[, CurGrp := mapply(CurGrpSep, CurRating)]
-
-  outside.hit.rate.item.curiosity        <- object.recognition.old[Scene != "None", .(SFHit = mean(SFHit, na.rm = TRUE), SHit = mean(SHit, na.rm = TRUE)), by = c("SubjectNo", "CurGrp")]
-  outside.hit.rate.item.curiosity        <- merge(outside.hit.rate.item.curiosity, idv.false.alarm.rate, all = TRUE)
-  outside.hit.rate.item.curiosity[, c("SFAcc", "SAcc") := list( (SFHit - SFFalse), (SHit - SFalse))]
-
-  ## Calculate the hit rates for each curiosity group that is median split
-  object.recognition.old[, CurGrpMd := mapply(CurGrpMedianSep, CurRating, MedianCur)]
-
-  outside.hit.rate.item.curiosity.median   <- object.recognition.old[!is.na(CurGrpMd), .(SFHit = mean(SFHit, na.rm = TRUE), SHit = mean(SHit, na.rm = TRUE)), by = c("SubjectNo", "CurGrpMd")]
-  outside.hit.rate.item.curiosity.median   <- merge(outside.hit.rate.item.curiosity.median, idv.false.alarm.rate, all = TRUE)
-  outside.hit.rate.item.curiosity.median[, c("SFAcc", "SAcc") := list( (SFHit - SFFalse), (SHit - SFalse))]
-
-  ## Calculate the hit rates for each curiosity group that is mean split
-  object.recognition.old[, CurGrpMn := mapply(CurGrpMeanSep, CurRating, MeanCur)]
-
-  outside.hit.rate.item.curiosity.mean   <- object.recognition.old[Scene != "None", .(SFHit = mean(SFHit, na.rm = TRUE), SHit = mean(SHit, na.rm = TRUE)), by = c("SubjectNo", "CurGrpMn")]
-  outside.hit.rate.item.curiosity.mean   <- merge(outside.hit.rate.item.curiosity.mean, idv.false.alarm.rate, all = TRUE)
-  outside.hit.rate.item.curiosity.mean[, c("SFAcc", "SAcc") := list( (SFHit - SFFalse), (SHit - SFalse))]
+  object.recognition.old[, CurGrp := mapply(GrpSep, Curiosity)]
+  outside.hit.rate.item.curiosity <- CorrHitRateCal(object.recognition.old, "CurGrp", idv.false.alarm.rate)
 
   ## Calculate the hit rates for each curiosity group and order group
   object.recognition.old[, ObjOrdGrp := mapply(ObjOrdGrpSep, ItemOrder) ]
+  outside.hit.rate.item.order.curiosity        <- CorrHitRateOrderCal(object.recognition.old, "CurGrp", idv.false.alarm.rate)
 
-  outside.hit.rate.item.order.curiosity        <- object.recognition.old[Scene != "None", .(SFHit = mean(SFHit, na.rm = TRUE), SHit = mean(SHit, na.rm = TRUE)), by = c("SubjectNo", "CurGrp", "ObjOrdGrp")]
-  outside.hit.rate.item.order.curiosity        <- merge(outside.hit.rate.item.order.curiosity, idv.false.alarm.rate, all = TRUE)
-  outside.hit.rate.item.order.curiosity[, c("SFAcc", "SAcc") := list( (SFHit - SFFalse), (SHit - SFalse))]
-
-  ## Calculate the hit rates for each curiosity group (median-splited) and order group
-  object.recognition.old[, ObjOrdGrp := mapply(ObjOrdGrpSep, ItemOrder) ]
-
-  outside.hit.rate.item.order.curiosity.median   <- object.recognition.old[!is.na(CurGrpMd), .(SFHit = mean(SFHit, na.rm = TRUE), SHit = mean(SHit, na.rm = TRUE)), by = c("SubjectNo", "CurGrpMd", "ObjOrdGrp")]
-  outside.hit.rate.item.order.curiosity.median   <- merge(outside.hit.rate.item.order.curiosity.median, idv.false.alarm.rate, all = TRUE)
-  outside.hit.rate.item.order.curiosity.median[, c("SFAcc", "SAcc") := list( (SFHit - SFFalse), (SHit - SFalse))]
+  ## Calculate the hit rates for each curiosity group that is median split
+  object.recognition.old[, CurGrpMd := mapply(GrpMedianSep, Curiosity, MedianCur)]
+  outside.hit.rate.item.curiosity.median   <- CorrHitRateCal(object.recognition.old, "CurGrpMd", idv.false.alarm.rate)
 
   ## Calculate the hit rates for each curiosity group (median-splited) and order group
-  object.recognition.old[, ObjOrdGrp := mapply(ObjOrdGrpSep, ItemOrder) ]
-
-  outside.hit.rate.item.order.curiosity.mean   <- object.recognition.old[Scene != "None", .(SFHit = mean(SFHit, na.rm = TRUE), SHit = mean(SHit, na.rm = TRUE)), by = c("SubjectNo", "CurGrpMn", "ObjOrdGrp")]
-  outside.hit.rate.item.order.curiosity.mean   <- merge(outside.hit.rate.item.order.curiosity.mean, idv.false.alarm.rate, all = TRUE)
-  outside.hit.rate.item.order.curiosity.mean[, c("SFAcc", "SAcc") := list( (SFHit - SFFalse), (SHit - SFalse))]
-
-  # Calculate the hit rates for each pre interesting rating
-  outside.hit.rate.preInt <- object.recognition.old[PreInt != 0, .(SFHit = mean(SFHit, na.rm = TRUE), SHit = mean(SHit, na.rm = TRUE)), by = c("SubjectNo", "PreInt")]
-  outside.hit.rate.preInt <- outside.hit.rate.preInt[order(SubjectNo, PreInt), ]
-  outside.hit.rate.preInt <- merge(outside.hit.rate.preInt, idv.false.alarm.rate, all = TRUE)
-
-  outside.hit.rate.preInt[, SFAcc  := (SFHit - SFFalse)]
-  outside.hit.rate.preInt[, SAcc   := (SHit  - SFalse)]
-
-  # Calculate the hit rates for each pre surprise rating
-  outside.hit.rate.preSur <- object.recognition.old[PreSur != 0, .(SFHit = mean(SFHit, na.rm = TRUE), SHit = mean(SHit, na.rm = TRUE)), by = c("SubjectNo", "PreSur")]
-  outside.hit.rate.preSur <- outside.hit.rate.preSur[order(SubjectNo, PreSur), ]
-  outside.hit.rate.preSur <- merge(outside.hit.rate.preSur, idv.false.alarm.rate, all = TRUE)
-
-  outside.hit.rate.preSur[, SFAcc  := (SFHit - SFFalse)]
-  outside.hit.rate.preSur[, SAcc   := (SHit  - SFalse)]
+  outside.hit.rate.item.order.curiosity.median   <- CorrHitRateOrderCal(object.recognition.old, "CurGrpMd", idv.false.alarm.rate)
 
   # Calculate the hit rates for each exploration group (median-split based on exploration time)
-  object.recognition.old[, DurGrpMd := mapply(CurGrpMedianSep, InsideDuration, MedianDur)]
-
-  outside.hit.rate.item.exploration.median   <- object.recognition.old[Scene != "None", .(SFHit = mean(SFHit, na.rm = TRUE), SHit = mean(SHit, na.rm = TRUE)), by = c("SubjectNo", "DurGrpMd")]
-  outside.hit.rate.item.exploration.median   <- merge(outside.hit.rate.item.exploration.median, idv.false.alarm.rate, all = TRUE)
-  outside.hit.rate.item.exploration.median[, c("SFAcc", "SAcc") := list( (SFHit - SFFalse), (SHit - SFalse))]
+  object.recognition.old[, DurGrpMd := mapply(GrpMedianSep, InsideDuration, MedianDur)]
+  outside.hit.rate.item.exploration.median   <- CorrHitRateCal(object.recognition.old, "DurGrpMd", idv.false.alarm.rate)
 
   ## Calculate the hit rates for each exploration group (median-splited) and order group
-  outside.hit.rate.item.order.exploration.median   <- object.recognition.old[Scene != "None", .(SFHit = mean(SFHit, na.rm = TRUE), SHit = mean(SHit, na.rm = TRUE)), by = c("SubjectNo", "DurGrpMd", "ObjOrdGrp")]
-  outside.hit.rate.item.order.exploration.median   <- merge(outside.hit.rate.item.order.exploration.median, idv.false.alarm.rate, all = TRUE)
-  outside.hit.rate.item.order.exploration.median[, c("SFAcc", "SAcc") := list( (SFHit - SFFalse), (SHit - SFalse))]
+  outside.hit.rate.item.order.exploration.median   <- CorrHitRateOrderCal(object.recognition.old, "DurGrpMd", idv.false.alarm.rate)
+
+  # Calculate the hit rates for each interestingness group (median-split based on the rating)
+  object.recognition.old[, IntGrpMd := mapply(GrpMedianSep, Interest, MedianInt)]
+  outside.hit.rate.item.interest.median <- CorrHitRateCal(object.recognition.old, "IntGrpMd", idv.false.alarm.rate)
+
+  ## Calculate the hit rates for each interestingness group (median-splited) and order group
+  outside.hit.rate.item.order.interest.median   <- CorrHitRateOrderCal(object.recognition.old, "IntGrpMd", idv.false.alarm.rate)
+
+  # Calculate the hit rates for each surprise group (median-split based on the rating)
+  object.recognition.old[, SurGrpMd := mapply(GrpMedianSep, Surprise, MedianSur)]
+  outside.hit.rate.item.surprise.median <- CorrHitRateCal(object.recognition.old, "SurGrpMd", idv.false.alarm.rate)
+
+  ## Calculate the hit rates for each surpriseingness group (median-splited) and order group
+  outside.hit.rate.item.order.surprise.median   <- CorrHitRateOrderCal(object.recognition.old, "SurGrpMd", idv.false.alarm.rate)
+
+  ## Calculate the hit rates for each pre-interest group (median-splited based on the rating)
+  object.recognition.old[, PreIntGrpMd := mapply(GrpMedianSep, PreInt, MedianPreInt)]
+  outside.hit.rate.item.preint.median  <- CorrHitRateCal(object.recognition.old, "PreIntGrpMd", idv.false.alarm.rate)
+  outside.hit.rate.item.order.preint.median <- CorrHitRateOrderCal(object.recognition.old, "PreIntGrpMd", idv.false.alarm.rate)
+
+  ## Calculate the hit rates for each pre-surprise group (median-splited based on the rating)
+  object.recognition.old[, PreSurGrpMd := mapply(GrpMedianSep, PreSur, MedianPreSur)]
+  outside.hit.rate.item.presur.median  <- CorrHitRateCal(object.recognition.old, "PreSurGrpMd", idv.false.alarm.rate)
+  outside.hit.rate.item.order.presur.median <- CorrHitRateOrderCal(object.recognition.old, "PreSurGrpMd", idv.false.alarm.rate)
 
 
   save(rooms, ratings, individual.data, object.recognition, object.recognition.old,
-    outside.hit.rate.per.room, outside.hit.rate.per.rating, 
+    outside.hit.rate.per.room, 
     outside.hit.rate.item.curiosity, outside.hit.rate.item.curiosity.median, 
     outside.hit.rate.item.order.curiosity, outside.hit.rate.item.order.curiosity.median, 
-    outside.hit.rate.preInt, outside.hit.rate.preSur, 
     outside.hit.rate.item.exploration.median, outside.hit.rate.item.order.exploration.median, 
+    outside.hit.rate.item.interest.median, outside.hit.rate.item.order.interest.median,
+    outside.hit.rate.item.surprise.median, outside.hit.rate.item.order.surprise.median,
+    outside.hit.rate.item.preint.median, outside.hit.rate.item.order.preint.median,
+    outside.hit.rate.item.presur.median, outside.hit.rate.item.order.presur.median,
     file = "./PilotData/IndividualData.RData")
 }
 

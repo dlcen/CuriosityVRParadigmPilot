@@ -43,47 +43,47 @@ SFalseHitCal <- function(ActualResp, Scene){
 
 # Label "high" and "low" curiosity groups
 ## According to medien
-CurGrpMedianSep <- function(thisCur, medianCur) {
+GrpMedianSep <- function(thisScor, medianScor) {
       
-      if (is.na(thisCur)) {
-            CurGrp <- NA
+      if (is.na(thisScor)) {
+            ScorGrp <- NA
       } else {
-            if (thisCur < medianCur) {   # Used to be <=, now switch to a more extreme median split by removing the rooms with median equal values
-                  CurGrp <- "Low"
-            } else if (thisCur > medianCur) {
-                  CurGrp <- "High"
+            if (thisScor < medianScor) {   # Used to be <=, now switch to a more extreme median split by removing the rooms with median equal values
+                  ScorGrp <- "Low"
+            } else if (thisScor > medianScor) {
+                  ScorGrp <- "High"
             } else {
-                  CurGrp <- NA
+                  ScorGrp <- NA
             }
       }
 }
 
 ## According to mean
-CurGrpMeanSep <- function(thisCur, meanCur) {
-      if (is.na(thisCur)) {
-            CurGrp <- NA
+GrpMeanSep <- function(thisScor, meanScor) {
+      if (is.na(thisScor)) {
+            ScorGrp <- NA
       } else {
-            if (thisCur < meanCur) {
-                  CurGrp <- "Low"
-            } else if (thisCur > meanCur) {
-                  CurGrp <- "High"
+            if (thisScor < meanScor) {
+                  ScorGrp <- "Low"
+            } else if (thisScor > meanScor) {
+                  ScorGrp <- "High"
             } else {
-                  CurGrp <- NA
+                  ScorGrp <- NA
             }
       }
 }
 
 ## According to 4
-CurGrpSep <- function(thisCur) {
-  if (is.na(thisCur)) {
-            CurGrp <- NA
+GrpSep <- function(thisScor) {
+  if (is.na(thisScor)) {
+            ScorGrp <- NA
       } else {
-            if (thisCur < 6) {
-                  CurGrp <- "Low"
-            } else if (thisCur >= 6) {
-                  CurGrp <- "High"
+            if (thisScor < 6) {
+                  ScorGrp <- "Low"
+            } else if (thisScor >= 6) {
+                  ScorGrp <- "High"
             } else {
-                  CurGrp <- NA
+                  ScorGrp <- NA
             }
       }
 }
@@ -101,5 +101,27 @@ ObjOrdGrpSep <- function(thisOrder) {
     }
   }
 }
+
+
+# Calculate the corrected hit rate given the group
+CorrHitRateCal <- function(data, group, false.alarm.rate) {
+  results <- data[!is.na(get(group)), .(SFHit = mean(SFHit, na.rm = TRUE), SHit = mean(SHit, na.rm = TRUE)), by = c("SubjectNo", group)]
+  results <- merge(results, false.alarm.rate, all = TRUE)
+  results[, c("SFAcc", "SAcc") := list( (SFHit - SFFalse), (SHit - SFalse))]
+
+  return(results)
+}
+
+# Calculate the corrected hit rate given the group and according to the order ('early' vs 'later')
+CorrHitRateOrderCal <- function(data, group, false.alarm.rate) {
+  results   <- data[!is.na(get(group)), .(SFHit = mean(SFHit, na.rm = TRUE), SHit = mean(SHit, na.rm = TRUE)), by = c("SubjectNo", group, "ObjOrdGrp")]
+  results   <- merge(results, false.alarm.rate, all = TRUE)
+  results[, c("SFAcc", "SAcc") := list( (SFHit - SFFalse), (SHit - SFalse))]
+
+  return(results)
+}
+
+
+
 
 
