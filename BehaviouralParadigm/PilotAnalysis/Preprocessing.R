@@ -39,7 +39,7 @@ individual.data <- merge(individual.data, room.order, by = c("SubjectNo", "Room"
 
 individual.data$PreCur <- 0
 individual.data$PreInt <- 0
-individual.data$PreSur <- 0
+individual.data$PreSur <- 100
 
 for (this.p in participant.list) {
   for (this.room in rooms) {
@@ -54,7 +54,7 @@ for (this.p in participant.list) {
 
 individual.data[PreCur == 0]$PreCur <- NA
 individual.data[PreInt == 0]$PreInt <- NA
-individual.data[PreSur == 0]$PreSur <- NA
+individual.data[PreSur == 100]$PreSur <- NA
 
 names(individual.data)[2] <- "Scene"
 

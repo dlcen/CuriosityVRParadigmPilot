@@ -230,42 +230,31 @@ if (!is.day1.only) {
 	}
 
 	## Ratings and memory performance
-
-	lmEqn <- function(data) {
-		m <- lm(SAcc ~ Curiosity, data = data)
-
-		if(coef(m)[2] > 0) {
-			eq <- substitute(italic(y) == a + b%.%italic(x)*","~~italic(adjusted)~italic(r)^2~"="~r2,
-							 list(a = format(unname(coef(m)[1]), digits = 4),
-							 	 b = format(unname(abs(coef(m)[2])), digits = 3),
-							 	r2 = format(summary(m)$r.squared, digits = 3)))
-		} else {
-			eq <- substitute(italic(y) == a - b%.%italic(x)*","~~italic(adjusted)~italic(r)^2~"="~r2,
-							 list(a = format(unname(coef(m)[1]), digits = 4),
-							 	 b = format(unname(abs(coef(m)[2])), digits = 3),
-							 	r2 = format(summary(m)$r.squared, digits = 3)))
-		}
-
-		as.character(as.expression(eq))
-	}
-
 	for (this.p in participant.list) {
-
 		this.data <- outside.hit.rate.per.room[SubjectNo == this.p]
 
-		ggplot(this.data, aes(Curiosity, SAcc)) + theme_gray() +
-			geom_point(size = 2) +
-			stat_smooth(method = "lm", se = FALSE, color = "red") +
-			geom_text(x = 5.5, y = 0.7, label = lmEqn(this.data), parse = T) +
-			scale_x_continuous(breaks = c(0:rating.up + 1)) +
-			xlim(0, rating.up + 1) + ylim(-0.25, 0.75) +
-			labs(x = "Curiosity rating", y = "Corrected hit rate") +
-			facet_wrap( ~ SubjectNo) +
-			theme( strip.text = element_text(face = "bold", size = 12))
+		this.cur.plt <- RgLineIdvPlot(this.data, iv="Curiosity", xlab="Curiosity rating")
+		this.int.plt <- RgLineIdvPlot(this.data, iv="Interest", xlab="Interestingness rating")
+
+		this.mean.sur <- mean(this.data$Surprise, na.rm = TRUE)
+		this.max.sur  <- max(this.data$Surprise, na.rm = TRUE)
+		this.min.sur  <- min(this.data$Surprise, na.rm = TRUE) 
+		this.sur.plt  <- RgLineIdvPlot(this.data, iv="Surprise", xlab="Surprise", xtxt=this.mean.sur, xbrk=seq(this.min.sur, this.max.sur, 1), xlims=c(this.min.sur, this.max.sur))
+
+		this.mean.exp <- mean(this.data$InsideDuration, na.rm = TRUE)
+		this.max.exp  <- ceiling(max(this.data$InsideDuration, na.rm = TRUE))
+		this.min.exp  <- floor(min(this.data$InsideDuration, na.rm = TRUE))
+		this.exp.plt  <- RgLineIdvPlot(this.data, iv="InsideDuration", xlab="Exploration time (s)", xtxt=this.mean.exp, xbrk=seq(this.min.exp, this.max.exp, 5), xlims=c(this.min.exp, this.max.exp))
+
+		plot_grid(this.cur.plt, 
+			this.int.plt + theme(axis.title.y = element_blank()), 
+			this.sur.plt + theme(axis.title.y = element_blank()), 
+			this.exp.plt + theme(axis.title.y = element_blank()), nrow = 1, rel_widths = c(1.05, 1, 1, 1))
 
 		if (!dir.exists(paste0("./Figures/IndividualPlots/", this.p))) { dir.create(paste0("./Figures/IndividualPlots/", this.p)) }
-		ggsave(paste0("./Figures/IndividualPlots//", this.p, "/", this.p, "_CurHitRate.png"), width = 6, height = 4)
+		ggsave(paste0("./Figures/IndividualPlots//", this.p, "/", this.p, "_RatingsHitRateLinear.png"), width = 18, height = 4)
 	}
+	
 
 	## Pre-ratings and memory performance
 
@@ -273,32 +262,17 @@ if (!is.day1.only) {
 
 		this.data <- outside.hit.rate.per.room[SubjectNo == this.p]
 
-		int.plot <- ggplot(this.data, aes(PreInt, SAcc)) + theme_gray() +
-			geom_point(size = 2) +
-			stat_smooth(method = "lm", se = FALSE, color = "red") +
-			# geom_text(x = 5.5, y = 0.45, label = lmEqn(this.data), parse = T) +
-			# scale_x_continuous(breaks = c(0:rating.up + 1)) +
-			xlim(0, rating.up + 1) + ylim(-0.25, 0.5) +
-			labs(x = "Interestingness rating in previous trial", y = "Corrected hit rate") +
-			facet_wrap( ~ SubjectNo) +
-			theme( strip.text = element_text(face = "bold", size = 12))
+		this.pre.int.plt <- RgLineIdvPlot(this.data, iv="PreInt", xlab="Interestingness rating for previous room")
 
-		sur.plot <- ggplot(this.data, aes(PreSur, SAcc)) + theme_gray() +
-			geom_point(size = 2) +
-			stat_smooth(method = "lm", se = FALSE, color = "red") +
-			# geom_text(x = 5.5, y = 0.45, label = lmEqn(this.data), parse = T) +
-			# scale_x_continuous(breaks = c(0:rating.up + 1)) +
-			# xlim(0, rating.up + 1) + 
-			ylim(-0.25, 0.5) +
-			labs(x = "Surprise rating in previous trial", y = "Corrected hit rate") +
-			facet_wrap( ~ SubjectNo) +
-			theme( strip.text = element_text(face = "bold", size = 12),
-				   axis.title.y = element_blank())
+		this.mean.sur <- mean(this.data$PreSur, na.rm = TRUE)
+		this.max.sur  <- max(this.data$PreSur, na.rm = TRUE)
+		this.min.sur  <- min(this.data$PreSur, na.rm = TRUE) 
+		this.pre.sur.plt  <- RgLineIdvPlot(this.data, iv="PreSur", xlab="Surprise for previous room", xtxt=this.mean.sur, xbrk=seq(this.min.sur, this.max.sur, 1), xlims=c(this.min.sur, this.max.sur))
 
-		plot_grid(int.plot, sur.plot, nrow = 1, rel_widths = c(1.15, 1))
+		plot_grid(this.pre.int.plt, this.pre.sur.plt + theme(axis.title.y = element_blank()), nrow = 1, rel_widths = c(1.05, 1))
 
 		if (!dir.exists(paste0("./Figures/IndividualPlots/", this.p))) { dir.create(paste0("./Figures/IndividualPlots/", this.p)) }
-		ggsave(paste0("./Figures/IndividualPlots//", this.p, "/", this.p, "_PreRatingsHitRate.png"), width = 8, height = 4)
+		ggsave(paste0("./Figures/IndividualPlots//", this.p, "/", this.p, "_PreRatingsHitRateLinear.png"), width = 10, height = 5)
 	}
 
 	## Curiosity groups and memory performance

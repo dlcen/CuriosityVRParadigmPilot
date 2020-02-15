@@ -74,3 +74,39 @@ BarOrdGrpPlot <- function(data, group, dv, xlab, ylab, figname, legendgroup, new
 
 	data <- data.table(data)
 }
+
+# Plot linear relationships
+## Function to calculate the linear regression parameters
+lmEqn <- function(data, iv, dv = "SAcc") {
+
+	m <- lm(get(dv) ~ get(iv), data = data)
+
+	if(coef(m)[2] > 0) {
+		eq <- substitute(italic(y) == a + b%.%italic(x)*","~~italic(adjusted)~italic(r)^2~"="~r2,
+						 list(a = format(unname(coef(m)[1]), digits = 4),
+						 	 b = format(unname(abs(coef(m)[2])), digits = 3),
+						 	r2 = format(summary(m)$r.squared, digits = 3)))
+	} else {
+		eq <- substitute(italic(y) == a - b%.%italic(x)*","~~italic(adjusted)~italic(r)^2~"="~r2,
+						 list(a = format(unname(coef(m)[1]), digits = 4),
+						 	 b = format(unname(abs(coef(m)[2])), digits = 3),
+						 	r2 = format(summary(m)$r.squared, digits = 3)))
+	}
+
+	as.character(as.expression(eq))
+}
+
+## Function to plot individual regression lines
+RgLineIdvPlot <- function(data, iv, dv = "SAcc", xlab, ylab = "Corrected hit rate", xtxt = 5.5, ytxt = 0.7, xbrk = seq(1, 10, 1), xlims = c(1, 10)) {
+	this.plt <- ggplot(data, aes(get(iv), get(dv))) + theme_gray() +
+					geom_point(size = 2) +
+					stat_smooth(method = "lm", se = FALSE, color = "red") +
+					geom_text(x = xtxt, y = ytxt, aes(label = lmEqn(data, iv, dv)), parse = T) +
+					scale_x_continuous(breaks = xbrk, limits = xlims) +
+					ylim(-0.25, 0.75) +
+					labs(x = xlab, y = ylab) +
+					facet_wrap( ~ SubjectNo, ncol = 1) +
+					theme( strip.text = element_text(face = "bold", size = 12))
+
+	return(this.plt)
+}
