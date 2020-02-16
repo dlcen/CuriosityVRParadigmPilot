@@ -277,33 +277,33 @@ if (!is.day1.only) {
 
 	## Curiosity groups and memory performance
 	### Median split groups
-	BarGrpPlot(outside.hit.rate.item.curiosity.median, "CurGrpMd", "SAcc", "Curiosity group (median-splitted)", "Corrected hit rate", "CurMedianHitRate")
+	BarGrpPlotSep(outside.hit.rate.item.curiosity.median, "CurGrpMd", "SAcc", "Curiosity group (median-splitted)", "Corrected hit rate", "CurMedianHitRate")
 
 	#### Curiosity groups, item order and memory performance
-	BarOrdGrpPlot(outside.hit.rate.item.order.curiosity.median, "CurGrpMd", "SAcc", "Item order", "Corrected hit rate", "CurOrdHitRate", "Curiosity group", NULL)
+	BarOrdGrpPlotSep(outside.hit.rate.item.order.curiosity.median, "CurGrpMd", "SAcc", "Item order", "Corrected hit rate", "CurOrdHitRate", "Curiosity group", NULL)
 
 	## Relationships between exploration time and memory performance
 	### Compare the long- and low-exploration groups
-	BarGrpPlot(outside.hit.rate.item.exploration.median, "DurGrpMd", "SAcc", "Exploration time group (median-splitted)", "Corrected hit rate", "DurMedianHitRate", c("Short", "Long"))
+	BarGrpPlotSep(outside.hit.rate.item.exploration.median, "DurGrpMd", "SAcc", "Exploration time group (median-splitted)", "Corrected hit rate", "DurMedianHitRate", c("Short", "Long"))
 
 	#### Include item order
-	BarOrdGrpPlot(outside.hit.rate.item.order.exploration.median, "DurGrpMd", "SAcc", "Item order", "Corrected hit rate", "DurOrdHitRate", "Exploration time", c("Short", "Long"))
+	BarOrdGrpPlotSep(outside.hit.rate.item.order.exploration.median, "DurGrpMd", "SAcc", "Item order", "Corrected hit rate", "DurOrdHitRate", "Exploration time", c("Short", "Long"))
 
 	## Relationiships between interest ratings (median-split groups) and memory performance
-	BarGrpPlot(outside.hit.rate.item.interest.median, "IntGrpMd", "SAcc", "Interestingness group (median-splitted)", "Corrected hit rate", "IntMedianHitRate")
-	BarOrdGrpPlot(outside.hit.rate.item.order.interest.median, "IntGrpMd", "SAcc", "Item order", "Corrected hit rate", "IntOrdHitRate", "Interestingness", NULL)
+	BarGrpPlotSep(outside.hit.rate.item.interest.median, "IntGrpMd", "SAcc", "Interestingness group (median-splitted)", "Corrected hit rate", "IntMedianHitRate")
+	BarOrdGrpPlotSep(outside.hit.rate.item.order.interest.median, "IntGrpMd", "SAcc", "Item order", "Corrected hit rate", "IntOrdHitRate", "Interestingness", NULL)
 
 	## Relationiships between surprise (median-split groups) and memory performance
-	BarGrpPlot(outside.hit.rate.item.surprise.median, "SurGrpMd", "SAcc", "Surprise group (median-splitted)", "Corrected hit rate", "SurMedianHitRate")
-	BarOrdGrpPlot(outside.hit.rate.item.order.surprise.median, "SurGrpMd", "SAcc", "Item order", "Corrected hit rate", "SurOrdHitRate", "Surprise", NULL)
+	BarGrpPlotSep(outside.hit.rate.item.surprise.median, "SurGrpMd", "SAcc", "Surprise group (median-splitted)", "Corrected hit rate", "SurMedianHitRate")
+	BarOrdGrpPlotSep(outside.hit.rate.item.order.surprise.median, "SurGrpMd", "SAcc", "Item order", "Corrected hit rate", "SurOrdHitRate", "Surprise", NULL)
 
 	## Relationiships between pre-Surerest ratings (median-split groups) and memory performance
-	BarGrpPlot(outside.hit.rate.item.preint.median, "PreIntGrpMd", "SAcc", "Interest (for previous room) group (median-splitted)", "Corrected hit rate", "PreIntMedianHitRate")
-	BarOrdGrpPlot(outside.hit.rate.item.order.preint.median, "PreIntGrpMd", "SAcc", "Item order", "Corrected hit rate", "PreIntOrdHitRate", "Pre Interest", NULL)
+	BarGrpPlotSep(outside.hit.rate.item.preint.median, "PreIntGrpMd", "SAcc", "Interest (for previous room) group (median-splitted)", "Corrected hit rate", "PreIntMedianHitRate")
+	BarOrdGrpPlotSep(outside.hit.rate.item.order.preint.median, "PreIntGrpMd", "SAcc", "Item order", "Corrected hit rate", "PreIntOrdHitRate", "Pre Interest", NULL)
 
 	## Relationiships between pre-surprise ratings (median-split groups) and memory performance
-	BarGrpPlot(outside.hit.rate.item.presur.median, "PreSurGrpMd", "SAcc", "Surprise (for previous room) group (median-splitted)", "Corrected hit rate", "PreSurMedianHitRate")
-	BarOrdGrpPlot(outside.hit.rate.item.order.presur.median, "PreSurGrpMd", "SAcc", "Item order", "Corrected hit rate", "PreSurOrdHitRate", "Pre Surprise", NULL)
+	BarGrpPlotSep(outside.hit.rate.item.presur.median, "PreSurGrpMd", "SAcc", "Surprise (for previous room) group (median-splitted)", "Corrected hit rate", "PreSurMedianHitRate")
+	BarOrdGrpPlotSep(outside.hit.rate.item.order.presur.median, "PreSurGrpMd", "SAcc", "Item order", "Corrected hit rate", "PreSurOrdHitRate", "Pre Surprise", NULL)
 
 
 }

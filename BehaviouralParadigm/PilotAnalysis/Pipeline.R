@@ -37,3 +37,5 @@ source("./PilotAnalysis/PlotIndividualData.R")
 ## Check how the curiosity ratings are distributed for each room.
 source("./PilotAnalysis/RoomRatings.R")
 
+## Check how the effects look for the group as a whole
+source("./PilotAnalysis/PlotGroupData.R")

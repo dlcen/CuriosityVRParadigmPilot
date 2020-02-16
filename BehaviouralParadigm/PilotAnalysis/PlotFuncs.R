@@ -1,4 +1,4 @@
-library(data.table); library(ggplot2); library(ggsci); library(cowplot); library(reshape2); library(dplyr)
+library(data.table); library(ggplot2); library(ggsci); library(cowplot); library(reshape2); library(dplyr); library(Hmisc)
 
 # Plot bar graphs to compare group means for individual participant
 BarIdvPlot <- function(data, comparison, dv, xlab, ylab){
@@ -24,7 +24,7 @@ BarOrdIdvPlot <- function(data, comparison, dv, xlab, ylab, legendgroup){
 }
 
 # Plot bar graphs to compare group means for a group of participants
-BarGrpPlot <- function(data, group, dv, xlab, ylab, figname, newlevels = NULL){
+BarGrpPlotSep <- function(data, group, dv, xlab, ylab, figname, newlevels = NULL){
 	if (is.data.table(data)) { data <- as.data.frame(data) }
 
 	data[, eval(group)] <- with(data, factor(get(group)))
@@ -50,7 +50,7 @@ BarGrpPlot <- function(data, group, dv, xlab, ylab, figname, newlevels = NULL){
 }
 
 # Plot bar graphs to compare group and order group means for a group of participants
-BarOrdGrpPlot <- function(data, group, dv, xlab, ylab, figname, legendgroup, newlevels = NULL){
+BarOrdGrpPlotSep <- function(data, group, dv, xlab, ylab, figname, legendgroup, newlevels = NULL){
 	if (is.data.table(data)) { data <- as.data.frame(data) }
 
 	data[, eval(group)] <- with(data, factor(get(group)))
@@ -110,3 +110,28 @@ RgLineIdvPlot <- function(data, iv, dv = "SAcc", xlab, ylab = "Corrected hit rat
 
 	return(this.plt)
 }
+
+# Plot bar comparison graphs for group data (together)
+BarGrpPlotTog <- function(data, group, dv = "SAcc", xlab, ylab = "Corrected hit rate", figname, newlevels = NULL) {
+	if (is.data.table(data)) { data <- as.data.frame(data) }
+
+	data[, eval(group)] <- with(data, factor(get(group)))
+
+	if (is.null(newlevels)) {
+		data[, eval(group)] <- with(data, factor(get(group), levels = levels(get(group))[c(2, 1)]))
+	} else {
+		data[, eval(group)] <- with(data, factor(get(group), levels = levels(get(group))[c(2, 1)], labels = newlevels))
+	}
+
+	ggplot(data, aes(get(group), get(dv))) +
+		stat_summary(fun.y = "mean", geom = "bar", aes(color = get(group), fill = get(group))) +
+		stat_summary(fun.data = mean_cl_normal, geom = "errorbar", width = 0.2, size = 1, color = "grey50") +
+		labs(x = xlab, y = ylab) +
+		scale_fill_jama(name = "") +
+		scale_colour_jama(name = "") +
+		theme(legend.position = "none")
+
+	ggsave(paste0("./Figures/", figname, ".png"), width = 5, height = 4)
+}
+
+

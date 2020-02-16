@@ -18,7 +18,7 @@ GroupRoomNo <- function(this.SubjectNo) {
 }
 
 GroupRoomNo2 <- function(this.SubjectNo) {
-	this.data <- object.recognition[SubjectNo == this.SubjectNo]
+	this.data <- object.recognition.old[SubjectNo == this.SubjectNo]
 
 	high.rooms <- as.character(unique(this.data[CurGrpMd == "High"]$Scene))
 	high.no    <- length(high.rooms)
