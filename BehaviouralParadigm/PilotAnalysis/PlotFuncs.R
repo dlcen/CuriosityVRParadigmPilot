@@ -49,7 +49,7 @@ BarGrpPlotSep <- function(data, group, dv, xlab, ylab, figname, newlevels = NULL
 	data <- data.table(data)
 }
 
-# Plot bar graphs to compare group and order group means for a group of participants
+# Plot bar graphs to compare group and order group means for a group of individual participants
 BarOrdGrpPlotSep <- function(data, group, dv, xlab, ylab, figname, legendgroup, newlevels = NULL){
 	if (is.data.table(data)) { data <- as.data.frame(data) }
 
@@ -130,6 +130,29 @@ BarGrpPlotTog <- function(data, group, dv = "SAcc", xlab, ylab = "Corrected hit 
 		scale_fill_jama(name = "") +
 		scale_colour_jama(name = "") +
 		theme(legend.position = "none")
+
+	ggsave(paste0("./Figures/", figname, ".png"), width = 5, height = 4)
+}
+
+# Plot bar graphs to compare group and order group means for a group as a whole
+BarOrdGrpPlotTog <- function(data, group, dv = "SAcc", xlab = "Item order", ylab = "Corrected hit rate", figname, legendgroup, newlevels = NULL) {
+	if (is.data.table(data)) { data <- as.data.frame(data) }
+
+	data[, eval(group)] <- with(data, factor(get(group)))
+
+	if (is.null(newlevels)) {
+		data[, eval(group)] <- with(data, factor(get(group), levels = levels(get(group))[c(2, 1)]))
+	} else {
+		data[, eval(group)] <- with(data, factor(get(group), levels = levels(get(group))[c(2, 1)], labels = newlevels))
+	}
+
+	ggplot(data, aes(ObjOrdGrp, get(dv))) +
+		stat_summary(fun.y = "mean", geom = "bar", aes(group = get(group), color = get(group), fill = get(group)), position = position_dodge(width = 0.95)) +
+		stat_summary(fun.data = mean_cl_normal, geom = "errorbar", aes(group = get(group)), width = 0.2, size = 1, color = "grey50", position = position_dodge(width = 0.95)) +
+		geom_hline(yintercept = 0, size = 0.5, color = "grey25") +
+		labs(x = xlab, y = ylab) +
+		scale_fill_jama(name = legendgroup) +
+		scale_colour_jama(name = legendgroup) 
 
 	ggsave(paste0("./Figures/", figname, ".png"), width = 5, height = 4)
 }

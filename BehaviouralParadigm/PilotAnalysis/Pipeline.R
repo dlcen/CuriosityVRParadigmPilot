@@ -39,3 +39,4 @@ source("./PilotAnalysis/RoomRatings.R")
 
 ## Check how the effects look for the group as a whole
 source("./PilotAnalysis/PlotGroupData.R")
+
