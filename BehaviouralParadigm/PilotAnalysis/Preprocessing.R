@@ -58,6 +58,17 @@ individual.data[PreSur == 100]$PreSur <- NA
 
 names(individual.data)[2] <- "Scene"
 
+# Questionnaires
+questionnaire <- read.csv("./PilotData/QScores.csv", header = T, fileEncoding="UTF-8-BOM")
+
+questionnaire$PC <- rowMeans(questionnaire[, c(2:13)])
+questionnaire$EC <- rowMeans(questionnaire[, c(14:23)])
+questionnaire$GN <- rowMeans(questionnaire[, c("PC", "EC")])
+
+questionnaire <- data.table(questionnaire)
+
+individual.data  <- merge(individual.data, questionnaire[, c(1, 24:26)], by = c("SubjectNo"))
+
 # Memory performance
 
 object.recognition <- NULL
@@ -155,9 +166,13 @@ if (!is.day1.only) {
   object.recognition.old[, PreSurGrpMd := mapply(GrpMedianSep, PreSur, MedianPreSur)]
   outside.hit.rate.item.presur.median  <- CorrHitRateCal(object.recognition.old, "PreSurGrpMd", idv.false.alarm.rate)
   outside.hit.rate.item.order.presur.median <- CorrHitRateOrderCal(object.recognition.old, "PreSurGrpMd", idv.false.alarm.rate)
+ 
+  ## Calculate the average curiosity, interestingness and surprise scores, exploration time and memory enhancement for each participant, and add questionnaire scores
+  individual.average.data <- merge(average.ratings[, c("SubjectNo", "MeanCur", "MeanInt", "MeanSur")], average.inside.duration[, c("SubjectNo", "MeanDur")], by = c("SubjectNo"))
+  individual.average.data <- merge(individual.average.data, questionnaire[, c(1, 24:26)], by = c("SubjectNo"))
 
-
-  save(rooms, ratings, individual.data, object.recognition, object.recognition.old,
+  save(rooms, ratings, individual.data, questionnaire, individual.average.data,
+    object.recognition, object.recognition.old,
     outside.hit.rate.per.room, 
     outside.hit.rate.item.curiosity, outside.hit.rate.item.curiosity.median, 
     outside.hit.rate.item.order.curiosity, outside.hit.rate.item.order.curiosity.median, 

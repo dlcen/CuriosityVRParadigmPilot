@@ -97,16 +97,18 @@ lmEqn <- function(data, iv, dv = "SAcc") {
 }
 
 ## Function to plot individual regression lines
-RgLineIdvPlot <- function(data, iv, dv = "SAcc", xlab, ylab = "Corrected hit rate", xtxt = 5.5, ytxt = 0.7, xbrk = seq(1, 10, 1), xlims = c(1, 10)) {
+RgLineIdvPlot <- function(data, iv, dv = "SAcc", xlab, ylab = "Corrected hit rate", xtxt = 5.5, ytxt = 0.7, xbrk = seq(1, 10, 1), xlims = c(1, 10), ylims = c(-0.25, 0.75), is.individual = TRUE) {
 	this.plt <- ggplot(data, aes(get(iv), get(dv))) + theme_gray() +
 					geom_point(size = 2) +
 					stat_smooth(method = "lm", se = FALSE, color = "red") +
 					geom_text(x = xtxt, y = ytxt, aes(label = lmEqn(data, iv, dv)), parse = T) +
 					scale_x_continuous(breaks = xbrk, limits = xlims) +
-					ylim(-0.25, 0.75) +
-					labs(x = xlab, y = ylab) +
-					facet_wrap( ~ SubjectNo, ncol = 1) +
-					theme( strip.text = element_text(face = "bold", size = 12))
+					scale_y_continuous(limits = ylims) +
+					labs(x = xlab, y = ylab)
+
+	if (is.individual) {
+		this.plt + facet_wrap( ~ SubjectNo, ncol = 1) + theme( strip.text = element_text(face = "bold", size = 12))
+	}		
 
 	return(this.plt)
 }
