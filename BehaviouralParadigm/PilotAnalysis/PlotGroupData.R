@@ -41,3 +41,5 @@ BarOrdGrpPlotTog(data = outside.hit.rate.item.order.preint.median[!SubjectNo %in
 
 ## Plot comparison between surprise (for previous rooms) median-split groups
 BarOrdGrpPlotTog(data = outside.hit.rate.item.order.presur.median[!SubjectNo %in% excluded.ps], group = "PreSurGrpMd", legendgroup = "Previous Surprise", figname = "GroupOrdPreSurMedian")
+
+

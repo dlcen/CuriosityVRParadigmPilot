@@ -197,6 +197,10 @@ for (this.p in participant.list) {
 	ggsave(paste0("./Figures/IndividualPlots/", this.p, "/", this.p, "_RatingsDurations.png"), width = 12, height = 4)
 }
 
+# -- Relationship between surprise in previous trial and curiosity rating in the current trial ---
+# ggplot(outside.hit.rate.per.room, aes(x = PreSur, y = Curiosity, group = SubjectNo)) +         |
+# 	stat_smooth(method = "lm", se = FALSE, aes(color = SubjectNo))                               |
+# -- I don't think there is any meaningful relationship ------------------------------------------
 
 # Memory performance
 
@@ -304,6 +308,5 @@ if (!is.day1.only) {
 	## Relationiships between pre-surprise ratings (median-split groups) and memory performance
 	BarGrpPlotSep(outside.hit.rate.item.presur.median, "PreSurGrpMd", "SAcc", "Surprise (for previous room) group (median-splitted)", "Corrected hit rate", "PreSurMedianHitRate")
 	BarOrdGrpPlotSep(outside.hit.rate.item.order.presur.median, "PreSurGrpMd", "SAcc", "Item order", "Corrected hit rate", "PreSurOrdHitRate", "Pre Surprise", NULL)
-
 
 }
