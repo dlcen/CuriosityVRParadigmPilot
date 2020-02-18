@@ -77,7 +77,7 @@ BarOrdGrpPlotSep <- function(data, group, dv, xlab, ylab, figname, legendgroup, 
 
 # Plot linear relationships
 ## Function to calculate the linear regression parameters
-lmEqn <- function(data, iv, dv = "SAcc") {
+lmEqnFunc <- function(data, iv, dv = "SAcc") {
 
 	m <- lm(get(dv) ~ get(iv), data = data)
 
@@ -101,7 +101,7 @@ RgLineIdvPlot <- function(data, iv, dv = "SAcc", xlab, ylab = "Corrected hit rat
 	this.plt <- ggplot(data, aes(get(iv), get(dv))) + theme_gray() +
 					geom_point(size = 2) +
 					stat_smooth(method = "lm", se = FALSE, color = "red") +
-					geom_text(x = xtxt, y = ytxt, aes(label = lmEqn(data, iv, dv)), parse = T) +
+					geom_text(x = xtxt, y = ytxt, aes(label = lmEqnFunc(data, iv, dv)), parse = T) +
 					scale_x_continuous(breaks = xbrk, limits = xlims) +
 					scale_y_continuous(limits = ylims) +
 					labs(x = xlab, y = ylab)
