@@ -9,7 +9,7 @@ if (!is.subset) { participant.list <- list.files(path = "./PilotData/IndividualD
 ## For a sub-group of participants
 else { participant.list <- c(paste0("P0", c(1:9)), paste0("P", c(11:20)) }
 
-participant.list <- c(paste0("P", c(21:22)))
+participant.list <- c(paste0("P", c(21:25)))
 
 is.day1.only <- FALSE
 
