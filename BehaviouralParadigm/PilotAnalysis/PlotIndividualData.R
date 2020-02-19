@@ -206,14 +206,6 @@ for (this.p in participant.list) {
 
 if (!is.day1.only) {
 	## Percentage of option selection for "Old", "Familiar" and "New" respectively for old and new items.
-	RespFreqCal <- function(ObjResp, ... ){
-	  FreqTable <- as.data.frame(table(ObjResp)/sum(table(ObjResp)))
-	  names(FreqTable) <- c("Response", "Frequency")
-	  return(FreqTable)
-	}
-
-	Recall.Freq.Rsp <- object.recognition[, c(RespFreqCal(Response)), by = c("SubjectNo", "Group")]
-
 	Recall.Freq.Rsp$Response <- factor(Recall.Freq.Rsp$Response, levels = levels(Recall.Freq.Rsp$Response)[c(3, 1, 2)])
 
 

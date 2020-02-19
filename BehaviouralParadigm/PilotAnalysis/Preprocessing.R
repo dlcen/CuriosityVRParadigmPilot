@@ -110,6 +110,15 @@ if (!is.day1.only) {
   object.recognition.old    <- merge(object.recognition, individual.data, by = c("SubjectNo", "Scene"))
   object.recognition.old    <- merge(object.recognition.old, average.inside.duration, by = "SubjectNo")
 
+  ## Calculate the frequency of choosing each response option for old and new items respectively
+  RespFreqCal <- function(ObjResp, ... ){
+    FreqTable <- as.data.frame(table(ObjResp)/sum(table(ObjResp)))
+    names(FreqTable) <- c("Response", "Frequency")
+    return(FreqTable)
+  }
+
+  Recall.Freq.Rsp <- object.recognition[, c(RespFreqCal(Response)), by = c("SubjectNo", "Group")]
+
   ## Calculate average ratings (median and mean)
   average.ratings           <- individual.data[, .(MeanCur = mean(Curiosity, na.rm = TRUE), MedianCur = median(Curiosity, na.rm = TRUE), MeanInt = mean(Interest, na.rm = TRUE), MedianInt = median(Interest, na.rm = TRUE), MeanSur = mean(Surprise, na.rm = TRUE), MedianSur = median(Surprise, na.rm = TRUE), MeanPreInt = mean(PreInt, na.rm = TRUE), MedianPreInt = median(PreInt, na.rm = TRUE), MeanPreSur = mean(PreSur, na.rm = TRUE), MedianPreSur = median(PreSur, na.rm = TRUE)),  by = c("SubjectNo")]
   object.recognition.old    <- merge(object.recognition.old, average.ratings, by = "SubjectNo")
@@ -165,14 +174,29 @@ if (!is.day1.only) {
   ## Calculate the hit rates for each pre-surprise group (median-splited based on the rating)
   object.recognition.old[, PreSurGrpMd := mapply(GrpMedianSep, PreSur, MedianPreSur)]
   outside.hit.rate.item.presur.median  <- CorrHitRateCal(object.recognition.old, "PreSurGrpMd", idv.false.alarm.rate)
+  tmp <- data.table(SubjectNo = "P06", PreSurGrpMd = "Low", SFHit = NA, SHit = NA, SFFalse = NA, SFalse = NA, SFAcc = NA, SAcc = NA)
+  outside.hit.rate.item.presur.median  <- rbind(outside.hit.rate.item.presur.median, tmp)
+  outside.hit.rate.item.presur.median  <- outside.hit.rate.item.presur.median[with(outside.hit.rate.item.presur.median, order(SubjectNo, PreSurGrpMd))]
   outside.hit.rate.item.order.presur.median <- CorrHitRateOrderCal(object.recognition.old, "PreSurGrpMd", idv.false.alarm.rate)
  
   ## Calculate the average curiosity, interestingness and surprise scores, exploration time and memory enhancement for each participant, and add questionnaire scores
   individual.average.data <- merge(average.ratings[, c("SubjectNo", "MeanCur", "MeanInt", "MeanSur")], average.inside.duration[, c("SubjectNo", "MeanDur")], by = c("SubjectNo"))
   individual.average.data <- merge(individual.average.data, questionnaire[, c(1, 24:26)], by = c("SubjectNo"))
 
+  ## Calculate the average corrected hit rate for each individual participant
+  individual.average.data$MSAcc <- as.numeric(Recall.Freq.Rsp[Group == "OldItem" & Response == "Seen"]$Frequency) - as.numeric(Recall.Freq.Rsp[Group == "Distractor" & Response == "Seen"]$Frequency)
+
+  ## Calculate the memory enhancement for each comparison and then add the data to the *individual.data*
+  individual.average.data$CurME <- DiffCal(outside.hit.rate.item.curiosity.median,   "CurGrpMd", "SAcc", c("High", "Low"))
+  individual.average.data$DurME <- DiffCal(outside.hit.rate.item.exploration.median, "DurGrpMd", "SAcc", c("High", "Low"))
+  individual.average.data$IntME <- DiffCal(outside.hit.rate.item.interest.median,    "IntGrpMd", "SAcc", c("High", "Low"))
+  individual.average.data$SurME <- DiffCal(outside.hit.rate.item.surprise.median,    "SurGrpMd", "SAcc", c("High", "Low"))
+
+  individual.average.data$PreIntME <- DiffCal(outside.hit.rate.item.preint.median,    "PreIntGrpMd", "SAcc", c("High", "Low"))
+  individual.average.data$PreSurME <- DiffCal(outside.hit.rate.item.presur.median,    "PreSurGrpMd", "SAcc", c("High", "Low"))
+
   save(rooms, ratings, individual.data, questionnaire, individual.average.data,
-    object.recognition, object.recognition.old,
+    object.recognition, object.recognition.old, Recall.Freq.Rsp,
     outside.hit.rate.per.room, 
     outside.hit.rate.item.curiosity, outside.hit.rate.item.curiosity.median, 
     outside.hit.rate.item.order.curiosity, outside.hit.rate.item.order.curiosity.median, 

@@ -79,7 +79,7 @@ BarOrdGrpPlotSep <- function(data, group, dv, xlab, ylab, figname, legendgroup, 
 ## Function to calculate the linear regression parameters
 lmEqnFunc <- function(data, iv, dv = "SAcc") {
 
-	m <- lm(get(dv) ~ get(iv), data = data)
+	m <- lm(get(dv) ~ get(iv), data = data, na.action=na.omit)
 
 	if(coef(m)[2] > 0) {
 		eq <- substitute(italic(y) == a + b%.%italic(x)*","~~italic(adjusted)~italic(r)^2~"="~r2,

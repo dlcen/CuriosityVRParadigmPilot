@@ -122,6 +122,14 @@ CorrHitRateOrderCal <- function(data, group, false.alarm.rate) {
 }
 
 
+# Calculate the difference in corrected hit rate between *high* and *low* groups or between *early* or *later* groups
+DiffCal <- function(data, comparison, dv, group) {
+  grp.h <- data[get(comparison) == group[1], ..dv]
+  grp.l <- data[get(comparison) == group[2], ..dv]
 
+  grp.diff <- grp.h - grp.l
+
+  return(grp.diff)
+}
 
 
