@@ -38,5 +38,8 @@ source("./PilotAnalysis/PlotIndividualData.R")
 source("./PilotAnalysis/RoomRatings.R")
 
 ## Check how the effects look for the group as a whole
+
+excluded.ps <- c("P19", "P20", "P21")
+
 source("./PilotAnalysis/PlotGroupData.R")
 

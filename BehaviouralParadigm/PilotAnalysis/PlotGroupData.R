@@ -2,8 +2,6 @@ library(data.table); library(ggplot2); library(ggsci); library(cowplot); library
 
 source("./PilotAnalysis/PlotFuncs.R")
 
-excluded.ps <- c("P19", "P20")
-
 # Plot the comparison between median-split groups
 ## Plot comparison between curiosity median-split groups
 BarGrpPlotTog(data = outside.hit.rate.item.curiosity.median[!SubjectNo %in% excluded.ps], group = "CurGrpMd", xlab = "Curiosity median-split group", figname = "GroupCurMedian")
