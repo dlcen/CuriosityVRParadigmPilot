@@ -5,11 +5,11 @@ Openner,Office,Seen,3.592369
 ShowerHead,Kitchen,Seen,2.317173
 SecurityCam,None,New,2.475555
 Wheels,Gym,Familiar,2.775757
-Mushroom,LivingRoom,New,2.85894
+Mushroom,None,New,2.85894
 Dog,None,New,3.292389
 NikonCamera,Bedroom,Seen,1.975574
 Matrioshka,None,Familiar,2.958843
-Toothpaste,LivingRoom,Familiar,3.492401
+Toothpaste,None,Familiar,3.492401
 Ganmianzhang,None,Seen,1.658615
 RugbyBall,Lounge,New,1.883606
 Sandals,Lounge,Seen,1.466972
@@ -29,7 +29,7 @@ Calculator_FLIPPED,Kitchen,Seen,0.9336243
 Basket,KTV,Seen,1.067108
 Buiscuits_FLIPPED,StorageRoom,New,1.7752
 CacerolaPan,Classroom,Familiar,2.66716
-Cabbaage,LivingRoom,New,2.033768
+Cabbaage,None,New,2.033768
 CottonSticks,Lounge,Seen,1.718216
 Icecream,Kindergarten,Familiar,2.767197
 Teacup,KTV,New,2.033875
@@ -63,11 +63,11 @@ HandDrill,Museum,Familiar,1.79216
 Xmas Globe,Lounge,Familiar,2.392441
 Pinza,KTV,Familiar,1.408615
 Slippers,Cafe,New,2.417328
-Vanish_FLIPPED,LivingRoom,Familiar,1.425491
+Vanish_FLIPPED,None,Familiar,1.425491
 Marmite_FLIPPED,Office,Seen,0.9753723
 Weimeng_FLIPPED,MeetingRoom,New,2.917313
 Markers,MeetingRoom,Seen,1.317749
-Burger,LivingRoom,New,1.283981
+Burger,None,New,1.283981
 Cereal,None,New,2.875427
 Kiwi,Kindergarten,Familiar,1.450394
 YellowDuck,None,Familiar,1.358719
@@ -123,7 +123,7 @@ OfficeBin,Library,Seen,1.549988
 Cheese,None,New,3.900787
 Padella,Library,Familiar,1.308746
 NailScissors,SPA,Seen,2.267212
-RoadCone,LivingRoom,Familiar,1.483948
+RoadCone,None,Familiar,1.483948
 Suitcase,None,New,1.241577
 MokaEspress,None,Familiar,2.800781
 JBLSpeaker,Cafe,Familiar,1.942108

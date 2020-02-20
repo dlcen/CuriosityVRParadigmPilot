@@ -107,7 +107,7 @@ RgLineIdvPlot <- function(data, iv, dv = "SAcc", xlab, ylab = "Corrected hit rat
 					labs(x = xlab, y = ylab)
 
 	if (is.individual) {
-		this.plt + facet_wrap( ~ SubjectNo, ncol = 1) + theme( strip.text = element_text(face = "bold", size = 12))
+		this.plt <- this.plt + facet_wrap( ~ SubjectNo, ncol = 1) + theme( strip.text = element_text(face = "bold", size = 12))
 	}		
 
 	return(this.plt)

@@ -9,7 +9,7 @@ if (!is.subset) { participant.list <- list.files(path = "./PilotData/IndividualD
 ## For a sub-group of participants
 else { participant.list <- c(paste0("P0", c(1:9)), paste0("P", c(11:20)) }
 
-participant.list <- c(paste0("P", c(21:25)))
+participant.list <- c(paste0("P", c(27:28)))
 
 is.day1.only <- FALSE
 
@@ -39,7 +39,13 @@ source("./PilotAnalysis/RoomRatings.R")
 
 ## Check how the effects look for the group as a whole
 
-excluded.ps <- c("P19", "P20", "P21")
+## Check how many participants have a corrected recollection rate < 10%
+corr.hit.rate <- data.table(participant.list, Recall.Freq.Rsp[Group == "OldItem" & Response == "Seen"]$Frequency - Recall.Freq.Rsp[Group == "Distractor" & Response == "Seen"]$Frequency)
+names(corr.hit.rate) <- c("SubjectNo", "SAcc")
+
+criteria <- 0.1
+
+excluded.ps <- corr.hit.rate[SAcc < criteria]$SubjectNo
 
 source("./PilotAnalysis/PlotGroupData.R")
 

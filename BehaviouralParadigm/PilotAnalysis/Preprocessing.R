@@ -44,10 +44,12 @@ individual.data$PreSur <- 100
 for (this.p in participant.list) {
   for (this.room in rooms) {
     this.pre.room <- individual.data[SubjectNo == this.p & Room == this.room]$PreRoom
-    if (!is.na(this.pre.room)) {
-      individual.data[SubjectNo == this.p & Room == this.room]$PreCur <- individual.data[SubjectNo == this.p & Room == this.pre.room]$Curiosity
-      individual.data[SubjectNo == this.p & Room == this.room]$PreInt <- individual.data[SubjectNo == this.p & Room == this.pre.room]$Interest
-      individual.data[SubjectNo == this.p & Room == this.room]$PreSur <- individual.data[SubjectNo == this.p & Room == this.pre.room]$Surprise
+    if (length(this.pre.room) > 0) {
+      if (!is.na(this.pre.room)) {
+        individual.data[SubjectNo == this.p & Room == this.room]$PreCur <- individual.data[SubjectNo == this.p & Room == this.pre.room]$Curiosity
+        individual.data[SubjectNo == this.p & Room == this.room]$PreInt <- individual.data[SubjectNo == this.p & Room == this.pre.room]$Interest
+        individual.data[SubjectNo == this.p & Room == this.room]$PreSur <- individual.data[SubjectNo == this.p & Room == this.pre.room]$Surprise
+      }
     }
   }
 }
@@ -174,9 +176,13 @@ if (!is.day1.only) {
   ## Calculate the hit rates for each pre-surprise group (median-splited based on the rating)
   object.recognition.old[, PreSurGrpMd := mapply(GrpMedianSep, PreSur, MedianPreSur)]
   outside.hit.rate.item.presur.median  <- CorrHitRateCal(object.recognition.old, "PreSurGrpMd", idv.false.alarm.rate)
-  tmp <- data.table(SubjectNo = "P06", PreSurGrpMd = "Low", SFHit = NA, SHit = NA, SFFalse = NA, SFalse = NA, SFAcc = NA, SAcc = NA)
-  outside.hit.rate.item.presur.median  <- rbind(outside.hit.rate.item.presur.median, tmp)
-  outside.hit.rate.item.presur.median  <- outside.hit.rate.item.presur.median[with(outside.hit.rate.item.presur.median, order(SubjectNo, PreSurGrpMd))]
+  
+  if ("P06" %in% participant.list) {
+    tmp <- data.table(SubjectNo = "P06", PreSurGrpMd = "Low", SFHit = NA, SHit = NA, SFFalse = NA, SFalse = NA, SFAcc = NA, SAcc = NA)
+    outside.hit.rate.item.presur.median  <- rbind(outside.hit.rate.item.presur.median, tmp)
+    outside.hit.rate.item.presur.median  <- outside.hit.rate.item.presur.median[with(outside.hit.rate.item.presur.median, order(SubjectNo, PreSurGrpMd))]
+  }
+
   outside.hit.rate.item.order.presur.median <- CorrHitRateOrderCal(object.recognition.old, "PreSurGrpMd", idv.false.alarm.rate)
  
   ## Calculate the average curiosity, interestingness and surprise scores, exploration time and memory enhancement for each participant, and add questionnaire scores
