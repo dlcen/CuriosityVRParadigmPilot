@@ -142,3 +142,8 @@ ggplot(individual.average.data[!SubjectNo %in% excluded.ps], aes(MeanDur, group 
 	labs(x = "Exploration time (s)")
  
 ggsave("./Figures/AverageExpTimeDistri.png", width = 8, height = 6)
+
+# Check the corrected hit rate as a function of room order
+RgLineIdvPlot(outside.hit.rate.per.room, iv="Order", xlab="Room order", xtxt=8, xbrk=seq(1, 16, 1), xlims=c(1, 16))
+
+ggsave("./Figures/OrderMemory.png", width = 4, height = 24)

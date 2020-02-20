@@ -126,7 +126,7 @@ if (!is.day1.only) {
   object.recognition.old    <- merge(object.recognition.old, average.ratings, by = "SubjectNo")
 
   ## Calculate the hit rates for each individual participant and each room
-  outside.hit.rate.per.room <- object.recognition.old[, .(SFHit = mean(SFHit, na.rm = TRUE), SHit = mean(SHit, na.rm = TRUE)), by = c("SubjectNo", "Scene", "Curiosity", "Interest", "Surprise", "PreInt", "PreSur", "InsideDuration", "OutsideDuration", "MedianDur", "MedianCur", "MedianInt", "MedianSur", "MedianPreInt", "MedianPreSur")]
+  outside.hit.rate.per.room <- object.recognition.old[, .(SFHit = mean(SFHit, na.rm = TRUE), SHit = mean(SHit, na.rm = TRUE)), by = c("SubjectNo", "Scene", "Order", "Curiosity", "Interest", "Surprise", "PreInt", "PreSur", "InsideDuration", "OutsideDuration", "MedianDur", "MedianCur", "MedianInt", "MedianSur", "MedianPreInt", "MedianPreSur")]
   outside.hit.rate.per.room <- outside.hit.rate.per.room[order(SubjectNo, Scene), ]
   outside.hit.rate.per.room <- merge(outside.hit.rate.per.room, idv.false.alarm.rate, all = TRUE)
 
