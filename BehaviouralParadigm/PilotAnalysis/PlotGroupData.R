@@ -123,3 +123,22 @@ GN.PreSurME <- RgLineIdvPlot(individual.average.data[!SubjectNo %in% excluded.ps
 plot_grid(GN.PreIntME, GN.PreSurME, nrow = 1)
 
 ggsave("./Figures/GNMELinear.png", width = 15, height = 5)
+
+# Plot distribution of time spent on the pathway outside the rooms and exploring the rooms
+ggplot(individual.data[!SubjectNo %in% excluded.ps], aes(OutsideDuration, group = SubjectNo)) +
+	geom_histogram(binwidth = 1, aes(color = SubjectNo, fill = SubjectNo)) +
+	labs(x = "Time on pathway (s)")
+ 
+ggsave("./Figures/PathwayTimeDistri.png", width = 8, height = 6)
+
+ggplot(individual.data[!SubjectNo %in% excluded.ps], aes(InsideDuration, group = SubjectNo)) +
+	geom_histogram(binwidth = 5, aes(color = SubjectNo, fill = SubjectNo)) +
+	labs(x = "Exploration time (s)")
+ 
+ggsave("./Figures/ExpTimeDistri.png", width = 8, height = 6)
+
+ggplot(individual.average.data[!SubjectNo %in% excluded.ps], aes(MeanDur, group = SubjectNo)) +
+	geom_histogram(binwidth = 5, aes(color = SubjectNo, fill = SubjectNo)) +
+	labs(x = "Exploration time (s)")
+ 
+ggsave("./Figures/AverageExpTimeDistri.png", width = 8, height = 6)
