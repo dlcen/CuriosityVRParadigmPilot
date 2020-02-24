@@ -43,7 +43,7 @@ source("./PilotAnalysis/RoomRatings.R")
 corr.hit.rate <- data.table(participant.list, Recall.Freq.Rsp[Group == "OldItem" & Response == "Seen"]$Frequency - Recall.Freq.Rsp[Group == "Distractor" & Response == "Seen"]$Frequency)
 names(corr.hit.rate) <- c("SubjectNo", "SAcc")
 
-criteria <- 0.1
+criteria <- 0.05
 
 excluded.ps <- corr.hit.rate[SAcc < criteria]$SubjectNo
 
