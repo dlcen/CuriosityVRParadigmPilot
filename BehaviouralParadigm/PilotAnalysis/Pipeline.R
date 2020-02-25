@@ -9,7 +9,7 @@ if (!is.subset) { participant.list <- list.files(path = "./PilotData/IndividualD
 ## For a sub-group of participants
 else { participant.list <- c(paste0("P0", c(1:9)), paste0("P", c(11:20)) }
 
-participant.list <- c(paste0("P", c(27:28)))
+participant.list <- c(paste0("P", c(29:31)))
 
 is.day1.only <- FALSE
 
@@ -48,4 +48,3 @@ criteria <- 0.05
 excluded.ps <- corr.hit.rate[SAcc < criteria]$SubjectNo
 
 source("./PilotAnalysis/PlotGroupData.R")
-
