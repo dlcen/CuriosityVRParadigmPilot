@@ -40,6 +40,8 @@ source("./PilotAnalysis/RoomRatings.R")
 ## Check how the effects look for the group as a whole
 
 ## Check how many participants have a corrected recollection rate < 10%
+require(data.table)
+
 corr.hit.rate <- data.table(participant.list, Recall.Freq.Rsp[Group == "OldItem" & Response == "Seen"]$Frequency - Recall.Freq.Rsp[Group == "Distractor" & Response == "Seen"]$Frequency)
 names(corr.hit.rate) <- c("SubjectNo", "SAcc")
 
