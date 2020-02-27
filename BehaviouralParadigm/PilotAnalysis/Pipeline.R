@@ -45,8 +45,16 @@ require(data.table)
 corr.hit.rate <- data.table(participant.list, Recall.Freq.Rsp[Group == "OldItem" & Response == "Seen"]$Frequency - Recall.Freq.Rsp[Group == "Distractor" & Response == "Seen"]$Frequency)
 names(corr.hit.rate) <- c("SubjectNo", "SAcc")
 
+### Check the total number of participants that have been tested
+nrow(corr.hit.rate)  # N = 29
+
 criteria <- 0.05
 
 excluded.ps <- corr.hit.rate[SAcc < criteria]$SubjectNo
+
+### Check the number of participants that would be excluded from further analysis
+length(excluded.ps)
+# when criteria = 5%, N = 3
+# when criteria = 10%, N = 7
 
 source("./PilotAnalysis/PlotGroupData.R")
