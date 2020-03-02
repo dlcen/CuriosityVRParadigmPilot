@@ -147,3 +147,10 @@ ggsave("./Figures/AverageExpTimeDistri.png", width = 8, height = 6)
 RgLineIdvPlot(outside.hit.rate.per.room, iv="Order", xlab="Room order", xtxt=8, xbrk=seq(1, 16, 1), xlims=c(1, 16))
 
 ggsave("./Figures/OrderMemory.png", width = 4, height = 24)
+
+
+
+
+
+
+

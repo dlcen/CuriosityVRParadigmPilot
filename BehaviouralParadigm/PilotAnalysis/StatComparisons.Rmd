@@ -7,9 +7,11 @@ output:
     number_sections: no
     highlight: tango
     latex_engine: xelatex
+  fontsize: 12pt
 ---
 
 \setmainfont{Noto Sans}
+\setmathfont{Fira Code}
 \colorlet{shadecolor}{gray!10}
 
 ```{r global_options, include=FALSE}
@@ -34,10 +36,14 @@ load("../PilotData/ExcludedSubjectList.RData")
 outside.hit.rate.item.curiosity.median <- outside.hit.rate.item.curiosity.median[! SubjectNo %in% excluded.ps]
 outside.hit.rate.item.interest.median  <- outside.hit.rate.item.interest.median[! SubjectNo %in% excluded.ps]
 outside.hit.rate.item.surprise.median  <- outside.hit.rate.item.surprise.median[! SubjectNo %in% excluded.ps]
+outside.hit.rate.item.preint.median    <- outside.hit.rate.item.preint.median[! SubjectNo %in% excluded.ps]
+outside.hit.rate.item.presur.median    <- outside.hit.rate.item.presur.median[! SubjectNo %in% excluded.ps]
 
 outside.hit.rate.item.order.curiosity.median <- outside.hit.rate.item.order.curiosity.median[! SubjectNo %in% excluded.ps]
 outside.hit.rate.item.order.interest.median  <- outside.hit.rate.item.order.interest.median[! SubjectNo %in% excluded.ps]
 outside.hit.rate.item.order.surprise.median  <- outside.hit.rate.item.order.surprise.median[! SubjectNo %in% excluded.ps]
+outside.hit.rate.item.order.preint.median    <- outside.hit.rate.item.order.preint.median[! SubjectNo %in% excluded.ps]
+outside.hit.rate.item.order.presur.median    <- outside.hit.rate.item.order.presur.median[! SubjectNo %in% excluded.ps]
 ```
 
 # Compare the *Curiosity* groups
@@ -99,6 +105,48 @@ outside.hit.rate.item.order.surprise.median[, .(Mean = mean(SAcc, na.rm = T), SD
 ```{r}
 ezANOVA(outside.hit.rate.item.order.surprise.median, dv = .(SAcc), wid = .(SubjectNo), within = .(SurGrpMd, ObjOrdGrp), type = 3)
 ```
+
+
+# Compare the *Pre-Interest* groups
+```{r}
+outside.hit.rate.item.preint.median[,. (Mean = mean(SAcc, na.rm = T), SD = sd(SAcc, na.rm = T)), by = .(PreIntGrpMd)]
+```
+
+**Statistic difference**
+```{r}
+t.test(SAcc ~ PreIntGrpMd, outside.hit.rate.item.preint.median, paired = T)
+```
+
+## Include the item order
+```{r}
+outside.hit.rate.item.order.preint.median[, .(Mean = mean(SAcc, na.rm = T), SD = sd(SAcc, na.rm = T)), by = .(PreIntGrpMd, ObjOrdGrp)]
+```
+
+**Statistic difference**
+```{r}
+ezANOVA(outside.hit.rate.item.order.preint.median, dv = .(SAcc), wid = .(SubjectNo), within = .(PreIntGrpMd, ObjOrdGrp), type = 3)
+```
+
+# Compare the *Pre-Surprise* groups
+```{r}
+outside.hit.rate.item.presur.median[SubjectNo != "P06",. (Mean = mean(SAcc, na.rm = T), SD = sd(SAcc, na.rm = T)), by = .(PreSurGrpMd)]
+```
+
+**Statistic difference**
+```{r}
+t.test(SAcc ~ PreSurGrpMd, outside.hit.rate.item.presur.median[SubjectNo != "P06"], paired = T)
+```
+
+## Include the item order
+```{r}
+outside.hit.rate.item.order.presur.median[SubjectNo != "P06", .(Mean = mean(SAcc, na.rm = T), SD = sd(SAcc, na.rm = T)), by = .(PreSurGrpMd, ObjOrdGrp)]
+```
+
+**Statistic difference**
+```{r}
+ezANOVA(outside.hit.rate.item.order.presur.median[SubjectNo != "P06"], dv = .(SAcc), wid = .(SubjectNo), within = .(PreSurGrpMd, ObjOrdGrp), type = 3)
+```
+
 
 
 

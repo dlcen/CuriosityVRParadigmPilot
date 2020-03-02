@@ -1,0 +1,184 @@
+---
+title: "Linear relationships with ratings"
+output: 
+  pdf_document:
+    toc: yes
+    toc_depth: 5
+    number_sections: no
+    highlight: tango
+    latex_engine: xelatex
+  fontsize: 11pt
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE, warning=FALSE, message=FALSE)
+```
+
+```{r, echo=FALSE, message=FALSE, warning=FALSE}
+library(kableExtra)
+options(knitr.table.format = "latex", cache=TRUE) # "latex" for PDF; "html" for html 
+```
+
+```{r}
+library(data.table); library(nlme); library(multcomp); library(ggplot2)
+```
+
+```{r load the data}
+load("../PilotData/IndividualData.RData")
+load("../PilotData/ExcludedSubjectList.RData")
+```
+
+```{r remove excluded participants}
+outside.hit.rate.per.room <- outside.hit.rate.per.room[! SubjectNo %in% excluded.ps]
+```
+
+# Relationships with curiosity rating
+```{r}
+baseline <- lme(SAcc ~ 1, random = ~ 1|SubjectNo, data = outside.hit.rate.per.room, method = "ML", control = list(msMaxIter = 500, opt = "optim", msVerbose=FALSE), na.action = na.exclude)
+```
+
+```{r}
+cur.model <- update(baseline, .~. + Curiosity, random = ~ 1 + Curiosity|SubjectNo)
+```
+
+```{r}
+anova(baseline, cur.model)
+```
+
+```{r}
+summary(cur.model)
+```
+
+
+# Relationships with interestingness rating
+```{r}
+int.model <- update(baseline, .~. + Interest, random = ~ 1 + Interest|SubjectNo)
+```
+
+```{r}
+anova(baseline, int.model)
+```
+
+```{r}
+summary(int.model)
+```
+
+# Relationships with surprise score
+```{r}
+sur.model <- update(baseline, .~. + Surprise, random = ~ 1 + Surprise|SubjectNo)
+```
+
+```{r}
+anova(baseline, sur.model)
+```
+
+```{r}
+summary(sur.model)
+```
+
+## Plot the linear relationships
+```{r, echo=FALSE}
+outside.hit.rate.per.room[, PredSur := predict(sur.model, level = 1)]
+```
+
+```{r group predicted values for surprise model, echo=FALSE }
+sur.model.group.pred <- data.table(Surprise = c(min(as.numeric(unique(outside.hit.rate.per.room$Surprise))): max(as.numeric(unique(outside.hit.rate.per.room$Surprise)))))
+sur.model.group.pred[, PredSAcc := (sur.model$coefficients$fixed["(Intercept)"] + Surprise * sur.model$coefficients$fixed["Surprise"]) ]
+```
+
+
+```{r, echo=FALSE, fig.align="center", fig.width=6.4, fig.height=4.8}
+ggplot(outside.hit.rate.per.room, aes(x = Surprise, y = PredSur)) +
+  geom_point(aes(y = SAcc, group = SubjectNo, color = SubjectNo), alpha = 0.25) +
+  geom_line(aes(group = SubjectNo, color = SubjectNo), alpha = 0.25) +
+  geom_line(data = sur.model.group.pred, aes(y = PredSAcc), size = 1.5, color = "black") +
+  labs(x = "Surprise score (Interest - Curiosity)", y = "Corrected hit rate (%)" )+
+  theme(legend.position = "none",
+        axis.title = element_text(face = "bold", size = 14),
+        axis.text = element_text(size = 12))
+```
+
+```{r, echo=FALSE}
+ggsave("../Figures/SurHitLinear.png", width = 6.4, height = 4.8 )
+```
+
+# Relationships with pre-interestingness rating
+```{r}
+pre.int.model   <- update(baseline, .~. + PreInt, random = ~ 1 + PreInt|SubjectNo)
+```
+
+```{r}
+summary(pre.int.model)
+```
+
+# Relationships with pre-surprise rating
+```{r}
+pre.sur.model   <- update(baseline, .~. + PreSur, random = ~ 1 + PreSur|SubjectNo)
+```
+
+```{r}
+summary(pre.sur.model)
+```
+
+## Plot the linear relationships
+```{r, echo=FALSE}
+outside.hit.rate.per.room[, PredPreSur := predict(pre.sur.model, level = 1)]
+```
+
+```{r group predicted values for pre-surprise model, echo=FALSE }
+pre.sur.model.group.pred <- data.table(PreSur = c(min(as.numeric(unique(outside.hit.rate.per.room$PreSur)), na.rm = T): max(as.numeric(unique(outside.hit.rate.per.room$PreSur)), na.rm = T)))
+pre.sur.model.group.pred[, PredSAcc := (pre.sur.model$coefficients$fixed["(Intercept)"] + PreSur * pre.sur.model$coefficients$fixed["PreSur"]) ]
+```
+
+
+```{r, echo=FALSE, fig.align="center", fig.width=6.4, fig.height=4.8}
+ggplot(outside.hit.rate.per.room, aes(x = PreSur, y = PredPreSur)) +
+  geom_point(aes(y = SAcc, group = SubjectNo, color = SubjectNo), alpha = 0.25) +
+  geom_line(aes(group = SubjectNo, color = SubjectNo), alpha = 0.25) +
+  geom_line(data = pre.sur.model.group.pred, aes(y = PredSAcc), size = 1.5, color = "black") +
+  labs(x = "Surprise score for the previous trial (Interest - Curiosity)", y = "Corrected hit rate (%)" )+
+  theme(legend.position = "none",
+        axis.title = element_text(face = "bold", size = 14),
+        axis.text = element_text(size = 12))
+```
+
+```{r, echo=FALSE}
+ggsave("../Figures/PreSurHitLinear.png", width = 6.4, height = 4.8 )
+```
+
+
+```{r save the models, echo=FALSE}
+save(baseline, cur.model, int.model, sur.model, pre.int.model, pre.sur.model, file = "./Outcomes/LinearModels.RData")
+```
+
+> Check the relationship between *Surprise* and *Pre-surprise*
+
+```{r, echo=FALSE, fig.align='center', fig.width=6.4, fig.height=4.8}
+ggplot(outside.hit.rate.per.room, aes(PreSur, Surprise, group = SubjectNo)) +
+  geom_point(aes(color=SubjectNo)) +
+  stat_smooth(method = "lm", se = FALSE, aes(color = SubjectNo)) +
+  labs(x = "Surprise score for the preceding trial", y = "Surprise score") +
+  theme(legend.title = element_blank(),
+        axis.title = element_text(face = "bold", size = 12),
+        axis.text = element_text(size = 10))
+```
+
+```{r}
+base.sur <- lme(PreSur ~ 1, random = ~ 1|SubjectNo, data = outside.hit.rate.per.room, method = "ML", na.action = na.exclude)
+base.pre.sur.sur <- update(base.sur, .~. + Surprise, random = ~ Surprise|SubjectNo)
+```
+
+```{r}
+anova(base.sur, base.pre.sur.sur)
+```
+
+```{r}
+summary(base.pre.sur.sur)
+```
+
+> So there is no coorelation between Surprise score and pre-Surprise score.
+
+
+
+
+
