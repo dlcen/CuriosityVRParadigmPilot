@@ -1,0 +1,106 @@
+---
+title: "Comparing the groups"
+output: 
+  pdf_document:
+    toc: yes
+    toc_depth: 5
+    number_sections: no
+    highlight: tango
+    latex_engine: xelatex
+---
+
+\setmainfont{Noto Sans}
+\colorlet{shadecolor}{gray!10}
+
+```{r global_options, include=FALSE}
+knitr::opts_chunk$set(echo=FALSE, warning=FALSE, message=FALSE)
+```
+
+```{r, echo=FALSE, message=FALSE, warning=FALSE}
+library(kableExtra)
+options(knitr.table.format = "latex", cache=TRUE) # "latex" for PDF; "html" for html 
+```
+
+```{r}
+library(data.table); library(ez)
+```
+
+```{r load the data}
+load("../PilotData/IndividualData.RData")
+load("../PilotData/ExcludedSubjectList.RData")
+```
+
+```{r remove excluded participants}
+outside.hit.rate.item.curiosity.median <- outside.hit.rate.item.curiosity.median[! SubjectNo %in% excluded.ps]
+outside.hit.rate.item.interest.median  <- outside.hit.rate.item.interest.median[! SubjectNo %in% excluded.ps]
+outside.hit.rate.item.surprise.median  <- outside.hit.rate.item.surprise.median[! SubjectNo %in% excluded.ps]
+
+outside.hit.rate.item.order.curiosity.median <- outside.hit.rate.item.order.curiosity.median[! SubjectNo %in% excluded.ps]
+outside.hit.rate.item.order.interest.median  <- outside.hit.rate.item.order.interest.median[! SubjectNo %in% excluded.ps]
+outside.hit.rate.item.order.surprise.median  <- outside.hit.rate.item.order.surprise.median[! SubjectNo %in% excluded.ps]
+```
+
+# Compare the *Curiosity* groups
+```{r}
+outside.hit.rate.item.curiosity.median[,. (Mean = mean(SAcc, na.rm = T), SD = sd(SAcc, na.rm = T)), by = .(CurGrpMd)]
+```
+
+**Statistic difference**
+```{r}
+t.test(SAcc ~ CurGrpMd, outside.hit.rate.item.curiosity.median, paired = T)
+```
+
+## Include the item order
+```{r}
+outside.hit.rate.item.order.curiosity.median[, .(Mean = mean(SAcc, na.rm = T), SD = sd(SAcc, na.rm = T)), by = .(CurGrpMd, ObjOrdGrp)]
+```
+
+**Statistic difference**
+```{r}
+ezANOVA(outside.hit.rate.item.order.curiosity.median, dv = .(SAcc), wid = .(SubjectNo), within = .(CurGrpMd, ObjOrdGrp), type = 3)
+```
+
+# Compare the *Interest* groups
+```{r}
+outside.hit.rate.item.interest.median[,. (Mean = mean(SAcc, na.rm = T), SD = sd(SAcc, na.rm = T)), by = .(IntGrpMd)]
+```
+
+**Statistic difference**
+```{r}
+t.test(SAcc ~ IntGrpMd, outside.hit.rate.item.interest.median, paired = T)
+```
+
+## Include the item order
+```{r}
+outside.hit.rate.item.order.interest.median[, .(Mean = mean(SAcc, na.rm = T), SD = sd(SAcc, na.rm = T)), by = .(IntGrpMd, ObjOrdGrp)]
+```
+
+**Statistic difference**
+```{r}
+ezANOVA(outside.hit.rate.item.order.interest.median, dv = .(SAcc), wid = .(SubjectNo), within = .(IntGrpMd, ObjOrdGrp), type = 3)
+```
+
+# Compare the *Surprise* groups
+```{r}
+outside.hit.rate.item.surprise.median[,. (Mean = mean(SAcc, na.rm = T), SD = sd(SAcc, na.rm = T)), by = .(SurGrpMd)]
+```
+
+**Statistic difference**
+```{r}
+t.test(SAcc ~ SurGrpMd, outside.hit.rate.item.surprise.median, paired = T)
+```
+
+## Include the item order
+```{r}
+outside.hit.rate.item.order.surprise.median[, .(Mean = mean(SAcc, na.rm = T), SD = sd(SAcc, na.rm = T)), by = .(SurGrpMd, ObjOrdGrp)]
+```
+
+**Statistic difference**
+```{r}
+ezANOVA(outside.hit.rate.item.order.surprise.median, dv = .(SAcc), wid = .(SubjectNo), within = .(SurGrpMd, ObjOrdGrp), type = 3)
+```
+
+
+
+
+

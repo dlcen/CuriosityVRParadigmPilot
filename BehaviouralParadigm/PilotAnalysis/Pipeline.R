@@ -57,4 +57,6 @@ length(excluded.ps)
 # when criteria = 5%, N = 3
 # when criteria = 10%, N = 7
 
+save(excluded.ps, file = "./PilotData/ExcludedSubjectList.RData")
+
 source("./PilotAnalysis/PlotGroupData.R")
