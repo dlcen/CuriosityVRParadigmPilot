@@ -60,6 +60,7 @@ load("../PilotData/ExcludedSubjectList.RData")
 ```{r remove excluded participants}
 outside.hit.rate.per.room <- outside.hit.rate.per.room[! SubjectNo %in% excluded.ps]
 ```
+
 # Correlations between *Curiosity*, *Interest* and *Surprise* scores
 ## Correlation between *Curiosity* and *Interest*
 ```{r}
