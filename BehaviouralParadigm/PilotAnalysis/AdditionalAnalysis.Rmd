@@ -1,0 +1,151 @@
+---
+title: "Additional analysis"
+output: 
+  html_document:
+    fig_caption: yes
+    highlight: default
+    number_sections: no
+    theme: lumen
+    toc: yes
+    toc_depth: 5
+    toc_float: true
+
+  pdf_document:
+    toc: yes
+    toc_depth: 5
+    number_sections: no
+    highlight: tango
+    latex_engine: xelatex
+    fontsize: 12pt
+---
+
+\setmainfont{Noto Sans}
+\setmathfont{Fira Code}
+\colorlet{shadecolor}{gray!10}
+
+<style>
+body {
+  font-size: 15px;
+}
+
+p.caption {
+  font-weight: 500;
+  font-style: italic;
+}
+
+code.r {
+  font-family: Consolas, Monaco, monospace;
+  font-size: 12px;
+}
+</style>
+
+```{r global_options, include=FALSE}
+knitr::opts_chunk$set(echo=FALSE, warning=FALSE, message=FALSE)
+```
+
+```{r, echo=FALSE, message=FALSE, warning=FALSE}
+library(kableExtra)
+options(knitr.table.format = "html", cache=TRUE) # "latex" for PDF; "html" for html 
+```
+
+```{r load libraries}
+library(data.table); library(ggplot2); library(nlme)
+```
+
+```{r load the data}
+load("../PilotData/IndividualData.RData")
+load("../PilotData/ExcludedSubjectList.RData")
+```
+
+```{r remove excluded participants}
+outside.hit.rate.per.room <- outside.hit.rate.per.room[! SubjectNo %in% excluded.ps]
+break.durations <- break.durations[! SubjectNo %in% excluded.ps]
+```
+
+---
+# Distribution of break duration
+```{r}
+ggplot(break.durations, aes(x = Duration)) +
+  geom_histogram(binwidth = 10, aes(color = SubjectNo, fill = SubjectNo)) +
+  labs(x = "Duration of a break (s)")
+```
+
+
+---
+# Effects of Pre-surprise after removing the trials following a break
+```{r}
+outside.hit.rate.per.room.nobrk <- outside.hit.rate.per.room[! Order %in% c(1, 5, 9, 13), ]
+```
+
+```{r}
+baseline.nobrk <- lme(SAcc ~ 1, random = ~ 1|SubjectNo, data = outside.hit.rate.per.room.nobrk, method = "ML", control = list(msMaxIter = 500, opt = "optim", msVerbose=FALSE), na.action = na.exclude)
+
+pre.sur.nobrk.int <- update(baseline.nobrk, .~. + PreSur)
+pre.sur.nobrk.slp <- update(pre.sur.nobrk.int, random = ~ 1 + PreSur|SubjectNo)
+```
+
+```{r}
+anova(baseline.nobrk, pre.sur.nobrk.int, pre.sur.nobrk.slp)
+```
+
+```{r}
+summary(pre.sur.nobrk.int)
+```
+
+
+---
+# Relationship between outside duration and memory performance
+```{r}
+baseline <- lme(SAcc ~ 1, random = ~ 1|SubjectNo, data = outside.hit.rate.per.room, method = "ML", control = list(msMaxIter = 500, opt = "optim", msVerbose=FALSE), na.action = na.exclude)
+
+out.dur.int <- update(baseline, .~. + OutsideDuration)
+out.dur.slp <- update(out.dur.int, random = ~ 1 + OutsideDuration|SubjectNo)
+
+anova(baseline, out.dur.int, out.dur.slp)
+```
+
+> So the longer the participant spent on the pathway, the better their memory of the objects.
+
+## Check the effects of *Surprise* after controlling for the outside duration
+```{r}
+sur.int.dur <- update(out.dur.int, .~. + Surprise)
+sur.slp.dur <- update(sur.int.dur, random = ~ 1 + Surprise|SubjectNo)
+anova(out.dur.int, sur.int.dur, sur.slp.dur)
+```
+
+
+## Check the effects of *Pre-surprise* after controlling for the outside duration
+```{r}
+pre.baseline <- lme(SAcc ~ 1, random = ~ 1|SubjectNo, data = outside.hit.rate.per.room[! is.na(PreSur)], method = "ML", control = list(msMaxIter = 500, opt = "optim", msVerbose=FALSE), na.action = na.exclude)
+
+pre.out.dur.int <- update(pre.baseline, .~. + OutsideDuration)
+
+pre.sur.int.dur <- update(pre.out.dur.int, .~. + PreSur)
+pre.sur.slp.dur <- update(pre.sur.int.dur, random = ~ 1 + PreSur|SubjectNo)
+
+```
+
+```{r}
+anova(pre.baseline, pre.out.dur.int, pre.sur.int.dur, pre.sur.slp.dur)
+```
+
+```{r}
+summary(pre.sur.slp.dur)
+```
+
+### What about those without trials following a break
+```{r}
+pre.baseline.nobrk <- lme(SAcc ~ 1, random = ~ 1|SubjectNo, data = outside.hit.rate.per.room.nobrk[! is.na(PreSur)], method = "ML", control = list(msMaxIter = 500, opt = "optim", msVerbose=FALSE), na.action = na.exclude)
+
+pre.out.dur.int.nobrk <- update(pre.baseline.nobrk, .~. + OutsideDuration)
+
+pre.sur.int.dur.nobrk <- update(pre.out.dur.int.nobrk, .~. + PreSur)
+pre.sur.slp.dur.nobrk <- update(pre.sur.int.dur.nobrk, random = ~ 1 + PreSur|SubjectNo)
+
+anova(pre.baseline.nobrk, pre.out.dur.int.nobrk, pre.sur.int.dur.nobrk, pre.sur.slp.dur.nobrk)
+```
+
+```{r}
+summary(pre.sur.int.dur.nobrk)
+```
+

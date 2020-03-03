@@ -71,6 +71,17 @@ questionnaire <- data.table(questionnaire)
 
 individual.data  <- merge(individual.data, questionnaire[, c(1, 24:26)], by = c("SubjectNo"))
 
+# Break durations
+break.durations <- NULL
+
+for (this.p in participant.list) {
+  this.brk <- read.csv(paste0("./PilotData/IndividualData/", this.p, "/Exploration/BreakDurations.csv"), header = TRUE)
+  this.brk$SubjectNo <- this.p
+  break.durations    <- rbind(break.durations, this.brk)
+}
+
+break.durations <- data.table(break.durations)
+
 # Memory performance
 
 object.recognition <- NULL
@@ -201,7 +212,8 @@ if (!is.day1.only) {
   individual.average.data$PreIntME <- DiffCal(outside.hit.rate.item.preint.median,    "PreIntGrpMd", "SAcc", c("High", "Low"))
   individual.average.data$PreSurME <- DiffCal(outside.hit.rate.item.presur.median,    "PreSurGrpMd", "SAcc", c("High", "Low"))
 
-  save(rooms, ratings, individual.data, questionnaire, individual.average.data,
+  save(rooms, ratings, break.durations,
+    individual.data, questionnaire, individual.average.data,
     object.recognition, object.recognition.old, Recall.Freq.Rsp,
     outside.hit.rate.per.room, 
     outside.hit.rate.item.curiosity, outside.hit.rate.item.curiosity.median, 
@@ -213,6 +225,8 @@ if (!is.day1.only) {
     outside.hit.rate.item.presur.median, outside.hit.rate.item.order.presur.median,
     file = "./PilotData/IndividualData.RData")
 }
+
+
 
 
 
