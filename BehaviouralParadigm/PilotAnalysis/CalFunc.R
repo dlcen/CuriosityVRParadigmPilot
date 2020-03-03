@@ -133,3 +133,6 @@ DiffCal <- function(data, comparison, dv, group) {
 }
 
 
+# Find out the rooms with a score higher/lower than median also has a score higher/lower than median
+# RoomOverlapChecker <- function(data, )
+

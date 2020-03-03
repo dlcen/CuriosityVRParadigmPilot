@@ -1,6 +1,15 @@
 ---
 title: "Comparing the groups"
 output: 
+  html_document:
+    fig_caption: yes
+    highlight: default
+    number_sections: no
+    theme: lumen
+    toc: yes
+    toc_depth: 5
+    toc_float: true
+
   pdf_document:
     toc: yes
     toc_depth: 5
@@ -14,13 +23,29 @@ output:
 \setmathfont{Fira Code}
 \colorlet{shadecolor}{gray!10}
 
+<style>
+body {
+  font-size: 15px;
+}
+
+p.caption {
+  font-weight: 500;
+  font-style: italic;
+}
+
+code.r {
+  font-family: Consolas, Monaco, monospace;
+  font-size: 12px;
+}
+</style>
+
 ```{r global_options, include=FALSE}
 knitr::opts_chunk$set(echo=FALSE, warning=FALSE, message=FALSE)
 ```
 
 ```{r, echo=FALSE, message=FALSE, warning=FALSE}
 library(kableExtra)
-options(knitr.table.format = "latex", cache=TRUE) # "latex" for PDF; "html" for html 
+options(knitr.table.format = "html", cache=TRUE) # "latex" for PDF; "html" for html 
 ```
 
 ```{r}
@@ -147,7 +172,28 @@ outside.hit.rate.item.order.presur.median[SubjectNo != "P06", .(Mean = mean(SAcc
 ezANOVA(outside.hit.rate.item.order.presur.median[SubjectNo != "P06"], dv = .(SAcc), wid = .(SubjectNo), within = .(PreSurGrpMd, ObjOrdGrp), type = 3)
 ```
 
+# Check any overlap between *Surprise* groups and *Pre-surprise* groups
+```{r}
+source("../PilotAnalysis/CalFunc.R")
 
+outside.hit.rate.per.room[, SurGrpMd := mapply(GrpMedianSep, Surprise, MedianSur)]
+outside.hit.rate.per.room[, PreSurGrpMd := mapply(GrpMedianSep, PreSur, MedianPreSur)]
+
+# Find out for each participant that the rooms with a surprise score lower/higher than median also has a pre-surprise score lower/higher than median
+n.overlapping <- outside.hit.rate.per.room[, .(NOverlappingRooms = sum(as.numeric(SurGrpMd == PreSurGrpMd), na.rm = T)), by = .(SubjectNo)]
+n.overlapping
+```
+
+```{r}
+require(ggplot2)
+ggplot(n.overlapping, aes(x = NOverlappingRooms) ) +
+  geom_histogram(binwidth = 1, aes(color = SubjectNo, fill = SubjectNo)) +
+  geom_vline(aes(xintercept = median(NOverlappingRooms)), color = "red", size = 1) +
+	scale_x_continuous(breaks = c(1:9))+
+	labs(x = "Number of rooms in the same group", y = "Count") + 
+	theme(axis.text = element_text(size = 12),
+		  strip.text = element_text(size = 12, face = "bold"))
+```
 
 
 
