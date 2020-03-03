@@ -1,0 +1,107 @@
+---
+title: "Trait curiosity and effects"
+output: 
+  html_document:
+    fig_caption: yes
+    highlight: default
+    number_sections: no
+    theme: lumen
+    toc: yes
+    toc_depth: 5
+    toc_float: true
+
+  pdf_document:
+    toc: yes
+    toc_depth: 5
+    number_sections: no
+    highlight: tango
+    latex_engine: xelatex
+    fontsize: 12pt
+---
+
+\setmainfont{Noto Sans}
+\setmathfont{Fira Code}
+\colorlet{shadecolor}{gray!10}
+
+<style>
+body {
+  font-size: 15px;
+}
+
+p.caption {
+  font-weight: 500;
+  font-style: italic;
+}
+
+code.r {
+  font-family: Consolas, Monaco, monospace;
+  font-size: 12px;
+}
+</style>
+
+```{r global_options, include=FALSE}
+knitr::opts_chunk$set(echo=TRUE, warning=FALSE, message=FALSE)
+```
+
+```{r, echo=FALSE, message=FALSE, warning=FALSE}
+library(kableExtra)
+options(knitr.table.format = "html", cache=TRUE) # "latex" for PDF; "html" for html 
+```
+
+```{r load libraries, echo=FALSE}
+library(data.table); 
+```
+
+```{r load the data, echo=FALSE}
+load("../PilotData/IndividualData.RData")
+load("../PilotData/ExcludedSubjectList.RData")
+```
+
+```{r remove excluded participants, echo=FALSE}
+individual.average.data           <- individual.average.data[! SubjectNo %in% excluded.ps]
+```
+
+# Relationship between **Trait** and ratings
+## *Curiosity* and ratings
+```{r}
+with(individual.average.data, cor.test(MeanCur, PC))
+with(individual.average.data, cor.test(MeanCur, EC))
+with(individual.average.data, cor.test(MeanCur, GN))
+```
+
+## *Interest* and ratings
+```{r}
+with(individual.average.data, cor.test(MeanInt, PC))
+with(individual.average.data, cor.test(MeanInt, EC))
+with(individual.average.data, cor.test(MeanInt, GN))
+```
+
+# Relationship between **Trait** and exploration duration
+```{r}
+with(individual.average.data, cor.test(MeanDur, PC))
+with(individual.average.data, cor.test(MeanDur, EC))
+with(individual.average.data, cor.test(MeanDur, GN))
+```
+
+# Relationship between **Trait** and overall memory performance
+```{r}
+with(individual.average.data, cor.test(MSAcc, PC))
+with(individual.average.data, cor.test(MSAcc, EC))
+with(individual.average.data, cor.test(MSAcc, GN))
+```
+
+# Relationship between **Trait** and overall memory enhancement
+## Surprise
+```{r}
+with(individual.average.data, cor.test(SurME, PC))
+with(individual.average.data, cor.test(SurME, EC))
+with(individual.average.data, cor.test(SurME, GN))
+```
+
+## Pre-surprise
+```{r}
+with(individual.average.data, cor.test(PreSurME, PC))
+with(individual.average.data, cor.test(PreSurME, EC))
+with(individual.average.data, cor.test(PreSurME, GN))
+```
+
