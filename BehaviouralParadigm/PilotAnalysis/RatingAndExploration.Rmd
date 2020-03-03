@@ -1,0 +1,183 @@
+---
+title: "Rating and exploration time"
+output: 
+  html_document:
+    fig_caption: yes
+    highlight: default
+    number_sections: no
+    theme: lumen
+    toc: yes
+    toc_depth: 5
+    toc_float: true
+
+  pdf_document:
+    toc: yes
+    toc_depth: 5
+    number_sections: no
+    highlight: tango
+    latex_engine: xelatex
+    fontsize: 12pt
+---
+
+\setmainfont{Noto Sans}
+\setmathfont{Fira Code}
+\colorlet{shadecolor}{gray!10}
+
+<style>
+body {
+  font-size: 15px;
+}
+
+p.caption {
+  font-weight: 500;
+  font-style: italic;
+}
+
+code.r {
+  font-family: Consolas, Monaco, monospace;
+  font-size: 12px;
+}
+</style>
+
+```{r global_options, include=FALSE}
+knitr::opts_chunk$set(echo=TRUE, warning=FALSE, message=FALSE)
+```
+
+```{r, echo=FALSE, message=FALSE, warning=FALSE}
+library(kableExtra)
+options(knitr.table.format = "html", cache=TRUE) # "latex" for PDF; "html" for html 
+```
+
+```{r load libraries}
+library(data.table); library(ggplot2); library(nlme)
+```
+
+```{r load the data}
+load("../PilotData/IndividualData.RData")
+load("../PilotData/ExcludedSubjectList.RData")
+```
+
+```{r remove excluded participants}
+outside.hit.rate.per.room <- outside.hit.rate.per.room[! SubjectNo %in% excluded.ps]
+```
+# Correlations between *Curiosity*, *Interest* and *Surprise* scores
+## Correlation between *Curiosity* and *Interest*
+```{r}
+base.cur <- lme(Curiosity ~ 1, random = ~ 1|SubjectNo, data = outside.hit.rate.per.room, method = "ML", control = list(msMaxIter = 500, opt = "optim", msVerbose=FALSE), na.action = na.exclude)
+cur.int    <- update(base.cur, .~. + Interest, random = ~ 1 + Interest|SubjectNo)
+```
+
+```{r}
+anova(base.cur, cur.int)
+```
+
+## Correlation between *Curiosity* and *Surprise*
+```{r}
+cur.sur <- update(base.cur, .~. + Surprise, random = ~ 1 + Surprise|SubjectNo)
+anova(base.cur, cur.sur)
+```
+
+## Correlation between *Interest* and *Surprise*
+```{r}
+base.int <- lme(Interest ~ 1, random = ~ 1|SubjectNo, data = outside.hit.rate.per.room, method = "ML", control = list(msMaxIter = 500, opt = "optim", msVerbose=FALSE), na.action = na.exclude)
+int.sur      <- update(base.int, .~. + Surprise, random = ~ 1 + Surprise|SubjectNo)
+anova(base.int, int.sur)
+```
+
+> So all the three scores correlate with each other.
+
+# Relationships between scores and exploration time
+## Relationship between *Curiosity* rating and exploration time
+```{r}
+baseline      <- lme(InsideDuration ~ 1, random = ~ 1|SubjectNo, data = outside.hit.rate.per.room, method = "ML", control = list(msMaxIter = 500, opt = "optim", msVerbose=FALSE), na.action = na.exclude)
+cur.model.int <- update(baseline, .~. + Curiosity)
+cur.model.slp <- update(cur.model.int, random = ~ 1 + Curiosity|SubjectNo)
+```
+
+```{r}
+anova(baseline, cur.model.int, cur.model.slp)
+```
+
+```{r}
+summary(cur.model.slp)
+```
+
+## Relationship between *Interest* rating and exploration time
+```{r}
+int.model.int <- update(baseline, .~. + Interest)
+int.model.slp <- update(int.model.int, random = ~ 1 + Interest|SubjectNo)
+```
+
+```{r}
+anova(baseline, int.model.int, int.model.slp)
+```
+
+```{r}
+summary(int.model.slp)
+```
+
+## Relationship between *Surprise* rating and exploration time
+```{r}
+sur.model.int <- update(baseline, .~. + Surprise)
+sur.model.slp <- update(sur.model.int, random = ~ 1 + Surprise|SubjectNo)
+```
+
+```{r}
+anova(baseline, sur.model.int, sur.model.slp)
+```
+
+```{r}
+summary(sur.model.slp)
+```
+
+# Find the relative contribution of each score
+## Order 1
+*Curiosity* -> *Interest* 
+
+```{r}
+cur.int.int <- update(cur.model.slp, .~. + Interest)
+cur.int.slp <- update(cur.int.int, random = ~ 1 + Curiosity + Interest|SubjectNo)
+anova(cur.model.slp, cur.int.int, cur.int.slp)
+```
+
+## Order 2
+*Curiosity* -> *Surprise* 
+```{r}
+cur.sur.int <- update(cur.model.slp, .~. + Surprise)
+cur.sur.slp <- update(cur.sur.int, random = ~ 1 + Curiosity + Surprise|SubjectNo)
+anova(cur.model.slp, cur.sur.int, cur.sur.slp)
+```
+
+## Order 3
+*Interest* -> *Curiosity* 
+```{r}
+int.cur.int <- update(int.model.slp, .~. + Curiosity)
+int.cur.slp <- update(int.cur.int, random = ~ 1 + Curiosity + Interest|SubjectNo)
+anova(int.model.slp, int.cur.int, int.cur.slp)
+```
+
+## Order 4
+*Interest* -> *Surprise* 
+```{r}
+int.sur.int <- update(int.model.slp, .~. + Surprise)
+int.sur.slp <- update(int.sur.int, random = ~ 1 + Surprise + Interest|SubjectNo)
+anova(int.model.slp, int.sur.int, int.sur.slp)
+```
+
+## Order 5
+*Surprise* -> *Interest* 
+```{r}
+sur.int.int <- update(sur.model.slp, .~. + Interest)
+sur.int.slp <- update(sur.int.int, random = ~ 1 + Surprise + Interest|SubjectNo)
+anova(sur.model.slp, sur.int.int, sur.int.slp)
+```
+
+## Order 6
+*Surprise* -> *Curiosity* 
+```{r}
+sur.cur.int <- update(sur.model.slp, .~. + Curiosity)
+sur.cur.slp <- update(sur.cur.int, random = ~ 1 + Surprise + Curiosity|SubjectNo)
+anova(sur.model.slp, sur.cur.int, sur.cur.slp)
+```
+
+
