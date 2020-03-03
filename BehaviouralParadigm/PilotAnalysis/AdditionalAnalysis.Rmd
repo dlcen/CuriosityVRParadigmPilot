@@ -104,13 +104,22 @@ out.dur.slp <- update(out.dur.int, random = ~ 1 + OutsideDuration|SubjectNo)
 anova(baseline, out.dur.int, out.dur.slp)
 ```
 
+```{r}
+summary(out.dur.slp)
+```
+
+
 > So the longer the participant spent on the pathway, the better their memory of the objects.
 
 ## Check the effects of *Surprise* after controlling for the outside duration
 ```{r}
-sur.int.dur <- update(out.dur.int, .~. + Surprise)
-sur.slp.dur <- update(sur.int.dur, random = ~ 1 + Surprise|SubjectNo)
-anova(out.dur.int, sur.int.dur, sur.slp.dur)
+sur.int.dur <- update(out.dur.slp, .~. + Surprise)
+sur.slp.dur <- update(sur.int.dur, random = ~ 1 + OutsideDuration + Surprise|SubjectNo)
+anova(out.dur.slp, sur.int.dur, sur.slp.dur)
+```
+
+```{r}
+summary(sur.slp.dur)
 ```
 
 
@@ -119,14 +128,15 @@ anova(out.dur.int, sur.int.dur, sur.slp.dur)
 pre.baseline <- lme(SAcc ~ 1, random = ~ 1|SubjectNo, data = outside.hit.rate.per.room[! is.na(PreSur)], method = "ML", control = list(msMaxIter = 500, opt = "optim", msVerbose=FALSE), na.action = na.exclude)
 
 pre.out.dur.int <- update(pre.baseline, .~. + OutsideDuration)
+pre.out.dur.slp <- update(pre.out.dur.int, random = ~ 1 + OutsideDuration|SubjectNo)
 
-pre.sur.int.dur <- update(pre.out.dur.int, .~. + PreSur)
-pre.sur.slp.dur <- update(pre.sur.int.dur, random = ~ 1 + PreSur|SubjectNo)
+pre.sur.int.dur <- update(pre.out.dur.slp, .~. + PreSur)
+pre.sur.slp.dur <- update(pre.sur.int.dur, random = ~ 1 + OutsideDuration + PreSur|SubjectNo)
 
 ```
 
 ```{r}
-anova(pre.baseline, pre.out.dur.int, pre.sur.int.dur, pre.sur.slp.dur)
+anova(pre.baseline, pre.out.dur.int, pre.out.dur.slp, pre.sur.int.dur, pre.sur.slp.dur)
 ```
 
 ```{r}

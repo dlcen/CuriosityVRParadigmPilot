@@ -1,6 +1,6 @@
 ---
 title: "Rating and exploration time"
-output: 
+output:
   html_document:
     fig_caption: yes
     highlight: default
@@ -45,11 +45,11 @@ knitr::opts_chunk$set(echo=TRUE, warning=FALSE, message=FALSE)
 
 ```{r, echo=FALSE, message=FALSE, warning=FALSE}
 library(kableExtra)
-options(knitr.table.format = "html", cache=TRUE) # "latex" for PDF; "html" for html 
+options(knitr.table.format = "html", cache=TRUE) # "latex" for PDF; "html" for html
 ```
 
 ```{r load libraries}
-library(data.table); library(ggplot2); library(nlme)
+library(data.table); library(ggplot2); library(nlme); library(cowplot)
 ```
 
 ```{r load the data}
@@ -103,6 +103,10 @@ anova(baseline, cur.model.int, cur.model.slp)
 summary(cur.model.slp)
 ```
 
+```{r}
+outside.hit.rate.per.room[, PredCurDur := predict(cur.model.slp, level = 1)]
+```
+
 ## Relationship between *Interest* rating and exploration time
 ```{r}
 int.model.int <- update(baseline, .~. + Interest)
@@ -115,6 +119,10 @@ anova(baseline, int.model.int, int.model.slp)
 
 ```{r}
 summary(int.model.slp)
+```
+
+```{r}
+outside.hit.rate.per.room[, PredIntDur := predict(int.model.slp, level = 1)]
 ```
 
 ## Relationship between *Surprise* rating and exploration time
@@ -131,9 +139,13 @@ anova(baseline, sur.model.int, sur.model.slp)
 summary(sur.model.slp)
 ```
 
+```{r}
+outside.hit.rate.per.room[, PredSurDur := predict(sur.model.slp, level = 1)]
+```
+
 # Find the relative contribution of each score
 ## Order 1
-*Curiosity* -> *Interest* 
+*Curiosity* -> *Interest*
 
 ```{r}
 cur.int.int <- update(cur.model.slp, .~. + Interest)
@@ -142,7 +154,7 @@ anova(cur.model.slp, cur.int.int, cur.int.slp)
 ```
 
 ## Order 2
-*Curiosity* -> *Surprise* 
+*Curiosity* -> *Surprise*
 ```{r}
 cur.sur.int <- update(cur.model.slp, .~. + Surprise)
 cur.sur.slp <- update(cur.sur.int, random = ~ 1 + Curiosity + Surprise|SubjectNo)
@@ -150,7 +162,7 @@ anova(cur.model.slp, cur.sur.int, cur.sur.slp)
 ```
 
 ## Order 3
-*Interest* -> *Curiosity* 
+*Interest* -> *Curiosity*
 ```{r}
 int.cur.int <- update(int.model.slp, .~. + Curiosity)
 int.cur.slp <- update(int.cur.int, random = ~ 1 + Curiosity + Interest|SubjectNo)
@@ -158,7 +170,7 @@ anova(int.model.slp, int.cur.int, int.cur.slp)
 ```
 
 ## Order 4
-*Interest* -> *Surprise* 
+*Interest* -> *Surprise*
 ```{r}
 int.sur.int <- update(int.model.slp, .~. + Surprise)
 int.sur.slp <- update(int.sur.int, random = ~ 1 + Surprise + Interest|SubjectNo)
@@ -166,7 +178,7 @@ anova(int.model.slp, int.sur.int, int.sur.slp)
 ```
 
 ## Order 5
-*Surprise* -> *Interest* 
+*Surprise* -> *Interest*
 ```{r}
 sur.int.int <- update(sur.model.slp, .~. + Interest)
 sur.int.slp <- update(sur.int.int, random = ~ 1 + Surprise + Interest|SubjectNo)
@@ -174,11 +186,55 @@ anova(sur.model.slp, sur.int.int, sur.int.slp)
 ```
 
 ## Order 6
-*Surprise* -> *Curiosity* 
+*Surprise* -> *Curiosity*
 ```{r}
 sur.cur.int <- update(sur.model.slp, .~. + Curiosity)
 sur.cur.slp <- update(sur.cur.int, random = ~ 1 + Surprise + Curiosity|SubjectNo)
 anova(sur.model.slp, sur.cur.int, sur.cur.slp)
 ```
 
+# Plot the models
+```{r}
+cur.model.group.pred <- data.table(Curiosity = c(min(as.numeric(unique(outside.hit.rate.per.room$Curiosity))): max(as.numeric(unique(outside.hit.rate.per.room$Curiosity)))))
+cur.model.group.pred[, PredDur := (cur.model.slp$coefficients$fixed["(Intercept)"] + Curiosity * cur.model.slp$coefficients$fixed["Curiosity"]) ]
 
+int.model.group.pred <- data.table(Interest = c(min(as.numeric(unique(outside.hit.rate.per.room$Interest))): max(as.numeric(unique(outside.hit.rate.per.room$Interest)))))
+int.model.group.pred[, PredDur := (int.model.slp$coefficients$fixed["(Intercept)"] + Interest * int.model.slp$coefficients$fixed["Interest"]) ]
+
+sur.model.group.pred <- data.table(Surprise = c(min(as.numeric(unique(outside.hit.rate.per.room$Surprise))): max(as.numeric(unique(outside.hit.rate.per.room$Surprise)))))
+sur.model.group.pred[, PredDur := (sur.model.slp$coefficients$fixed["(Intercept)"] + Surprise * sur.model.slp$coefficients$fixed["Surprise"]) ]
+```
+
+```{r, echo=FALSE, fig.align="center", fig.width=16.5, fig.height=5.3}
+cur.plot <- ggplot(outside.hit.rate.per.room, aes(x = Curiosity, y = PredCurDur)) +
+              geom_point(aes(y = InsideDuration, group = SubjectNo, color = SubjectNo), alpha = 0.5) +
+              geom_line(aes(group = SubjectNo, color = SubjectNo), alpha = 0.5) +
+              geom_line(data = cur.model.group.pred, aes(y = PredDur), size = 2, color = "black") +
+              labs(x = "Curiosity rating", y = "Exploration time (s)" )+
+              theme(legend.position = "none",
+                    axis.title = element_text(face = "bold", size = 16),
+                    axis.text = element_text(size = 14))
+
+int.plot <- ggplot(outside.hit.rate.per.room, aes(x = Interest, y = PredIntDur)) +
+              geom_point(aes(y = InsideDuration, group = SubjectNo, color = SubjectNo), alpha = 0.5) +
+              geom_line(aes(group = SubjectNo, color = SubjectNo), alpha = 0.5) +
+              geom_line(data = int.model.group.pred, aes(y = PredDur), size = 2, color = "black") +
+              labs(x = "Interest rating", y = "Exploration time (s)" )+
+              theme(legend.position = "none",
+                    axis.title = element_text(face = "bold", size = 16),
+                    axis.text = element_text(size = 14))
+
+sur.plot <- ggplot(outside.hit.rate.per.room, aes(x = Surprise, y = PredSurDur)) +
+              geom_point(aes(y = InsideDuration, group = SubjectNo, color = SubjectNo), alpha = 0.5) +
+              geom_line(aes(group = SubjectNo, color = SubjectNo), alpha = 0.5) +
+              geom_line(data = sur.model.group.pred, aes(y = PredDur), size = 2, color = "black") +
+              labs(x = "Surprise score (Interest - Curiosity)", y = "Exploration time (s)" )+
+              theme(legend.position = "none",
+                    axis.title = element_text(face = "bold", size = 16),
+                    axis.text = element_text(size = 14))
+
+plot_grid(cur.plot, int.plot + theme(axis.title.y = element_blank()), sur.plot + theme(axis.title.y = element_blank()), nrow = 1, rel_widths = c(1.05, 1, 1))
+
+ggsave(paste0("../Figures/RatingsAndExpDurLinear.png"), width = 16.5, height = 5.7)
+
+```

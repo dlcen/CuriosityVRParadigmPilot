@@ -2,13 +2,13 @@ library(data.table); library(ggplot2); library(ggsci); library(cowplot); library
 
 # Plot bar graphs to compare group means for individual participant
 BarIdvPlot <- function(data, comparison, dv, xlab, ylab){
-	ggplot(data, aes(get(comparison), get(dv))) + 
+	ggplot(data, aes(get(comparison), get(dv))) +
 			geom_bar( stat="identity", aes(color = get(comparison), fill = get(comparison))) +
-			labs(x = xlab, y = ylab) + 
+			labs(x = xlab, y = ylab) +
 			scale_fill_jama(name = "") +
 			scale_color_jama(name = "") +
 			facet_wrap(~ SubjectNo) +
-			theme( strip.text = element_text(face = "bold", size = 12),
+			theme( strip.text = element_text(face = "bold", size = 14),
 				   legend.position = "none")
 }
 
@@ -16,23 +16,25 @@ BarIdvPlot <- function(data, comparison, dv, xlab, ylab){
 BarOrdIdvPlot <- function(data, comparison, dv, xlab, ylab, legendgroup){
 	ggplot(data, aes(ObjOrdGrp, SAcc)) +
 			geom_bar(stat="identity", aes(group = get(comparison), color = get(comparison), fill = get(comparison)), position = position_dodge(width = 0.9)) +
-			labs(x = xlab, y = ylab) + 
+			labs(x = xlab, y = ylab) +
 			scale_fill_jama(name = legendgroup) +
 			scale_color_jama(name = legendgroup) +
 			facet_wrap(~ SubjectNo) +
-			theme( strip.text = element_text(face = "bold", size = 12))
+			theme( strip.text = element_text(face = "bold", size = 14))
 }
 
 # Plot bar graphs to compare group means for a group of participants
-BarGrpPlotSep <- function(data, group, dv, xlab, ylab, figname, newlevels = NULL){
+BarGrpPlotSep <- function(data, group, dv, xlab, ylab, figname, switch.levels = TRUE, newlevels = NULL){
 	if (is.data.table(data)) { data <- as.data.frame(data) }
 
 	data[, eval(group)] <- with(data, factor(get(group)))
 
-	if (is.null(newlevels)) {
-		data[, eval(group)] <- with(data, factor(get(group), levels = levels(get(group))[c(2, 1)]))
-	} else {
-		data[, eval(group)] <- with(data, factor(get(group), levels = levels(get(group))[c(2, 1)], labels = newlevels))
+	if (switch.levels){
+		if (is.null(newlevels)) {
+			data[, eval(group)] <- with(data, factor(get(group), levels = levels(get(group))[c(2, 1)]))
+		} else {
+			data[, eval(group)] <- with(data, factor(get(group), levels = levels(get(group))[c(2, 1)], labels = newlevels))
+		}
 	}
 
 	for (this.p in participant.list) {
@@ -50,15 +52,17 @@ BarGrpPlotSep <- function(data, group, dv, xlab, ylab, figname, newlevels = NULL
 }
 
 # Plot bar graphs to compare group and order group means for a group of individual participants
-BarOrdGrpPlotSep <- function(data, group, dv, xlab, ylab, figname, legendgroup, newlevels = NULL){
+BarOrdGrpPlotSep <- function(data, group, dv, xlab, ylab, figname, legendgroup, switch.levels = TRUE, newlevels = NULL){
 	if (is.data.table(data)) { data <- as.data.frame(data) }
 
 	data[, eval(group)] <- with(data, factor(get(group)))
 
-	if (is.null(newlevels)) {
-		data[, eval(group)] <- with(data, factor(get(group), levels = levels(get(group))[c(2, 1)]))
-	} else {
-		data[, eval(group)] <- with(data, factor(get(group), levels = levels(get(group))[c(2, 1)], labels = newlevels))
+	if (switch.levels){
+		if (is.null(newlevels)) {
+			data[, eval(group)] <- with(data, factor(get(group), levels = levels(get(group))[c(2, 1)]))
+		} else {
+			data[, eval(group)] <- with(data, factor(get(group), levels = levels(get(group))[c(2, 1)], labels = newlevels))
+		}
 	}
 
 	for (this.p in participant.list) {
@@ -108,55 +112,89 @@ RgLineIdvPlot <- function(data, iv, dv = "SAcc", xlab, ylab = "Corrected hit rat
 
 	if (is.individual) {
 		this.plt <- this.plt + facet_wrap( ~ SubjectNo, ncol = 1) + theme( strip.text = element_text(face = "bold", size = 12))
-	}		
+	}
 
 	return(this.plt)
 }
 
 # Plot bar comparison graphs for group data (together)
-BarGrpPlotTog <- function(data, group, dv = "SAcc", xlab, ylab = "Corrected hit rate", figname, newlevels = NULL) {
+BarGrpPlotTog <- function(data, group, dv = "SAcc", xlab, ylab = "Corrected hit rate", figname, switch.levels = TRUE, newlevels = NULL) {
 	if (is.data.table(data)) { data <- as.data.frame(data) }
 
 	data[, eval(group)] <- with(data, factor(get(group)))
 
-	if (is.null(newlevels)) {
-		data[, eval(group)] <- with(data, factor(get(group), levels = levels(get(group))[c(2, 1)]))
-	} else {
-		data[, eval(group)] <- with(data, factor(get(group), levels = levels(get(group))[c(2, 1)], labels = newlevels))
+	if (switch.levels){
+		if (is.null(newlevels)) {
+			data[, eval(group)] <- with(data, factor(get(group), levels = levels(get(group))[c(2, 1)]))
+		} else {
+			data[, eval(group)] <- with(data, factor(get(group), levels = levels(get(group))[c(2, 1)], labels = newlevels))
+		}
 	}
 
-	ggplot(data, aes(get(group), get(dv))) +
-		stat_summary(fun.y = "mean", geom = "bar", aes(color = get(group), fill = get(group))) +
-		stat_summary(fun.data = mean_cl_normal, geom = "errorbar", width = 0.2, size = 1, color = "grey50") +
-		labs(x = xlab, y = ylab) +
-		scale_fill_jama(name = "") +
-		scale_colour_jama(name = "") +
-		theme(legend.position = "none")
-
-	ggsave(paste0("./Figures/", figname, ".png"), width = 5, height = 4)
+	p <- ggplot(data, aes(get(group), get(dv))) +
+			stat_summary(fun.y = "mean", geom = "bar", aes(color = get(group), fill = get(group))) +
+			stat_summary(fun.data = mean_cl_normal, geom = "errorbar", width = 0.2, size = 1, color = "grey50") +
+			labs(x = xlab, y = ylab) +
+			scale_fill_jama(name = "") +
+			scale_colour_jama(name = "") +
+			theme(legend.position = "none",
+					axis.title = element_text(face = "bold", size = 16),
+					axis.text = element_text(size = 14))
+	return(p)
+	ggsave(paste0("./Figures/", figname, ".png"), plot = p, width = 6.4, height = 5.7)
 }
 
 # Plot bar graphs to compare group and order group means for a group as a whole
-BarOrdGrpPlotTog <- function(data, group, dv = "SAcc", xlab = "Item order", ylab = "Corrected hit rate", figname, legendgroup, newlevels = NULL) {
+BarOrdGrpPlotTog <- function(data, group, dv = "SAcc", xlab = "Item order", ylab = "Corrected hit rate", figname, legendgroup, switch.levels = TRUE, newlevels = NULL) {
 	if (is.data.table(data)) { data <- as.data.frame(data) }
 
 	data[, eval(group)] <- with(data, factor(get(group)))
 
-	if (is.null(newlevels)) {
-		data[, eval(group)] <- with(data, factor(get(group), levels = levels(get(group))[c(2, 1)]))
-	} else {
-		data[, eval(group)] <- with(data, factor(get(group), levels = levels(get(group))[c(2, 1)], labels = newlevels))
+	if (switch.levels){
+		if (is.null(newlevels)) {
+			data[, eval(group)] <- with(data, factor(get(group), levels = levels(get(group))[c(2, 1)]))
+		} else {
+			data[, eval(group)] <- with(data, factor(get(group), levels = levels(get(group))[c(2, 1)], labels = newlevels))
+		}
 	}
 
-	ggplot(data, aes(ObjOrdGrp, get(dv))) +
-		stat_summary(fun.y = "mean", geom = "bar", aes(group = get(group), color = get(group), fill = get(group)), position = position_dodge(width = 0.95)) +
-		stat_summary(fun.data = mean_cl_normal, geom = "errorbar", aes(group = get(group)), width = 0.2, size = 1, color = "grey50", position = position_dodge(width = 0.95)) +
-		geom_hline(yintercept = 0, size = 0.5, color = "grey25") +
-		labs(x = xlab, y = ylab) +
-		scale_fill_jama(name = legendgroup) +
-		scale_colour_jama(name = legendgroup) 
-
-	ggsave(paste0("./Figures/", figname, ".png"), width = 5, height = 4)
+	p <- ggplot(data, aes(ObjOrdGrp, get(dv))) +
+			stat_summary(fun.y = "mean", geom = "bar", aes(group = get(group), color = get(group), fill = get(group)), position = position_dodge(width = 0.95)) +
+			stat_summary(fun.data = mean_cl_normal, geom = "errorbar", aes(group = get(group)), width = 0.2, size = 1, color = "grey50", position = position_dodge(width = 0.95)) +
+			geom_hline(yintercept = 0, size = 0.5, color = "grey25") +
+			labs(x = xlab, y = ylab) +
+			scale_fill_jama(name = legendgroup) +
+			scale_colour_jama(name = legendgroup) +
+			theme(axis.title = element_text(face = "bold", size = 16),
+					axis.text = element_text(size = 14))
+	return(p)
+	ggsave(paste0("./Figures/", figname, ".png"), p, width = 6.4, height = 5.7)
 }
 
+# Plot box with data points for group comparison
+BoxGrpPlotTog <- function(data, group, dv = "SAcc", xlab, ylab = "Corrected hit rate", figname, switch.levels = TRUE, newlevels = NULL){
+	if (is.data.table(data)) { data <- as.data.frame(data) }
 
+	data[, eval(group)] <- with(data, factor(get(group)))
+
+	if (switch.levels){
+		if (is.null(newlevels)) {
+			data[, eval(group)] <- with(data, factor(get(group), levels = levels(get(group))[c(2, 1)]))
+		} else {
+			data[, eval(group)] <- with(data, factor(get(group), levels = levels(get(group))[c(2, 1)], labels = newlevels))
+		}
+	}
+
+	p <- ggplot(data, aes(get(group), get(dv))) +
+			geom_boxplot(outlier.shape = NA, aes(color = get(group)), size = 1)+
+			geom_jitter(size = 2, width = 0.2, aes(color = get(group))) +
+			labs(x = xlab, y = ylab) +
+			scale_fill_jama(name = "") +
+			scale_colour_jama(name = "") +
+			theme(legend.position = "none",
+				  axis.title = element_text(face = "bold", size = 16),
+			  	  axis.text = element_text(size = 14))
+    return(p)
+
+	ggsave(paste0("./Figures/", figname, ".png"), p, width = 6.4, height = 5.7)
+}

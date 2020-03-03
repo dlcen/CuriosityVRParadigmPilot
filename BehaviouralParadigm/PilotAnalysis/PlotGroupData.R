@@ -1,4 +1,4 @@
-library(data.table); library(ggplot2); library(ggsci); library(cowplot); library(reshape2)
+library(data.table); library(ggplot2); library(ggsci); library(cowplot); library(reshape2); library(ggpubr); library(ggsignif)
 
 source("./PilotAnalysis/PlotFuncs.R")
 
@@ -10,7 +10,13 @@ BarGrpPlotTog(data = outside.hit.rate.item.curiosity.median[!SubjectNo %in% excl
 BarGrpPlotTog(data = outside.hit.rate.item.interest.median[!SubjectNo %in% excluded.ps], group = "IntGrpMd", xlab = "interest median-split group", figname = "GroupIntMedian")
 
 ## Plot comparison between surprise median-split groups
-BarGrpPlotTog(data = outside.hit.rate.item.surprise.median[!SubjectNo %in% excluded.ps], group = "SurGrpMd", xlab = "Surprise median-split group", figname = "GroupSurMedian")
+p <- BarGrpPlotTog(data = outside.hit.rate.item.surprise.median[!SubjectNo %in% excluded.ps], group = "SurGrpMd", xlab = "Surprise median-split group", figname = "GroupSurMedian", switch.levels = FALSE)
+p + geom_signif(comparisons = list(c("High", "Low")), test="t.test", test.args=list(two.side = TRUE, paired=TRUE), y_position = 0.4, textsize = 8, vjust = 0.5, map_signif_level = T) 
+ggsave(paste0("./Figures/GroupSurMedian.png"), width = 6.4, height = 5.7)
+
+p <- BoxGrpPlotTog(data = outside.hit.rate.item.surprise.median[!SubjectNo %in% excluded.ps], group = "SurGrpMd", xlab = "Surprise median-split group", figname = "GroupSurMedianBox", switch.levels = FALSE)
+p + geom_signif(comparisons = list(c("High", "Low")), test="t.test", test.args=list(two.side = TRUE, paired=TRUE), y_position = 0.8, textsize = 8, vjust = 0.5, map_signif_level = T) 
+ggsave(paste0("./Figures/GroupSurMedianBox.png"), width = 6.4, height = 5.7)
 
 ## Plot comparison between exploration time median-split groups
 BarGrpPlotTog(data = outside.hit.rate.item.exploration.median[!SubjectNo %in% excluded.ps], group = "DurGrpMd", xlab = "Exploration time median-split group", figname = "GroupDurMedian", newlevels = c("Short", "Long"))
@@ -19,7 +25,13 @@ BarGrpPlotTog(data = outside.hit.rate.item.exploration.median[!SubjectNo %in% ex
 BarGrpPlotTog(data = outside.hit.rate.item.preint.median[!SubjectNo %in% excluded.ps], group = "PreIntGrpMd", xlab = "Interest (for the previous room) median-split group", figname = "GroupPreIntMedian")
 
 ## Plot comparison between surprise (for previous rooms) median-split groups
-BarGrpPlotTog(data = outside.hit.rate.item.presur.median[!SubjectNo %in% excluded.ps], group = "PreSurGrpMd", xlab = "Surprise (for the previous room) median-split group", figname = "GroupPreSurMedian")
+p <- BarGrpPlotTog(data = outside.hit.rate.item.presur.median[!SubjectNo %in% excluded.ps], group = "PreSurGrpMd", xlab = "Surprise (for the previous room) median-split group", figname = "GroupPreSurMedian", switch.levels = FALSE)
+p + geom_signif(comparisons = list(c("High", "Low")), test="t.test", test.args=list(two.side = TRUE, paired=TRUE, na.action = na.exclude), y_position = 0.4, textsize = 8, vjust = 0.5, map_signif_level = T) 
+ggsave(paste0("./Figures/GroupPreSurMedian.png"), width = 6.4, height = 5.7)
+
+p <- BoxGrpPlotTog(data = outside.hit.rate.item.presur.median[!SubjectNo %in% excluded.ps], group = "PreSurGrpMd", xlab = "Surprise (for the previous room) median-split group", figname = "GroupPreSurMedianBox", switch.levels = FALSE)
+p + geom_signif(comparisons = list(c("High", "Low")), test="t.test", test.args=list(two.side = TRUE, paired=TRUE), y_position = 0.8, textsize = 8, vjust = 0.5, map_signif_level = T) 
+ggsave(paste0("./Figures/GroupPreSurMedianBox.png"), width = 6.4, height = 5.7)
 
 # Include the comparison between "Early" and "Later" parts
 ## Plot comparison between curiosity median-split groups
@@ -128,29 +140,22 @@ ggsave("./Figures/GNMELinear.png", width = 15, height = 5)
 ggplot(individual.data[!SubjectNo %in% excluded.ps], aes(OutsideDuration, group = SubjectNo)) +
 	geom_histogram(binwidth = 1, aes(color = SubjectNo, fill = SubjectNo)) +
 	labs(x = "Time on pathway (s)")
- 
+
 ggsave("./Figures/PathwayTimeDistri.png", width = 8, height = 6)
 
 ggplot(individual.data[!SubjectNo %in% excluded.ps], aes(InsideDuration, group = SubjectNo)) +
 	geom_histogram(binwidth = 5, aes(color = SubjectNo, fill = SubjectNo)) +
 	labs(x = "Exploration time (s)")
- 
+
 ggsave("./Figures/ExpTimeDistri.png", width = 8, height = 6)
 
 ggplot(individual.average.data[!SubjectNo %in% excluded.ps], aes(MeanDur, group = SubjectNo)) +
 	geom_histogram(binwidth = 5, aes(color = SubjectNo, fill = SubjectNo)) +
 	labs(x = "Exploration time (s)")
- 
+
 ggsave("./Figures/AverageExpTimeDistri.png", width = 8, height = 6)
 
 # Check the corrected hit rate as a function of room order
 RgLineIdvPlot(outside.hit.rate.per.room, iv="Order", xlab="Room order", xtxt=8, xbrk=seq(1, 16, 1), xlims=c(1, 16))
 
 ggsave("./Figures/OrderMemory.png", width = 4, height = 24)
-
-
-
-
-
-
-

@@ -65,20 +65,21 @@ summary(int.model)
 
 # Relationships with surprise score
 ```{r}
-sur.model <- update(baseline, .~. + Surprise, random = ~ 1 + Surprise|SubjectNo)
+sur.model.int <- update(baseline, .~. + Surprise)
+sur.model.slp <- update(sur.model.int, random = ~ 1 + Surprise|SubjectNo)
 ```
 
 ```{r}
-anova(baseline, sur.model)
+anova(baseline, sur.model.int, sur.model.slp)
 ```
 
 ```{r}
-summary(sur.model)
+summary(sur.model.slp)
 ```
 
 ## Plot the linear relationships
 ```{r, echo=FALSE}
-outside.hit.rate.per.room[, PredSur := predict(sur.model, level = 1)]
+outside.hit.rate.per.room[, PredSur := predict(sur.model.slp, level = 1)]
 ```
 
 ```{r group predicted values for surprise model, echo=FALSE }
@@ -92,14 +93,14 @@ ggplot(outside.hit.rate.per.room, aes(x = Surprise, y = PredSur)) +
   geom_point(aes(y = SAcc, group = SubjectNo, color = SubjectNo), alpha = 0.25) +
   geom_line(aes(group = SubjectNo, color = SubjectNo), alpha = 0.25) +
   geom_line(data = sur.model.group.pred, aes(y = PredSAcc), size = 1.5, color = "black") +
-  labs(x = "Surprise score (Interest - Curiosity)", y = "Corrected hit rate (%)" )+
+  labs(x = "Surprise score (Interest - Curiosity)", y = "Corrected hit rate" )+
   theme(legend.position = "none",
-        axis.title = element_text(face = "bold", size = 14),
-        axis.text = element_text(size = 12))
+        axis.title = element_text(face = "bold", size = 16),
+        axis.text = element_text(size = 14))
 ```
 
 ```{r, echo=FALSE}
-ggsave("../Figures/SurHitLinear.png", width = 6.4, height = 4.8 )
+ggsave("../Figures/SurHitLinear.png", width = 6.4, height = 5.7 )
 ```
 
 # Relationships with pre-interestingness rating
@@ -136,14 +137,14 @@ ggplot(outside.hit.rate.per.room, aes(x = PreSur, y = PredPreSur)) +
   geom_point(aes(y = SAcc, group = SubjectNo, color = SubjectNo), alpha = 0.25) +
   geom_line(aes(group = SubjectNo, color = SubjectNo), alpha = 0.25) +
   geom_line(data = pre.sur.model.group.pred, aes(y = PredSAcc), size = 1.5, color = "black") +
-  labs(x = "Surprise score for the previous trial (Interest - Curiosity)", y = "Corrected hit rate (%)" )+
+  labs(x = "Surprise score for the room in previous trial", y = "Corrected hit rate" )+
   theme(legend.position = "none",
-        axis.title = element_text(face = "bold", size = 14),
-        axis.text = element_text(size = 12))
+        axis.title = element_text(face = "bold", size = 16),
+        axis.text = element_text(size = 14))
 ```
 
 ```{r, echo=FALSE}
-ggsave("../Figures/PreSurHitLinear.png", width = 6.4, height = 4.8 )
+ggsave("../Figures/PreSurHitLinear.png", width = 6.4, height = 5.7 )
 ```
 
 
