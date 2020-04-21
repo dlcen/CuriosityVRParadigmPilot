@@ -1,0 +1,65 @@
+---
+title: "Average rating and memory performance"
+output: 
+  html_notebook:
+    fig_caption: yes
+    highlight: default
+    number_sections: no
+    theme: lumen
+    toc: yes
+    toc_depth: 5
+    toc_float: true
+
+---
+
+<style>
+body {
+  font-size: 15px;
+}
+
+p.caption {
+  font-weight: 500;
+  font-style: italic;
+}
+
+code.r {
+  font-family: Consolas, Monaco, monospace;
+  font-size: 12px;
+}
+</style>
+
+```{r global_options, include=FALSE}
+knitr::opts_chunk$set(echo=TRUE, warning=FALSE, message=FALSE)
+```
+
+```{r, echo=FALSE, message=FALSE, warning=FALSE}
+library(kableExtra)
+options(knitr.table.format = "html", cache=TRUE) # "latex" for PDF; "html" for html 
+```
+
+```{r load libraries, echo=FALSE, message=FALSE, warning=FALSE}
+library(data.table); library(ggplot2)
+```
+
+```{r load the data, echo=FALSE}
+load("../PilotData/IndividualData.RData")
+load("../PilotData/ExcludedSubjectList.RData")
+```
+
+```{r remove excluded participants, echo=FALSE}
+individual.average.data           <- individual.average.data[! SubjectNo %in% excluded.ps]
+```
+
+```{r, fig.width=3, fig.height=2}
+ggplot(data = individual.average.data, aes(x = MeanCur, y = MSAcc*100)) + theme_light() +
+  geom_point(size = 3, aes(color = SubjectNo)) +
+  stat_smooth(method = "lm", size = 1, color = "black") +
+  scale_x_continuous(limits = c(1, 10), breaks = c(1:10)) +
+  labs(x = "Mean curiosity rating", y = "Mean corrected hit rate (%)") +
+  theme(legend.position = "none")
+```
+
+```{r}
+with(individual.average.data, cor.test(MeanCur, MSAcc))
+```
+
