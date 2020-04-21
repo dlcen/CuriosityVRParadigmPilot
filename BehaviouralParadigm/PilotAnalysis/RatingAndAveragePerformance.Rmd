@@ -63,3 +63,4 @@ ggplot(data = individual.average.data, aes(x = MeanCur, y = MSAcc*100)) + theme_
 with(individual.average.data, cor.test(MeanCur, MSAcc))
 ```
 
+Maybe it is because the sample size is smaller.
