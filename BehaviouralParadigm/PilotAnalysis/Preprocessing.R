@@ -66,10 +66,14 @@ questionnaire <- read.csv("./PilotData/QScores.csv", header = T, fileEncoding="U
 questionnaire$PC <- rowMeans(questionnaire[, c(2:13)])
 questionnaire$EC <- rowMeans(questionnaire[, c(14:23)])
 questionnaire$GN <- rowMeans(questionnaire[, c("PC", "EC")])
+questionnaire$PCd <- rowMeans(questionnaire[, paste0("PC", seq(1, 12, by = 2))])
+questionnaire$PCs <- rowMeans(questionnaire[, paste0("PC", seq(2, 12, by = 2))])
+questionnaire$ECi <- rowMeans(questionnaire[, paste0("EC", seq(1, 10, by = 2))])
+questionnaire$ECd <- rowMeans(questionnaire[, paste0("EC", seq(2, 10, by = 2))])
 
 questionnaire <- data.table(questionnaire)
 
-individual.data  <- merge(individual.data, questionnaire[, c(1, 24:26)], by = c("SubjectNo"))
+individual.data  <- merge(individual.data, questionnaire[, c(1, 24:30)], by = c("SubjectNo"))
 
 # Break durations
 break.durations <- NULL
@@ -137,11 +141,11 @@ if (!is.day1.only) {
   object.recognition.old    <- merge(object.recognition.old, average.ratings, by = "SubjectNo")
 
   ## Calculate the hit rates for each individual participant and each room
-  outside.hit.rate.per.room <- object.recognition.old[, .(SFHit = mean(SFHit, na.rm = TRUE), SHit = mean(SHit, na.rm = TRUE)), by = c("SubjectNo", "Scene", "Order", "Curiosity", "Interest", "Surprise", "PreInt", "PreSur", "InsideDuration", "OutsideDuration", "MedianDur", "MedianCur", "MedianInt", "MedianSur", "MedianPreInt", "MedianPreSur")]
+  outside.hit.rate.per.room <- object.recognition.old[, .(SFHit = mean(SFHit, na.rm = TRUE), SHit = mean(SHit, na.rm = TRUE)), by = c("SubjectNo", "Scene", "Order", "Curiosity", "Interest", "Surprise", "PreInt", "PreSur", "InsideDuration", "OutsideDuration", "MedianDur", "MedianCur", "MedianInt", "MedianSur", "MedianPreInt", "MedianPreSur", "MeanDur", "MeanCur", "MeanInt", "MeanSur", "MeanPreInt", "MeanPreSur")]
   outside.hit.rate.per.room <- outside.hit.rate.per.room[order(SubjectNo, Scene), ]
   outside.hit.rate.per.room <- merge(outside.hit.rate.per.room, idv.false.alarm.rate, all = TRUE)
 
-  outside.hit.rate.per.room[, c("SFAcc", "SAcc")  := list((SFHit - SFFalse), (SHit - SFalse)) ]
+  outside.hit.rate.per.room[, c("RFAcc", "RAcc")  := list((SFHit - SFFalse), (SHit - SFalse)) ]
 
   ## Calculate the hit rates for each curiosity group
   object.recognition.old[, CurGrp := mapply(GrpSep, Curiosity)]
@@ -149,7 +153,7 @@ if (!is.day1.only) {
 
   ## Calculate the hit rates for each curiosity group and order group
   object.recognition.old[, ObjOrdGrp := mapply(ObjOrdGrpSep, ItemOrder) ]
-  outside.hit.rate.item.order.curiosity        <- CorrHitRateOrderCal(object.recognition.old, "CurGrp", idv.false.alarm.rate)
+  outside.hit.rate.item.order.curiosity    <- CorrHitRateOrderCal(object.recognition.old, "CurGrp", idv.false.alarm.rate)
 
   ## Calculate the hit rates for each curiosity group that is median split
   object.recognition.old[, CurGrpMd := mapply(GrpMedianSep, Curiosity, MedianCur)]
@@ -189,7 +193,7 @@ if (!is.day1.only) {
   outside.hit.rate.item.presur.median  <- CorrHitRateCal(object.recognition.old, "PreSurGrpMd", idv.false.alarm.rate)
   
   if ("P06" %in% participant.list) {
-    tmp <- data.table(SubjectNo = "P06", PreSurGrpMd = "Low", SFHit = NA, SHit = NA, SFFalse = NA, SFalse = NA, SFAcc = NA, SAcc = NA)
+    tmp <- data.table(SubjectNo = "P06", PreSurGrpMd = "Low", SFHit = NA, SHit = NA, SFFalse = NA, SFalse = NA, RFAcc = NA, RAcc = NA)
     outside.hit.rate.item.presur.median  <- rbind(outside.hit.rate.item.presur.median, tmp)
     outside.hit.rate.item.presur.median  <- outside.hit.rate.item.presur.median[with(outside.hit.rate.item.presur.median, order(SubjectNo, PreSurGrpMd))]
   }
@@ -198,19 +202,19 @@ if (!is.day1.only) {
  
   ## Calculate the average curiosity, interestingness and surprise scores, exploration time and memory enhancement for each participant, and add questionnaire scores
   individual.average.data <- merge(average.ratings[, c("SubjectNo", "MeanCur", "MeanInt", "MeanSur")], average.inside.duration[, c("SubjectNo", "MeanDur")], by = c("SubjectNo"))
-  individual.average.data <- merge(individual.average.data, questionnaire[, c(1, 24:26)], by = c("SubjectNo"))
+  individual.average.data <- merge(individual.average.data, questionnaire[, c(1, 24:30)], by = c("SubjectNo"))
 
   ## Calculate the average corrected hit rate for each individual participant
-  individual.average.data$MSAcc <- as.numeric(Recall.Freq.Rsp[Group == "OldItem" & Response == "Seen"]$Frequency) - as.numeric(Recall.Freq.Rsp[Group == "Distractor" & Response == "Seen"]$Frequency)
+  individual.average.data$MRAcc <- as.numeric(Recall.Freq.Rsp[Group == "OldItem" & Response == "Seen"]$Frequency) - as.numeric(Recall.Freq.Rsp[Group == "Distractor" & Response == "Seen"]$Frequency)
 
   ## Calculate the memory enhancement for each comparison and then add the data to the *individual.data*
-  individual.average.data$CurME <- DiffCal(outside.hit.rate.item.curiosity.median,   "CurGrpMd", "SAcc", c("High", "Low"))
-  individual.average.data$DurME <- DiffCal(outside.hit.rate.item.exploration.median, "DurGrpMd", "SAcc", c("High", "Low"))
-  individual.average.data$IntME <- DiffCal(outside.hit.rate.item.interest.median,    "IntGrpMd", "SAcc", c("High", "Low"))
-  individual.average.data$SurME <- DiffCal(outside.hit.rate.item.surprise.median,    "SurGrpMd", "SAcc", c("High", "Low"))
+  individual.average.data$CurME <- DiffCal(outside.hit.rate.item.curiosity.median,   "CurGrpMd", "RAcc", c("High", "Low"))
+  individual.average.data$DurME <- DiffCal(outside.hit.rate.item.exploration.median, "DurGrpMd", "RAcc", c("High", "Low"))
+  individual.average.data$IntME <- DiffCal(outside.hit.rate.item.interest.median,    "IntGrpMd", "RAcc", c("High", "Low"))
+  individual.average.data$SurME <- DiffCal(outside.hit.rate.item.surprise.median,    "SurGrpMd", "RAcc", c("High", "Low"))
 
-  individual.average.data$PreIntME <- DiffCal(outside.hit.rate.item.preint.median,    "PreIntGrpMd", "SAcc", c("High", "Low"))
-  individual.average.data$PreSurME <- DiffCal(outside.hit.rate.item.presur.median,    "PreSurGrpMd", "SAcc", c("High", "Low"))
+  individual.average.data$PreIntME <- DiffCal(outside.hit.rate.item.preint.median,    "PreIntGrpMd", "RAcc", c("High", "Low"))
+  individual.average.data$PreSurME <- DiffCal(outside.hit.rate.item.presur.median,    "PreSurGrpMd", "RAcc", c("High", "Low"))
 
   save(rooms, ratings, break.durations,
     individual.data, questionnaire, individual.average.data,

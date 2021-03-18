@@ -20,7 +20,7 @@ options(knitr.table.format = "latex", cache=TRUE) # "latex" for PDF; "html" for 
 ```
 
 ```{r}
-library(data.table); library(nlme); library(multcomp); library(ggplot2)
+library(data.table); library(nlme); library(multcomp); library(ggplot2); library(bmlm)
 ```
 
 ```{r load the data}
@@ -32,13 +32,19 @@ load("../PilotData/ExcludedSubjectList.RData")
 outside.hit.rate.per.room <- outside.hit.rate.per.room[! SubjectNo %in% excluded.ps]
 ```
 
+```{r}
+source("CalFunc.R")
+outside.hit.rate.per.room[, CurRt_cw := center_colmeans(Curiosity), by = .(SubjectNo)]
+```
+
+
 # Relationships with curiosity rating
 ```{r}
 baseline <- lme(SAcc ~ 1, random = ~ 1|SubjectNo, data = outside.hit.rate.per.room, method = "ML", control = list(msMaxIter = 500, opt = "optim", msVerbose=FALSE), na.action = na.exclude)
 ```
 
 ```{r}
-cur.model <- update(baseline, .~. + Curiosity, random = ~ 1 + Curiosity|SubjectNo)
+cur.model <- update(baseline, .~. + CurRt_cw, random = ~ 1 + CurRt_cw|SubjectNo)
 ```
 
 ```{r}

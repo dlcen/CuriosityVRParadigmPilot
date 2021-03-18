@@ -1,0 +1,100 @@
+---
+title: "Traits"
+output:
+  html_notebook:
+    fig_caption: yes
+    highlight: tango
+    number_sections: no
+    theme: lumen
+    toc: yes
+    toc_depth: 6
+    toc_float: yes
+    code_folding: hide
+  html_document:
+    fig_caption: yes
+    highlight: tango
+    number_sections: no
+    theme: lumen
+    toc: yes
+    toc_depth: 6
+    toc_float: yes
+    code_folding: hide
+    
+---
+<style>
+body {
+  <!-- font-size: 15px; -->
+  line-height: 2;
+}
+
+h1, h2, h3, h4, h5, h6 {
+  color: #158CBA;
+}
+
+mark {
+  background-color:#FFEB94;
+}
+
+</style>
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = FALSE, include = TRUE)
+```
+
+```{r, echo=FALSE, message=FALSE, warning=FALSE}
+library(kableExtra)
+options(knitr.table.format = "html", cache=TRUE) # "latex" for PDF; "html" for html
+```
+
+```{r, echo = FALSE, message=FALSE, warning=FALSE}
+library(data.table); library(ggplot2); library(nlme); library(ez); library(multcomp); library(psychReport); library(psych); library(cowplot); library(RColorBrewer); library(dplyr); library(Rmisc)
+```
+
+```{r}
+load("./PilotData/IndividualData.RData")
+load("./PilotData/ExcludedSubjectList.RData")
+```
+
+```{r}
+individual.average.data <- individual.average.data[! SubjectNo %in% excluded.ps]
+```
+
+# Trait and curiosity 
+## PC and EC
+```{r}
+PC_rating <- with(individual.average.data, cor.test(MeanCur, PC))
+EC_rating <- with(individual.average.data, cor.test(MeanCur, EC))
+```
+
+## Subscales
+```{r}
+PCd_rating <- with(individual.average.data, cor.test(MeanCur, PCd))
+PCs_rating <- with(individual.average.data, cor.test(MeanCur, PCs))
+ECi_rating <- with(individual.average.data, cor.test(MeanCur, ECi))
+ECd_rating <- with(individual.average.data, cor.test(MeanCur, ECd))
+```
+
+# Trait and recollection accuracy
+## PC and EC
+```{r}
+PC_RAcc <- with(individual.average.data, cor.test(MRAcc, PC))
+EC_RAcc <- with(individual.average.data, cor.test(MRAcc, EC))
+```
+
+## Subscales
+```{r}
+PCd_RAcc <- with(individual.average.data, cor.test(MRAcc, PCd))
+PCs_RAcc <- with(individual.average.data, cor.test(MRAcc, PCs))
+ECi_RAcc <- with(individual.average.data, cor.test(MRAcc, ECi))
+ECd_RAcc <- with(individual.average.data, cor.test(MRAcc, ECd))
+```
+
+# Summary
+|Subscale Score|Curiosity Rating|Recollection Accuracy|
+|---|---|---|
+|PC|*r* = `r round(PC_rating$estimate[[1]], 2)`, t = `r round(PC_rating$statistic[[1]], 2)`, *p* = `r round(PC_rating$p.value, 2)`|*r* = `r round(PC_RAcc$estimate[[1]], 2)`, t = `r round(PC_RAcc$statistic[[1]], 2)`, *p* = `r round(PC_RAcc$p.value, 2)`|
+|EC|*r* = `r round(EC_rating$estimate[[1]], 2)`, t = `r round(EC_rating$statistic[[1]], 2)`, *p* = `r round(EC_rating$p.value, 2)`|*r* = `r round(EC_RAcc$estimate[[1]], 2)`, t = `r round(EC_RAcc$statistic[[1]], 2)`, *p* = `r round(EC_RAcc$p.value, 2)`|
+|PC/D|*r* = `r round(PCd_rating$estimate[[1]], 2)`, t = `r round(PCd_rating$statistic[[1]], 2)`, *p* = `r round(PCd_rating$p.value, 2)`|*r* = `r round(PCd_RAcc$estimate[[1]], 2)`, t = `r round(PCd_RAcc$statistic[[1]], 2)`, *p* = `r round(PCd_RAcc$p.value, 2)`|
+|PC/S|*r* = `r round(PCs_rating$estimate[[1]], 2)`, t = `r round(PCs_rating$statistic[[1]], 2)`, *p* = `r round(PCs_rating$p.value, 2)`|*r* = `r round(PCs_RAcc$estimate[[1]], 2)`, t = `r round(PCs_RAcc$statistic[[1]], 2)`, *p* = `r round(PCs_RAcc$p.value, 2)`|
+|EC/I|*r* = `r round(ECi_rating$estimate[[1]], 2)`, t = `r round(ECi_rating$statistic[[1]], 2)`, *p* = `r round(ECi_rating$p.value, 2)`|*r* = `r round(ECi_RAcc$estimate[[1]], 2)`, t = `r round(ECi_RAcc$statistic[[1]], 2)`, *p* = `r round(ECi_RAcc$p.value, 2)`|
+|EC/D|*r* = `r round(ECd_rating$estimate[[1]], 2)`, t = `r round(ECd_rating$statistic[[1]], 2)`, *p* = `r round(ECd_rating$p.value, 2)`|*r* = `r round(ECd_RAcc$estimate[[1]], 2)`, t = `r round(ECd_RAcc$statistic[[1]], 2)`, *p* = `r round(ECd_RAcc$p.value, 2)`|

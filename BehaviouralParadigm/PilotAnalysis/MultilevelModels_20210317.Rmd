@@ -1,0 +1,130 @@
+---
+title: "R Notebook"
+output: 
+      html_notebook:
+            fig_caption: yes
+            highlight: tango
+            number_sections: no
+            theme: lumen
+            toc: yes
+            toc_depth: 6
+            toc_float: true
+            # code_folding: hide
+            
+---
+<style>
+body {
+  <!-- font-size: 15px; -->
+  line-height: 2;
+}
+
+h1, h2, h3, h4, h5, h6 {
+  color: #158CBA;
+}
+
+mark {
+  background-color:#FFEB94;
+}
+
+</style>
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE, include = TRUE)
+```
+
+```{r, echo=FALSE, message=FALSE, warning=FALSE}
+library(kableExtra)
+options(knitr.table.format = "html", cache=TRUE) # "latex" for PDF; "html" for html
+```
+
+```{r, echo = FALSE, message=FALSE, warning=FALSE}
+library(data.table); library(ggplot2); library(nlme); library(ez); library(multcomp); library(psychReport); library(psych); library(cowplot); library(RColorBrewer); library(dplyr); library(lme4); library(Rmisc)
+```
+
+```{r}
+load("./PilotData/IndividualData.RData")
+load("./PilotData/ExcludedSubjectList.RData")
+```
+
+```{r}
+outside.hit.rate.per.room <- outside.hit.rate.per.room[! SubjectNo %in% excluded.ps]
+outside.hit.rate.per.room[, RAcc100 := RAcc * 100]
+```
+
+```{r}
+outside.hit.rate.per.room[, c("CuriosityCWC", "InterestCWC", "SurpriseCWC") := list(Curiosity-MeanCur, Interest - MeanInt, Surprise - MeanSur)]
+```
+
+## Multilevel Model
+### Curiosity
+```{r}
+model.12.CWC <- lme(RAcc100 ~ 1 + MeanCur +  CuriosityCWC, random = ~ 1 + CuriosityCWC|SubjectNo, data = outside.hit.rate.per.room, method = "ML", na.action = na.exclude, control = list(msMaxIter = 500, opt = "optim", msVerbose=FALSE))
+
+summary(model.12.CWC)
+```
+
+#### Plot the date
+```{r, fig.width = 2.5, fig.height=2.5}
+ggplot(data = outside.hit.rate.per.room, aes(x = Curiosity, y = RAcc100)) + theme_light() +
+      geom_point(size = 3, alpha = 0.25, aes(color = SubjectNo, fill = SubjectNo)) +
+      stat_smooth(method = "lm", se = F, size = 0.25, alpha = 0.5,  aes(color = SubjectNo)) +
+      # geom_line(data = tempdata, aes(x = CurRtCWC, y = predRAcc100, color = SubjectNo)) +
+      stat_smooth(method = "lm", se = F, size = 2, color = "black", aes(x = MeanCur)) +
+      scale_x_continuous(breaks = c(1:10)) +
+      labs(x = "Curiosity Rating", y = "Corrected hit rate for object recollection (%)") +
+      theme(legend.position = "none",
+            panel.grid = element_blank(),
+            strip.text = element_text(size = 14, face = "bold"),
+            axis.title = element_text(size = 12, face = "bold"),
+            axis.text = element_text(size = 10))
+```
+
+### Interest
+```{r}
+model.12.CWC <- lme(RAcc100 ~ 1 + MeanInt +  InterestCWC, random = ~ 1 + InterestCWC|SubjectNo, data = outside.hit.rate.per.room, method = "ML", na.action = na.exclude, control = list(msMaxIter = 500, opt = "optim", msVerbose=FALSE))
+
+summary(model.12.CWC)
+```
+
+#### Plot the date
+```{r, fig.width = 2.5, fig.height=2.5}
+ggplot(data = outside.hit.rate.per.room, aes(x = Interest, y = RAcc100)) + theme_light() +
+      geom_point(size = 3, alpha = 0.25, aes(color = SubjectNo, fill = SubjectNo)) +
+      stat_smooth(method = "lm", se = F, size = 0.25, alpha = 0.5,  aes(color = SubjectNo)) +
+      # geom_line(data = tempdata, aes(x = CurRtCWC, y = predRAcc100, color = SubjectNo)) +
+      stat_smooth(method = "lm", se = F, size = 2, color = "black", aes(x = MeanInt)) +
+      scale_x_continuous(breaks = c(1:10)) +
+      labs(x = "Interestingness Rating", y = "Corrected hit rate for object recollection (%)") +
+      theme(legend.position = "none",
+            panel.grid = element_blank(),
+            strip.text = element_text(size = 14, face = "bold"),
+            axis.title = element_text(size = 12, face = "bold"),
+            axis.text = element_text(size = 10))
+```
+
+### Surprise
+```{r}
+model.12.CWC <- lme(RAcc100 ~ 1 + MeanSur +  SurpriseCWC, random = ~ 1 + SurpriseCWC|SubjectNo, data = outside.hit.rate.per.room, method = "ML", na.action = na.exclude, control = list(msMaxIter = 500, opt = "optim", msVerbose=FALSE))
+
+summary(model.12.CWC)
+```
+
+#### Plot the date
+```{r, fig.width = 2.5, fig.height=2.5}
+ggplot(data = outside.hit.rate.per.room, aes(x = Surprise, y = RAcc100)) + theme_light() +
+      geom_point(size = 3, alpha = 0.25, aes(color = SubjectNo, fill = SubjectNo)) +
+      stat_smooth(method = "lm", se = F, size = 0.25, alpha = 0.5,  aes(color = SubjectNo)) +
+      # geom_line(data = tempdata, aes(x = CurRtCWC, y = predRAcc100, color = SubjectNo)) +
+      stat_smooth(method = "lm", se = F, size = 2, color = "black", aes(x = MeanSur)) +
+      scale_x_continuous(breaks = c(-8:8)) +
+      labs(x = "Surprise (Interestingness - Curiosity)", y = "Corrected hit rate for object recollection (%)") +
+      theme(legend.position = "none",
+            panel.grid = element_blank(),
+            strip.text = element_text(size = 14, face = "bold"),
+            axis.title = element_text(size = 12, face = "bold"),
+            axis.text = element_text(size = 10))
+```
+
+
+
+

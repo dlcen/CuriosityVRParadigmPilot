@@ -107,7 +107,7 @@ ObjOrdGrpSep <- function(thisOrder) {
 CorrHitRateCal <- function(data, group, false.alarm.rate) {
   results <- data[!is.na(get(group)), .(SFHit = mean(SFHit, na.rm = TRUE), SHit = mean(SHit, na.rm = TRUE)), by = c("SubjectNo", group)]
   results <- merge(results, false.alarm.rate, all = TRUE)
-  results[, c("SFAcc", "SAcc") := list( (SFHit - SFFalse), (SHit - SFalse))]
+  results[, c("RFAcc", "RAcc") := list( (SFHit - SFFalse), (SHit - SFalse))]
 
   return(results)
 }
@@ -116,7 +116,7 @@ CorrHitRateCal <- function(data, group, false.alarm.rate) {
 CorrHitRateOrderCal <- function(data, group, false.alarm.rate) {
   results   <- data[!is.na(get(group)), .(SFHit = mean(SFHit, na.rm = TRUE), SHit = mean(SHit, na.rm = TRUE)), by = c("SubjectNo", group, "ObjOrdGrp")]
   results   <- merge(results, false.alarm.rate, all = TRUE)
-  results[, c("SFAcc", "SAcc") := list( (SFHit - SFFalse), (SHit - SFalse))]
+  results[, c("RFAcc", "RAcc") := list( (SFHit - SFFalse), (SHit - SFalse))]
 
   return(results)
 }
@@ -136,3 +136,8 @@ DiffCal <- function(data, comparison, dv, group) {
 # Find out the rooms with a score higher/lower than median also has a score higher/lower than median
 # RoomOverlapChecker <- function(data, )
 
+# Centring the data
+center_colmeans <- function(x) {
+  xcenter = mean(x)
+  x - rep(xcenter, length(x))
+}

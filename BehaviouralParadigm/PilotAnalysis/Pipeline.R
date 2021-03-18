@@ -2,17 +2,8 @@
 
 # 1. Preprocessing the data
 
-is.subset <- FALSE
-
 ## For all participants
-if (!is.subset) {
-    participant.list <- list.files(path = "./PilotData/IndividualData/", pattern = "^P")
-} else {
-    participant.list <- c(paste0("P0", c(1:9)), paste0("P", c(11:20)) ## For a sub-group of participants
-}
-
-participant.list <- c(paste0("P", c(32)))
-
+participant.list <- list.files(path = "./PilotData/IndividualData/", pattern = "^P")
 is.day1.only <- FALSE
 
 source("./PilotAnalysis/Preprocessing.R")
